@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>桥水全天候策略 · 中国版实践</title>
+<style>
+* { box-sizing: border-box; }
+body {
+    font-family: "Microsoft YaHei", "微软雅黑", -apple-system, sans-serif;
+    line-height: 1.7;
+    color: #2c2c2c;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    background: #fafafa;
+}
+.doc-title {
+    font-size: 32px;
+    color: #1f4e79;
+    text-align: center;
+    margin-bottom: 8px;
+    border-bottom: none;
+    padding-top: 0;
+}
+.doc-subtitle {
+    text-align: center;
+    color: #595959;
+    font-style: italic;
+    font-size: 15px;
+    margin-top: 0;
+}
+.doc-meta {
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #e0e0e0;
+}
+.ch-h1 {
+    color: #1f4e79;
+    font-size: 24px;
+    margin-top: 48px;
+    padding: 12px 16px;
+    background: linear-gradient(90deg, #e8f0f8 0%, transparent 100%);
+    border-left: 5px solid #1f4e79;
+    border-radius: 0 6px 6px 0;
+}
+.plan-title {
+    font-size: 22px;
+    margin-top: 36px;
+    padding: 14px 18px;
+    border-radius: 6px;
+    color: white;
+}
+.plan-c { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); }
+.plan-b { background: linear-gradient(135deg, #1f4e79 0%, #2e75b6 100%); }
+.plan-d { background: linear-gradient(135deg, #703000 0%, #a0522d 100%); }
+.step-h {
+    color: #1f4e79;
+    font-size: 18px;
+    margin-top: 28px;
+    padding: 8px 14px;
+    background: #f0f6fc;
+    border-radius: 4px;
+    border-left: 3px solid #2e75b6;
+}
+.sec-h3 {
+    color: #2e75b6;
+    font-size: 16px;
+    margin-top: 18px;
+    margin-bottom: 8px;
+}
+.para { margin: 8px 0; }
+.para-bold { margin: 12px 0; font-weight: 600; color: #1f4e79; }
+.bullet {
+    margin: 6px 0 6px 24px;
+    list-style: '▸ ';
+}
+.warning {
+    background: #fff5f5;
+    border-left: 4px solid #c0392b;
+    padding: 10px 14px;
+    margin: 12px 0;
+    color: #80201a;
+    border-radius: 0 4px 4px 0;
+}
+.faq-q {
+    margin-top: 16px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #1f4e79;
+    padding-left: 12px;
+    border-left: 3px solid #2e75b6;
+}
+.faq-a {
+    margin: 0 0 12px 0;
+    padding-left: 12px;
+    color: #4a4a4a;
+}
+table.data-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 22px 0;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    font-size: 14px;
+}
+table.data-tbl thead {
+    background: var(--header-color, #1f4e79);
+    color: white;
+}
+table.data-tbl th {
+    padding: 10px 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+}
+table.data-tbl td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+table.data-tbl tbody tr:nth-child(even) { background: #fbfbfb; }
+table.data-tbl tbody tr:hover { background: #f5f9fc; }
+.td-first { font-weight: 600; color: #333; }
+.td-num { text-align: center; color: #555; font-variant-numeric: tabular-nums; }
+.toc {
+    background: white;
+    padding: 18px 24px;
+    border-radius: 8px;
+    margin-bottom: 36px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.toc h3 {
+    margin-top: 0;
+    color: #1f4e79;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+.toc ol { margin: 8px 0 0 0; padding-left: 24px; }
+.toc li { margin: 6px 0; }
+.toc a { color: #2e75b6; text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+@media print {
+    body { background: white; padding: 0; }
+    .ch-h1 { page-break-before: auto; }
+    .plan-title { page-break-before: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="toc"><h3>📑 目录</h3><ol><li><a href="#ch0">一、桥水全天候策略核心逻辑</a></li><li><a href="#ch1">二、美版蓝本：RPAR / ALLW / All Seasons</a></li><li><a href="#ch2">三、中国版风险平价策略 - 三套方案</a></li><li><a href="#ch3">四、三方案对比一表看清</a></li><li><a href="#ch4">五、调仓规则：半年节点 + 3% 偏离双触发</a></li><li><a href="#ch5">六、风险提示</a></li><li><a href="#ch6">七、落地执行手册：从今天开始做什么</a></li><li><a href="#ch7">八、本方案 vs 网上常见中国版的差异</a></li><li><a href="#ch8">九、附录：ETF 速查表</a></li><li><a href="#ch9">十、参考资料</a></li></ol></div>
+<h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
+<p class="doc-subtitle">基于风险平价（Risk Parity）的 A 股投资者落地方案</p>
+<p class="doc-meta">回测期: 2020-08 ~ 2025-12  |  调仓规则: 半年节点 + 3% 偏离双触发  |  本金示例: 100 万</p>
+<h2 class="ch-h1" id="ch0">一、桥水全天候策略核心逻辑</h2>
+<p class="para">桥水基金（Bridgewater）的全天候策略（All Weather Strategy）是投资界最著名的风险平价（Risk Parity）实践。它的核心逻辑非常纯粹：既然我们无法准确预测未来，那就构建一个在任何宏观环境下都不会重伤的组合，让时间和复利做朋友。</p>
+<h3 class="sec-h3">（一）四象限框架：把宏观风险拆开看</h3>
+<p class="para">Dalio 把所有宏观环境拆解成两个维度——增长和通胀，每个维度都有上升/下降两种状态，组合出 4 个象限。每个象限里都有天然受益的资产类别：</p>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>宏观环境</th>
+<th>受益资产</th>
+<th>代表 ETF</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">增长 ↑（扩张/复苏）</td>
+<td class="td-num">权益、信用债、商品</td>
+<td class="td-num">沪深 300、红利、标普 500、城投债</td>
+</tr>
+<tr>
+<td class="td-first">增长 ↓（衰退）</td>
+<td class="td-num">利率债（长久期为主）</td>
+<td class="td-num">10 年国债、30 年国债</td>
+</tr>
+<tr>
+<td class="td-first">通胀 ↑（再通胀/滞胀）</td>
+<td class="td-num">黄金、工业金属、农产品</td>
+<td class="td-num">黄金、有色、豆粕</td>
+</tr>
+<tr>
+<td class="td-first">通胀 ↓（通缩/紧缩）</td>
+<td class="td-num">现金、短债、TIPS</td>
+<td class="td-num">货币基金、短债</td>
+</tr>
+</tbody></table>
+<p class="para">核心思想：每个象限都布置足够暴露，让 4 个桶对组合的风险贡献大致相等。这样无论宏观走到哪个象限，组合都不会被击穿。</p>
+<h3 class="sec-h3">（二）风险平价：解决 60/40 组合的风险集中问题</h3>
+<p class="para">传统 60/40 组合（60% 股票 + 40% 债券）看似分散，实则风险高度集中——由于股票波动率约是债券的 4 倍，股票最终贡献了 90% 以上的组合风险。股市大跌时债券的微弱收益根本无法对冲。</p>
+<p class="para">风险平价的解法：不按资金平分，而是按风险（波动率）平分，让各类资产对组合的风险贡献基本对等。具体公式上，低波动资产权重大，高波动资产权重小。</p>
+<h3 class="sec-h3">（三）Dalio 的圣杯：15 个不相关的回报流</h3>
+<p class="para">Dalio 在《原则》里提到的Holy Grail：如果你能找到 15 个相关性低、收益预期为正的回报来源，组合波动会显著下降，但收益不变——这是投资里少有的免费午餐。全天候不追求押对一个赛道，而是布满所有不会同时崩盘的资产。</p>
+<h3 class="sec-h3">（四）原版桥水的杠杆与中国版的妥协</h3>
+<p class="para">桥水原版用杠杆把低波债券放大到与股票同等风险贡献，再做风险平价。中国零售投资者拿不到这种成本的杠杆，所以中国版做了 4 个关键妥协：</p>
+<p class="para-bold">• 无 TIPS：国内没有通胀挂钩国债 → 用黄金 + 大宗商品ETF 做通胀对冲</p>
+<p class="para-bold">• 无杠杆：无法把短债加杠杆放大风险贡献 → 用 30 年国债 ETF 自带的高久期暴露代替</p>
+<p class="para-bold">• 无新兴市场债：中国本身就是新兴市场，回避国别集中</p>
+<p class="para-bold">• QDII 限购/溢价：海外股权用标普 500 ETF 替代，但有溢价/限购摩擦</p>
+<h2 class="ch-h1" id="ch1">二、美版蓝本：RPAR / ALLW / All Seasons</h2>
+<p class="para">国内复刻全天候之前，先看一下美版同行已经怎么做了——</p>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>产品</th>
+<th>类型</th>
+<th>管理人</th>
+<th>核心特征</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">RPAR ETF</td>
+<td class="td-num">ETF</td>
+<td class="td-num">Advanced Research</td>
+<td class="td-num">最严格的风险平价：股 / 债 / 商品 / TIPS 各贡献 25% 风险</td>
+</tr>
+<tr>
+<td class="td-first">UPAR ETF</td>
+<td class="td-num">ETF</td>
+<td class="td-num">Advanced Research</td>
+<td class="td-num">RPAR 的杠杆版（约 1.4×）</td>
+</tr>
+<tr>
+<td class="td-first">ALLW ETF</td>
+<td class="td-num">ETF</td>
+<td class="td-num">State Street + 桥水</td>
+<td class="td-num">桥水授权的零售版，含 EM 债</td>
+</tr>
+<tr>
+<td class="td-first">All Seasons</td>
+<td class="td-num">静态权重</td>
+<td class="td-num">Tony Robbins 推广</td>
+<td class="td-num">30/40/15/7.5/7.5 简化版，年度调仓</td>
+</tr>
+</tbody></table>
+<p class="para">All Seasons 是 Robbins 在《Money: Master the Game》里向 Dalio 求来的简化版，适合零售但忽略了风险贡献的动态变化。RPAR/ALLW 才是真正的风险平价 ETF。中国版借鉴 RPAR 的桶结构，但权重用样本协方差 + 长期波动率假设求解，避开窗口偏差。</p>
+<h2 class="ch-h1" id="ch2">三、中国版风险平价策略 - 三套方案</h2>
+<p class="para">以下三套方案都基于同一框架：9 资产 × 4 桶（增长↑权益、收益垫信用债、增长↓利率债、通胀↑商品+黄金）。差异在于桶内权重侧重——你可以根据自己对未来宏观的判断挑选。</p>
+<h2 class="plan-title plan-c">方案 1: V3c 多元型  ★★★ 强烈推荐</h2>
+<p class="para-bold">特征：海外权益加倍至 8%（A 股黑天鹅时国别分散），长债 55%，9 资产均衡。</p>
+<p class="para">适合：兼顾收益和稳健的大多数投资者。综合 Sharpe / 5 年蒙特卡洛下沿 / 滞胀防御都领先。</p>
+<h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
+<table class="data-tbl" style="--header-color: #C0392B;">
+<thead><tr>
+<th>桶</th>
+<th>资产</th>
+<th>代码</th>
+<th>100% RP</th>
+<th>85% RP</th>
+<th>70% RP</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">沪深 300 ETF</td>
+<td class="td-num">510300</td>
+<td class="td-num">4.0万</td>
+<td class="td-num">3.4万</td>
+<td class="td-num">2.8万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">红利 ETF（中证红利）</td>
+<td class="td-num">510880</td>
+<td class="td-num">6.0万</td>
+<td class="td-num">5.1万</td>
+<td class="td-num">4.2万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">标普 500 ETF（QDII）</td>
+<td class="td-num">513500</td>
+<td class="td-num">8.0万</td>
+<td class="td-num">6.8万</td>
+<td class="td-num">5.6万</td>
+</tr>
+<tr>
+<td class="td-first">收益垫</td>
+<td class="td-num">城投债 ETF</td>
+<td class="td-num">511220</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">10 年国债 ETF</td>
+<td class="td-num">511260</td>
+<td class="td-num">40.0万</td>
+<td class="td-num">34.0万</td>
+<td class="td-num">28.0万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">30 年国债 ETF</td>
+<td class="td-num">511130</td>
+<td class="td-num">15.0万</td>
+<td class="td-num">12.75万</td>
+<td class="td-num">10.5万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">黄金 ETF</td>
+<td class="td-num">518880</td>
+<td class="td-num">10.0万</td>
+<td class="td-num">8.5万</td>
+<td class="td-num">7.0万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">有色金属 ETF</td>
+<td class="td-num">159980</td>
+<td class="td-num">6.0万</td>
+<td class="td-num">5.1万</td>
+<td class="td-num">4.2万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">豆粕 ETF</td>
+<td class="td-num">159985</td>
+<td class="td-num">6.0万</td>
+<td class="td-num">5.1万</td>
+<td class="td-num">4.2万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↓</td>
+<td class="td-num">货币基金</td>
+<td class="td-num">511880</td>
+<td class="td-num">—</td>
+<td class="td-num">15.0万</td>
+<td class="td-num">30.0万</td>
+</tr>
+<tr>
+<td class="td-first">合计</td>
+<td class="td-num"></td>
+<td class="td-num"></td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">📈 回测核心指标 (2020-08 ~ 2025-12)</h3>
+<table class="data-tbl" style="--header-color: #C0392B;">
+<thead><tr>
+<th>档位</th>
+<th>5.5y累计</th>
+<th>CAGR年化</th>
+<th>波动</th>
+<th>回撤</th>
+<th>Sharpe</th>
+<th>Calmar</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">100% RP</td>
+<td class="td-num">+55.13%</td>
+<td class="td-num">8.77%</td>
+<td class="td-num">3.37%</td>
+<td class="td-num">-2.89%</td>
+<td class="td-num">2.60</td>
+<td class="td-num">3.03</td>
+</tr>
+<tr>
+<td class="td-first">85% RP</td>
+<td class="td-num">+47.82%</td>
+<td class="td-num">7.77%</td>
+<td class="td-num">2.87%</td>
+<td class="td-num">-2.37%</td>
+<td class="td-num">2.71</td>
+<td class="td-num">3.28</td>
+</tr>
+<tr>
+<td class="td-first">70% RP</td>
+<td class="td-num">+40.84%</td>
+<td class="td-num">6.78%</td>
+<td class="td-num">2.36%</td>
+<td class="td-num">-1.85%</td>
+<td class="td-num">2.87</td>
+<td class="td-num">3.65</td>
+</tr>
+</tbody></table>
+<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
+<table class="data-tbl" style="--header-color: #C0392B;">
+<thead><tr>
+<th>2020*</th>
+<th>2021</th>
+<th>2022</th>
+<th>2023</th>
+<th>2024</th>
+<th>2025</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">+2.04%</td>
+<td class="td-num">+9.03%</td>
+<td class="td-num">+5.33%</td>
+<td class="td-num">+8.48%</td>
+<td class="td-num">+12.72%</td>
+<td class="td-num">+8.27%</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">（*2020 仅 8 月起 5 个月；6 年全部正收益、零负年）</h3>
+<h3 class="sec-h3">✅ 优势</h3>
+<p class="para">• Sharpe 全场最高 2.60，风险调整后收益最优</p>
+<p class="para">• 蒙特卡洛 5%-分位下沿 +36.3%（5 年），下沿最厚实</p>
+<p class="para">• 海外 8% 提供真分散，2025 年 9 月关税冲击期 +2.73%</p>
+<p class="para">• 6 年全部正收益，单年最差 +2.04%（2020 5 个月）</p>
+<h2 class="plan-title plan-b">方案 2: V3b 平衡型  ★★ 备选 - 求最浅回撤者</h2>
+<p class="para-bold">特征：长债加厚至 58%，海外仅 5%，回撤最浅。</p>
+<p class="para">适合：极度厌恶回撤的保守型投资者，或对 QDII 限购/溢价有顾虑的人。</p>
+<h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>桶</th>
+<th>资产</th>
+<th>代码</th>
+<th>100% RP</th>
+<th>85% RP</th>
+<th>70% RP</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">沪深 300 ETF</td>
+<td class="td-num">510300</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">红利 ETF（中证红利）</td>
+<td class="td-num">510880</td>
+<td class="td-num">7.0万</td>
+<td class="td-num">5.95万</td>
+<td class="td-num">4.9万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">标普 500 ETF（QDII）</td>
+<td class="td-num">513500</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">收益垫</td>
+<td class="td-num">城投债 ETF</td>
+<td class="td-num">511220</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">10 年国债 ETF</td>
+<td class="td-num">511260</td>
+<td class="td-num">43.0万</td>
+<td class="td-num">36.55万</td>
+<td class="td-num">30.1万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">30 年国债 ETF</td>
+<td class="td-num">511130</td>
+<td class="td-num">15.0万</td>
+<td class="td-num">12.75万</td>
+<td class="td-num">10.5万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">黄金 ETF</td>
+<td class="td-num">518880</td>
+<td class="td-num">10.0万</td>
+<td class="td-num">8.5万</td>
+<td class="td-num">7.0万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">有色金属 ETF</td>
+<td class="td-num">159980</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">豆粕 ETF</td>
+<td class="td-num">159985</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↓</td>
+<td class="td-num">货币基金</td>
+<td class="td-num">511880</td>
+<td class="td-num">—</td>
+<td class="td-num">15.0万</td>
+<td class="td-num">30.0万</td>
+</tr>
+<tr>
+<td class="td-first">合计</td>
+<td class="td-num"></td>
+<td class="td-num"></td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">📈 回测核心指标</h3>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>档位</th>
+<th>5.5y累计</th>
+<th>CAGR年化</th>
+<th>波动</th>
+<th>回撤</th>
+<th>Sharpe</th>
+<th>Calmar</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">100% RP</td>
+<td class="td-num">+51.26%</td>
+<td class="td-num">8.25%</td>
+<td class="td-num">3.27%</td>
+<td class="td-num">-2.26%</td>
+<td class="td-num">2.52</td>
+<td class="td-num">3.65</td>
+</tr>
+<tr>
+<td class="td-first">85% RP</td>
+<td class="td-num">+44.68%</td>
+<td class="td-num">7.33%</td>
+<td class="td-num">2.78%</td>
+<td class="td-num">-1.88%</td>
+<td class="td-num">2.64</td>
+<td class="td-num">3.90</td>
+</tr>
+<tr>
+<td class="td-first">70% RP</td>
+<td class="td-num">+38.37%</td>
+<td class="td-num">6.42%</td>
+<td class="td-num">2.29%</td>
+<td class="td-num">-1.50%</td>
+<td class="td-num">2.80</td>
+<td class="td-num">4.28</td>
+</tr>
+</tbody></table>
+<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>2020*</th>
+<th>2021</th>
+<th>2022</th>
+<th>2023</th>
+<th>2024</th>
+<th>2025</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">+1.64%</td>
+<td class="td-num">+8.35%</td>
+<td class="td-num">+4.93%</td>
+<td class="td-num">+7.74%</td>
+<td class="td-num">+12.70%</td>
+<td class="td-num">+7.81%</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">✅ 优势</h3>
+<p class="para">• 最大回撤 -2.26%，全场最浅</p>
+<p class="para">• Calmar 3.65 最高（年化 / 回撤性价比最优）</p>
+<p class="para">• 海外仅 5%，QDII 摩擦小</p>
+<h2 class="plan-title plan-d">方案 3: V3d 商品偏重型  ★★ 备选 - 怕滞胀者</h2>
+<p class="para-bold">特征：商品桶加重至 27%（黄金 12% + 有色 7.5% + 豆粕 7.5%），长债压到 53%。</p>
+<p class="para">适合：判断未来 5 年大概率是高通胀/滞胀的投资者，愿意接受稍深回撤换通胀防御。</p>
+<h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
+<table class="data-tbl" style="--header-color: #703000;">
+<thead><tr>
+<th>桶</th>
+<th>资产</th>
+<th>代码</th>
+<th>100% RP</th>
+<th>85% RP</th>
+<th>70% RP</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">沪深 300 ETF</td>
+<td class="td-num">510300</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">红利 ETF（中证红利）</td>
+<td class="td-num">510880</td>
+<td class="td-num">7.0万</td>
+<td class="td-num">5.95万</td>
+<td class="td-num">4.9万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">标普 500 ETF（QDII）</td>
+<td class="td-num">513500</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">收益垫</td>
+<td class="td-num">城投债 ETF</td>
+<td class="td-num">511220</td>
+<td class="td-num">3.0万</td>
+<td class="td-num">2.55万</td>
+<td class="td-num">2.1万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">10 年国债 ETF</td>
+<td class="td-num">511260</td>
+<td class="td-num">40.0万</td>
+<td class="td-num">34.0万</td>
+<td class="td-num">28.0万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">30 年国债 ETF</td>
+<td class="td-num">511130</td>
+<td class="td-num">13.0万</td>
+<td class="td-num">11.05万</td>
+<td class="td-num">9.1万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">黄金 ETF</td>
+<td class="td-num">518880</td>
+<td class="td-num">12.0万</td>
+<td class="td-num">10.2万</td>
+<td class="td-num">8.4万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">有色金属 ETF</td>
+<td class="td-num">159980</td>
+<td class="td-num">7.5万</td>
+<td class="td-num">6.375万</td>
+<td class="td-num">5.25万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">豆粕 ETF</td>
+<td class="td-num">159985</td>
+<td class="td-num">7.5万</td>
+<td class="td-num">6.375万</td>
+<td class="td-num">5.25万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↓</td>
+<td class="td-num">货币基金</td>
+<td class="td-num">511880</td>
+<td class="td-num">—</td>
+<td class="td-num">15.0万</td>
+<td class="td-num">30.0万</td>
+</tr>
+<tr>
+<td class="td-first">合计</td>
+<td class="td-num"></td>
+<td class="td-num"></td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">📈 回测核心指标</h3>
+<table class="data-tbl" style="--header-color: #703000;">
+<thead><tr>
+<th>档位</th>
+<th>5.5y累计</th>
+<th>CAGR年化</th>
+<th>波动</th>
+<th>回撤</th>
+<th>Sharpe</th>
+<th>Calmar</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">100% RP</td>
+<td class="td-num">+55.82%</td>
+<td class="td-num">8.86%</td>
+<td class="td-num">3.69%</td>
+<td class="td-num">-3.44%</td>
+<td class="td-num">2.40</td>
+<td class="td-num">2.58</td>
+</tr>
+<tr>
+<td class="td-first">85% RP</td>
+<td class="td-num">+48.40%</td>
+<td class="td-num">7.85%</td>
+<td class="td-num">3.14%</td>
+<td class="td-num">-2.83%</td>
+<td class="td-num">2.50</td>
+<td class="td-num">2.77</td>
+</tr>
+<tr>
+<td class="td-first">70% RP</td>
+<td class="td-num">+41.30%</td>
+<td class="td-num">6.84%</td>
+<td class="td-num">2.59%</td>
+<td class="td-num">-2.22%</td>
+<td class="td-num">2.65</td>
+<td class="td-num">3.08</td>
+</tr>
+</tbody></table>
+<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
+<table class="data-tbl" style="--header-color: #703000;">
+<thead><tr>
+<th>2020*</th>
+<th>2021</th>
+<th>2022</th>
+<th>2023</th>
+<th>2024</th>
+<th>2025</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">+2.20%</td>
+<td class="td-num">+8.28%</td>
+<td class="td-num">+6.42%</td>
+<td class="td-num">+7.72%</td>
+<td class="td-num">+12.09%</td>
+<td class="td-num">+9.58%</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">✅ 优势</h3>
+<p class="para">• CAGR 8.86% 三策略最高</p>
+<p class="para">• 滞胀情景（股熊+债熊）平均季度 +0.33%（V3b -0.06% / V3c +0.02%）</p>
+<p class="para">• 2022 股债双杀期间 +5.75%（最强）</p>
+<p class="para">• 2025 关税冲击期 +2.99%（最强）</p>
+<h2 class="ch-h1" id="ch3">四、三方案对比一表看清</h2>
+<table class="data-tbl" style="--header-color: #595959;">
+<thead><tr>
+<th>维度</th>
+<th>V3c 多元 ★★★</th>
+<th>V3b 平衡 ★★</th>
+<th>V3d 商品 ★★</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">哲学</td>
+<td class="td-num">国别分散最强</td>
+<td class="td-num">长债最厚</td>
+<td class="td-num">通胀盾最厚</td>
+</tr>
+<tr>
+<td class="td-first">资产数</td>
+<td class="td-num">9</td>
+<td class="td-num">9</td>
+<td class="td-num">9</td>
+</tr>
+<tr>
+<td class="td-first">100% RP - CAGR</td>
+<td class="td-num">8.77%</td>
+<td class="td-num">8.25%</td>
+<td class="td-num">8.86%</td>
+</tr>
+<tr>
+<td class="td-first">100% RP - 回撤</td>
+<td class="td-num">-2.89%</td>
+<td class="td-num">-2.26%</td>
+<td class="td-num">-3.44%</td>
+</tr>
+<tr>
+<td class="td-first">100% RP - Sharpe</td>
+<td class="td-num">2.60</td>
+<td class="td-num">2.52</td>
+<td class="td-num">2.40</td>
+</tr>
+<tr>
+<td class="td-first">100% RP - Calmar</td>
+<td class="td-num">3.03</td>
+<td class="td-num">3.65</td>
+<td class="td-num">2.58</td>
+</tr>
+<tr>
+<td class="td-first">100万→5.5y后</td>
+<td class="td-num">155.1 万</td>
+<td class="td-num">151.3 万</td>
+<td class="td-num">155.8 万</td>
+</tr>
+<tr>
+<td class="td-first">最大单仓</td>
+<td class="td-num">10年债 40%</td>
+<td class="td-num">10年债 43%</td>
+<td class="td-num">10年债 40%</td>
+</tr>
+<tr>
+<td class="td-first">海外 QDII 暴露</td>
+<td class="td-num">8%</td>
+<td class="td-num">5%</td>
+<td class="td-num">5%</td>
+</tr>
+<tr>
+<td class="td-first">商品桶暴露</td>
+<td class="td-num">22%</td>
+<td class="td-num">20%</td>
+<td class="td-num">27%</td>
+</tr>
+<tr>
+<td class="td-first">蒙特卡洛 5%分位</td>
+<td class="td-num">+36.29%</td>
+<td class="td-num">+33.70%</td>
+<td class="td-num">+34.92%</td>
+</tr>
+<tr>
+<td class="td-first">蒙特卡洛 亏损概率</td>
+<td class="td-num">0.0%</td>
+<td class="td-num">0.0%</td>
+<td class="td-num">0.0%</td>
+</tr>
+<tr>
+<td class="td-first">滞胀情景表现</td>
+<td class="td-num">+0.02%</td>
+<td class="td-num">-0.06%</td>
+<td class="td-num">+0.33%</td>
+</tr>
+<tr>
+<td class="td-first">2022股债双杀</td>
+<td class="td-num">+5.11%</td>
+<td class="td-num">+4.56%</td>
+<td class="td-num">+5.75%</td>
+</tr>
+<tr>
+<td class="td-first">2024雪球危机</td>
+<td class="td-num">+2.41%</td>
+<td class="td-num">+2.42%</td>
+<td class="td-num">+2.04%</td>
+</tr>
+<tr>
+<td class="td-first">2025关税冲击</td>
+<td class="td-num">+2.73%</td>
+<td class="td-num">+2.60%</td>
+<td class="td-num">+2.99%</td>
+</tr>
+</tbody></table>
+<h2 class="ch-h1" id="ch4">五、调仓规则：半年节点 + 3% 偏离双触发</h2>
+<p class="para">调仓频率不是越勤越好。我们对 8 种调仓规则做了交叉回测，发现最优规则是：</p>
+<h3 class="sec-h3">规则定义</h3>
+<ul class="bullet-list"><li class="bullet">时间触发：每半年（6 月底、12 月底）强制检查一次，不论权重是否漂移；</li>
+<li class="bullet">空间触发：任意一个 ETF 的权重相对目标偏离绝对值 ≥ 3%，立刻调仓；</li>
+<li class="bullet">两个条件任一满足即执行 - 形成双保险。</li>
+</ul><h3 class="sec-h3">为什么这套规则最优</h3>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>规则</th>
+<th>调仓数（5.5y）</th>
+<th>净 Sharpe</th>
+<th>回撤</th>
+<th>Calmar</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">半年+3%阈值（推荐）</td>
+<td class="td-num">9</td>
+<td class="td-num">2.50</td>
+<td class="td-num">-2.86%</td>
+<td class="td-num">3.08 (最高)</td>
+</tr>
+<tr>
+<td class="td-first">纯阈值 3%</td>
+<td class="td-num">3</td>
+<td class="td-num">2.56 (最高)</td>
+<td class="td-num">-2.94%</td>
+<td class="td-num">3.04</td>
+</tr>
+<tr>
+<td class="td-first">季度调仓（基线）</td>
+<td class="td-num">20</td>
+<td class="td-num">2.50</td>
+<td class="td-num">-2.96%</td>
+<td class="td-num">2.97</td>
+</tr>
+<tr>
+<td class="td-first">月度调仓</td>
+<td class="td-num">48</td>
+<td class="td-num">2.51</td>
+<td class="td-num">-2.92%</td>
+<td class="td-num">2.96</td>
+</tr>
+<tr>
+<td class="td-first">年度调仓</td>
+<td class="td-num">6</td>
+<td class="td-num">2.53</td>
+<td class="td-num">-3.11%</td>
+<td class="td-num">2.85</td>
+</tr>
+</tbody></table>
+<p class="para">结论：半年+3%阈值在风险调整收益上几乎追平纯阈值最优，但比纯阈值多了时间纪律性（不会出现 1 年都不动手的情况），实操性最强。</p>
+<h3 class="sec-h3">交易成本分析</h3>
+<p class="para">假设每次再平衡平均换手 8%、单边综合费率 0.15%（佣金 + 冲击 + QDII 申赎），5.5 年 9 次调仓的年化成本约 0.021% — 几乎可忽略。</p>
+<h2 class="ch-h1" id="ch5">六、风险提示</h2>
+<p class="warning">⚠ 回测窗口偏差：2020-08 ~ 2025-12 是中国债牛 + A 股震荡熊的特殊环境，未来债券预期收益大概率低于历史。建议把 CAGR 预期下调 1-2 个百分点。</p>
+<p class="warning">⚠ QDII 限购与溢价：标普 500 ETF (513500) 经常出现 1-3% 溢价、不定期限购，实际买入成本可能高于回测假设。可考虑分批建仓或在贴水时增配。</p>
+<p class="warning">⚠ 长债久期风险：30 年国债 ETF (511130) 久期约 18 年，10bp 利率上行损失 1.8%。若进入加息周期，回撤可能超过历史最大值。</p>
+<p class="warning">⚠ 商品 ETF 跟踪误差：有色 (159980) 和豆粕 (159985) 是期货 ETF，移仓换月有损耗，长期年化拖累 1-3%。</p>
+<p class="warning">⚠ 信用债违约风险：城投债 ETF (511220) 极端情况下有违约可能，但比例不高，可承受。如完全规避可换为政金债 ETF (511520)。</p>
+<p class="warning">⚠ 滞胀样本不足：回测期内只有 2 个季度是真正的股熊+债熊（2022 年），对真正大滞胀的防御能力未经充分检验。</p>
+<h2 class="ch-h1" id="ch6">七、落地执行手册：从今天开始做什么</h2>
+<p class="para-bold">这一章按你的真实操作顺序写，照着做就行。</p>
+<h3 class="step-h">📋 Step 0：先回答两个问题，确定方案</h3>
+<p class="para-bold">问题 1：这笔钱多久不用？这决定档位（现金比例）。</p>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>这笔钱用途</th>
+<th>档位</th>
+<th>现金</th>
+<th>100万→5.5y</th>
+<th>回撤上限</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">5 年以上不用 / 想复利最大化</td>
+<td class="td-num">100% RP</td>
+<td class="td-num">0%</td>
+<td class="td-num">约 155 万</td>
+<td class="td-num">约 -3%</td>
+</tr>
+<tr>
+<td class="td-first">3-5 年的钱 / 偶尔需要流动性</td>
+<td class="td-num">85% RP</td>
+<td class="td-num">15%</td>
+<td class="td-num">约 148 万</td>
+<td class="td-num">约 -2.4%</td>
+</tr>
+<tr>
+<td class="td-first">1-3 年的钱 / 退休 / 对回撤敏感</td>
+<td class="td-num">70% RP</td>
+<td class="td-num">30%</td>
+<td class="td-num">约 141 万</td>
+<td class="td-num">约 -1.9%</td>
+</tr>
+</tbody></table>
+<p class="para-bold">问题 2：你怎么看未来 5 年的宏观？这决定方案（V3b/c/d）。</p>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>你的判断</th>
+<th>选这个</th>
+<th>原因</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">没特别判断 / 让组合自己平衡</td>
+<td class="td-num">V3c 多元 ★★★</td>
+<td class="td-num">Sharpe 最高、5 年蒙特卡洛下沿最厚（推荐）</td>
+</tr>
+<tr>
+<td class="td-first">最怕回撤、要睡得着</td>
+<td class="td-num">V3b 平衡 ★★</td>
+<td class="td-num">Calmar 最高、回撤最浅 -2.26%</td>
+</tr>
+<tr>
+<td class="td-first">担心高通胀 / 滞胀重演</td>
+<td class="td-num">V3d 商品 ★★</td>
+<td class="td-num">通胀桶 27% 厚盾、滞胀情景唯一正收益</td>
+</tr>
+</tbody></table>
+<p class="para">举例：你有 100 万退休金、不知道宏观会怎么样 → 70% RP 档 + V3c 多元。对照第三章 V3c 表的 70% RP 列就是你的目标持仓。</p>
+<h3 class="step-h">🛒 Step 1：开户准备（半天，一次性）</h3>
+<ul class="bullet-list"><li class="bullet">券商账户：佣金谈到 万 0.85（含规费）以下，ETF 免印花税；</li>
+<li class="bullet">开通基金账户（场外不收佣金，QDII 限购时备用）；</li>
+<li class="bullet">把 10 个 ETF 的代码加入自选股一次看清（见下方建仓清单）；</li>
+<li class="bullet">第一笔操作前，把目标权重表打印或截图存好。</li>
+</ul><h3 class="step-h">🏗 Step 2：分批建仓（3-4 个月，重点章节）</h3>
+<p class="warning">⚠ 不要一次性买齐！理由：黄金/长债/标普 500 在不同高位，分批降低择时风险。</p>
+<p class="para-bold">建仓优先级（先建底仓、再补卫星）：</p>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>第几个月</th>
+<th>建仓比例</th>
+<th>重点买入</th>
+<th>次重点</th>
+<th>暂缓</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">第 1 月</td>
+<td class="td-num">50% 资金</td>
+<td class="td-num">10 年国债、黄金、沪深 300、红利</td>
+<td class="td-num">城投债</td>
+<td class="td-num">QDII、商品 ETF</td>
+</tr>
+<tr>
+<td class="td-first">第 2 月</td>
+<td class="td-num">+25% 资金</td>
+<td class="td-num">30 年国债、有色、豆粕</td>
+<td class="td-num">—</td>
+<td class="td-num">QDII（看溢价）</td>
+</tr>
+<tr>
+<td class="td-first">第 3 月</td>
+<td class="td-num">+15% 资金</td>
+<td class="td-num">标普 500（QDII，等溢价 <1%）</td>
+<td class="td-num">补齐缺口</td>
+<td class="td-num">—</td>
+</tr>
+<tr>
+<td class="td-first">第 4 月</td>
+<td class="td-num">+10% 资金</td>
+<td class="td-num">查偏离，按目标权重微调</td>
+<td class="td-num">—</td>
+<td class="td-num">—</td>
+</tr>
+</tbody></table>
+<p class="para-bold">建仓时点细节：</p>
+<ul class="bullet-list"><li class="bullet">每天买入避开开盘后 30 分钟、收盘前 15 分钟（流动性差、价差大）；</li>
+<li class="bullet">ETF 用限价单，参考实时 IOPV（基金参考净值），溢价 >1% 不买；</li>
+<li class="bullet">标普 500 (513500) 经常限购，买不到就用 159612 (标普500等权重) 或 159659 (标普500ESG) 做替代——别 360% 等场内额度，可以用场外联接基金 050025 替代；</li>
+<li class="bullet">已有持仓：如果你已经有重仓某资产（比如 50% 黄金），别一次清完——按目标权重对比，差额慢慢补齐，存量资产 3-6 个月内调到目标。</li>
+</ul><h3 class="step-h">📅 Step 3：日常运行节奏</h3>
+<p class="para-bold">一图看全：</p>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>频率</th>
+<th>时长</th>
+<th>你要做什么</th>
+<th>需要动手吗</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">每周一次</td>
+<td class="td-num">3-5 分钟</td>
+<td class="td-num">打开账户看一眼，每个 ETF 占比 vs 目标权重</td>
+<td class="td-num">❌ 一般不动</td>
+</tr>
+<tr>
+<td class="td-first">每半年节点（6/12 月最后一个交易日）</td>
+<td class="td-num">30 分钟</td>
+<td class="td-num">强制再平衡（详见 Step 4）</td>
+<td class="td-num">✅ 必须</td>
+</tr>
+<tr>
+<td class="td-first">阈值触发（任一 ETF 偏离 ≥ 3%）</td>
+<td class="td-num">30 分钟</td>
+<td class="td-num">立刻再平衡</td>
+<td class="td-num">✅ 必须</td>
+</tr>
+<tr>
+<td class="td-first">每年底</td>
+<td class="td-num">1 小时</td>
+<td class="td-num">复盘年度收益、回撤；评估是否切换方案</td>
+<td class="td-num">可选</td>
+</tr>
+</tbody></table>
+<p class="warning">⚠ 重要纪律：除了上面 4 个时点，平时不要动！不要看到某个资产涨了就加仓、跌了就割肉。组合的全部价值就在于「该来的来、该走的走，自己别瞎插手」。</p>
+<h3 class="step-h">🔧 Step 4：再平衡的具体操作（半年节点 / 阈值触发都用这套）</h3>
+<p class="para-bold">再平衡 = 把每个 ETF 调回目标权重。具体三步：</p>
+<p class="para-bold">① 先算偏离</p>
+<p class="para">打开账户记录每个 ETF 的当前市值、占比，和目标权重对比。用 Excel 或纸笔都行。</p>
+<p class="para-bold">② 再决定动谁</p>
+<p class="para">• 实际权重 > 目标 → 卖到目标</p>
+<p class="para">• 实际权重 < 目标 → 买到目标</p>
+<p class="para">• 实际权重 ≈ 目标（差 <0.5%） → 不用动，省手续费</p>
+<p class="para-bold">③ 操作顺序：先卖后买，避免动用追加资金</p>
+<p class="para">把所有要卖的 ETF 卖出后，资金到账（T+0 可用）再买入要补的 ETF。QDII 要 T+1 资金到账，分两天做。</p>
+<p class="para-bold">举例（V3c 100% RP 档，假设到 2025 年 6 月底检查）：</p>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>ETF</th>
+<th>目标权重</th>
+<th>当前权重</th>
+<th>偏离</th>
+<th>动作</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">10 年国债 (511260)</td>
+<td class="td-num">40%</td>
+<td class="td-num">37%</td>
+<td class="td-num">-3.0%</td>
+<td class="td-num">买入 3% 份额</td>
+</tr>
+<tr>
+<td class="td-first">黄金 (518880)</td>
+<td class="td-num">10%</td>
+<td class="td-num">13.5%</td>
+<td class="td-num">+3.5%</td>
+<td class="td-num">✅ 触发，卖出 3.5%</td>
+</tr>
+<tr>
+<td class="td-first">标普 500 (513500)</td>
+<td class="td-num">8%</td>
+<td class="td-num">9.2%</td>
+<td class="td-num">+1.2%</td>
+<td class="td-num">保持不动</td>
+</tr>
+<tr>
+<td class="td-first">其他 6 只 ETF</td>
+<td class="td-num">—</td>
+<td class="td-num">—</td>
+<td class="td-num"><1%</td>
+<td class="td-num">保持不动</td>
+</tr>
+</tbody></table>
+<p class="para">即：本次再平衡只动 2 个 ETF，先卖黄金 3.5%，资金到账后买入 10 年国债 3%，余下 0.5% 按桶间比例补回。整个操作 30 分钟搞定。</p>
+<h3 class="step-h">❓ Step 5：常见疑问 FAQ</h3>
+<p class="faq-q">Q：买不到标普 500（QDII 限购）怎么办？</p>
+<p class="faq-a">A：三个备选：① 用场外联接 050025（华夏标普500A），无限购但 T+2 赎回；② 改用 159612（标普500等权重）或 159659；③ 实在买不到，把这 5-8% 暂时放到货币基金，等限购解除再加仓。切勿因此减少海外暴露——这是组合的关键分散来源。</p>
+<p class="faq-q">Q：半年到了，但市场剧烈波动，能不能延后调仓？</p>
+<p class="faq-a">A：不能。再平衡的全部价值就在于「机械执行」。回测里 2022 年 3 月（股债双杀谷底）阈值触发的那次调仓，事后看就是抄底。你的人脑判断大概率打不过纪律。</p>
+<p class="faq-q">Q：某个 ETF 偏离 3% 触发了，但我觉得它还会涨/跌，能等等吗？</p>
+<p class="faq-a">A：不能。同上，纪律压倒预测。唯一例外：偏离来源是大额申购/赎回（你自己刚加钱），那不算触发，按比例补即可。</p>
+<p class="faq-q">Q：能不能用银行的「全天候」基金代替自己买 ETF？</p>
+<p class="faq-a">A：不推荐。① 这类基金管理费 1-1.5%，年化吃掉 1 个百分点；② 大多是固收+偏债配置，不是真正的风险平价；③ 你看不到底层持仓，无法判断是否符合 RP 框架。自己买 9 个 ETF 总费率约 0.3%/年。</p>
+<p class="faq-q">Q：现金那部分（85%/70% 档）放哪里？</p>
+<p class="faq-a">A：首选：场内货币 ETF 511880（华宝添益）或 511990（华宝添益 H 类），日内可买卖；次选：余额宝、微信零钱通；再次：短债 ETF 511360（短融 ETF），收益略高但有波动。不要放活期，年化差 1.5%。</p>
+<p class="faq-q">Q：我有定投习惯，能不能用定投方式建组合？</p>
+<p class="faq-a">A：可以，但要按比例定投：每月固定金额，按目标权重分到 9 个 ETF。不要「今天买这个、明天买那个」——会破坏 RP 结构。定投本身不会替代再平衡，半年节点该平衡还是要平衡。</p>
+<p class="faq-q">Q：方案选错了能不能换？</p>
+<p class="faq-a">A：可以，但建议至少持有 1 年再换。频繁切换 = 择时，破坏 RP 的全部哲学。如果确实要换（比如从 V3c 换成 V3d），按目标权重差额一次性调整即可。</p>
+<p class="faq-q">Q：如果我未来有大额资金注入怎么办？</p>
+<p class="faq-a">A：新加的钱不要破坏现有结构——按当前目标权重分配到 9 个 ETF 即可。比如新加 20 万到 V3c 100% RP 档：买 10 年国债 8 万、标普 500 1.6 万、黄金 2 万…… 以此类推。</p>
+<p class="faq-q">Q：能加杠杆复制桥水原版吗？</p>
+<p class="faq-a">A：强烈不推荐。桥水的杠杆通过机构间回购，成本极低（2-3%）；国内零售融资成本 5-8%，杠杆放大波动但被利息吃掉超额。如果想要更高弹性，选 V3c 100% RP 即可，不要碰融资。</p>
+<h3 class="step-h">🎯 一页执行总结</h3>
+<p class="para-bold">如果你只看一段，看这段：</p>
+<table class="data-tbl" style="--header-color: #C0392B;">
+<thead><tr>
+<th>阶段</th>
+<th>时间</th>
+<th>动作</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">选方案</td>
+<td class="td-num">Day 0</td>
+<td class="td-num">回答两个问题：钱多久不用 + 宏观判断 → 锁定档位 + V3b/c/d</td>
+</tr>
+<tr>
+<td class="td-first">开户</td>
+<td class="td-num">Day 0-3</td>
+<td class="td-num">券商佣金谈到万 0.85；10 个 ETF 加自选；存好目标权重</td>
+</tr>
+<tr>
+<td class="td-first">建仓</td>
+<td class="td-num">Month 1-4</td>
+<td class="td-num">分 4 批建：先底仓（长债/黄金/A股）后卫星（QDII/商品）</td>
+</tr>
+<tr>
+<td class="td-first">运行</td>
+<td class="td-num">每周 5 分钟</td>
+<td class="td-num">看一眼，一般不动手</td>
+</tr>
+<tr>
+<td class="td-first">再平衡</td>
+<td class="td-num">每半年 + 阈值 3%</td>
+<td class="td-num">机械执行，先卖后买，30 分钟</td>
+</tr>
+<tr>
+<td class="td-first">复盘</td>
+<td class="td-num">每年底</td>
+<td class="td-num">看年度回撤、收益；评估是否切换方案（少切）</td>
+</tr>
+</tbody></table>
+<p class="para-bold">一句话总结：选对方案 → 慢慢建仓 → 每周看一眼 → 半年/3% 触发就调仓 → 其余时间，不要做任何事。</p>
+<h2 class="ch-h1" id="ch7">八、本方案 vs 网上常见中国版的差异</h2>
+<table class="data-tbl" style="--header-color: #595959;">
+<thead><tr>
+<th>维度</th>
+<th>网上常见</th>
+<th>本方案</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">回测窗口</td>
+<td class="td-num">缺失或语焉不详</td>
+<td class="td-num">2020-08 ~ 2025-12 真实日频回测</td>
+</tr>
+<tr>
+<td class="td-first">资产数</td>
+<td class="td-num">4-5 个</td>
+<td class="td-num">9 个 ETF（含海外、信用、商品）</td>
+</tr>
+<tr>
+<td class="td-first">权重逻辑</td>
+<td class="td-num">拍脑袋</td>
+<td class="td-num">样本协方差 + 长期波动率假设求解</td>
+</tr>
+<tr>
+<td class="td-first">调仓规则</td>
+<td class="td-num">季度或不调</td>
+<td class="td-num">半年 + 3% 阈值双触发</td>
+</tr>
+<tr>
+<td class="td-first">进取版用品</td>
+<td class="td-num">中证 1000 / 创业板</td>
+<td class="td-num">不用（高波动质量差，破坏 RP）</td>
+</tr>
+<tr>
+<td class="td-first">回测验证</td>
+<td class="td-num">无或假数据</td>
+<td class="td-num">10 年国债真实数据 / 30 年合成 / 蒙特卡洛</td>
+</tr>
+<tr>
+<td class="td-first">风险提示</td>
+<td class="td-num">无</td>
+<td class="td-num">QDII 溢价 / 长债久期 / 商品移仓 / 滞胀样本不足</td>
+</tr>
+</tbody></table>
+<p class="para">特别说明：网传中国版常用的中证 1000 ETF (512100) 在我们的回测中Sharpe 仅 0.1 左右，加入会显著破坏组合的风险平价结构。本方案完全剔除。</p>
+<h2 class="ch-h1" id="ch8">九、附录：ETF 速查表</h2>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>代码</th>
+<th>名称</th>
+<th>桶</th>
+<th>本方案使用率</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">510300</td>
+<td class="td-num">沪深 300 ETF</td>
+<td class="td-num">增长↑（A股大盘）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">510880</td>
+<td class="td-num">红利 ETF（中证红利）</td>
+<td class="td-num">增长↑（A股价值）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">513500</td>
+<td class="td-num">标普 500 ETF（QDII）</td>
+<td class="td-num">增长↑（海外）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">511220</td>
+<td class="td-num">城投债 ETF</td>
+<td class="td-num">收益垫（信用）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">511260</td>
+<td class="td-num">10 年国债 ETF</td>
+<td class="td-num">增长↓（中久期）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">511130</td>
+<td class="td-num">30 年国债 ETF</td>
+<td class="td-num">增长↓（长久期）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">518880</td>
+<td class="td-num">黄金 ETF</td>
+<td class="td-num">通胀↑（实物）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">159980</td>
+<td class="td-num">有色金属 ETF（期货）</td>
+<td class="td-num">通胀↑（金属）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">159985</td>
+<td class="td-num">豆粕 ETF（期货）</td>
+<td class="td-num">通胀↑（农产品）</td>
+<td class="td-num">全部三方案</td>
+</tr>
+<tr>
+<td class="td-first">511880</td>
+<td class="td-num">货币基金 ETF</td>
+<td class="td-num">通胀↓（现金）</td>
+<td class="td-num">85%/70% 档</td>
+</tr>
+</tbody></table>
+<h2 class="ch-h1" id="ch9">十、参考资料</h2>
+<p class="para">• Ray Dalio: 《Principles》, 《Big Debt Crises》</p>
+<p class="para">• Tony Robbins: 《Money: Master the Game》</p>
+<p class="para">• Bridgewater Associates: All Weather Strategy Whitepaper</p>
+<p class="para">• Advanced Research Investment Solutions: RPAR / UPAR ETF Prospectus</p>
+<p class="para">• 雪球及微信公众号关于全天候中国版的讨论（仅作参考，不全可信）</p>
+
+<footer style="margin-top: 60px; padding-top: 24px; border-top: 1px solid #e0e0e0; text-align: center; color: #888; font-size: 13px;">
+  <p>桥水全天候策略 · 中国版实践 · 基于 2020-08~2025-12 真实回测</p>
+</footer>
+
+</body>
+</html>

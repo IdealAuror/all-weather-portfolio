@@ -1,0 +1,24 @@
+[project]
+name = "allweather-cn"
+version = "1.0.0"
+description = "桥水全天候策略 · 中国版回测工程"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "python-docx>=1.0",
+]
+
+[project.optional-dependencies]
+fetch = ["akshare>=1.12"]
+dev = ["scipy>=1.11"]
+
+[project.scripts]
+allweather = "main:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["allweather"]
