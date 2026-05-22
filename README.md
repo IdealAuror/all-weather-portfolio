@@ -1,6 +1,13 @@
 # 桥水全天候策略 · 中国版
 
+[![Backtest](https://github.com/IdealAuror/all-weather-portfolio/actions/workflows/backtest.yml/badge.svg)](https://github.com/IdealAuror/all-weather-portfolio/actions/workflows/backtest.yml)
+[![Pages](https://img.shields.io/badge/docs-online-blue)](https://idealauror.github.io/all-weather-portfolio/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+
 基于真实 A 股 / 债 / 商品 ETF 数据的风险平价（Risk Parity）回测工程。
+
+📖 **在线阅读完整方案**：https://idealauror.github.io/all-weather-portfolio/
 
 ## 🚀 一键运行
 
