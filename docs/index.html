@@ -152,15 +152,6 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </head>
 <body>
 
-<a href="https://github.com/IdealAuror/all-weather-portfolio" target="_blank"
-   style="position: fixed; top: 16px; right: 16px; z-index: 1000;
-          background: #24292e; color: white; padding: 8px 16px;
-          border-radius: 6px; text-decoration: none; font-size: 13px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-          font-family: -apple-system, sans-serif;">
-  ⭐ View on GitHub
-</a>
-
 <div class="toc"><h3>📑 目录</h3><ol><li><a href="#ch0">一、桥水全天候策略核心逻辑</a></li><li><a href="#ch1">二、美版蓝本：RPAR / ALLW / All Seasons</a></li><li><a href="#ch2">三、中国版风险平价策略 - 三套方案</a></li><li><a href="#ch3">四、三方案对比一表看清</a></li><li><a href="#ch4">五、调仓规则：半年节点 + 3% 偏离双触发</a></li><li><a href="#ch5">六、风险提示</a></li><li><a href="#ch6">七、落地执行手册：从今天开始做什么</a></li><li><a href="#ch7">八、本方案 vs 网上常见中国版的差异</a></li><li><a href="#ch8">九、附录：ETF 速查表</a></li><li><a href="#ch9">十、参考资料</a></li></ol></div>
 <h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
 <p class="doc-subtitle">基于风险平价（Risk Parity）的 A 股投资者落地方案</p>
@@ -247,9 +238,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">All Seasons 是 Robbins 在《Money: Master the Game》里向 Dalio 求来的简化版，适合零售但忽略了风险贡献的动态变化。RPAR/ALLW 才是真正的风险平价 ETF。中国版借鉴 RPAR 的桶结构，但权重用样本协方差 + 长期波动率假设求解，避开窗口偏差。</p>
 <h2 class="ch-h1" id="ch2">三、中国版风险平价策略 - 三套方案</h2>
 <p class="para">以下三套方案都基于同一框架：9 资产 × 4 桶（增长↑权益、收益垫信用债、增长↓利率债、通胀↑商品+黄金）。差异在于桶内权重侧重——你可以根据自己对未来宏观的判断挑选。</p>
-<h2 class="plan-title plan-c">方案 1: V3c 多元型  ★★★ 强烈推荐</h2>
+<h2 class="plan-title plan-c">方案 1: V3c 多元型  ★★ 备选</h2>
 <p class="para-bold">特征：海外权益加倍至 8%（A 股黑天鹅时国别分散），长债 55%，9 资产均衡。</p>
-<p class="para">适合：兼顾收益和稳健的大多数投资者。综合 Sharpe / 5 年蒙特卡洛下沿 / 滞胀防御都领先。</p>
+<p class="para">适合：看重国别分散、希望保留 8% 海外敞口的投资者。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
 <table class="data-tbl" style="--header-color: #C0392B;">
 <thead><tr>
@@ -416,9 +407,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 蒙特卡洛 5%-分位下沿 +10.47%（5 年），下沿最厚实</p>
 <p class="para">• 海外 8% 提供真分散，2025 年关税冲击期 +3.45%</p>
 <p class="para">• 6 年中有 1 年负收益（2022 -5.18%），其余5 年正收益</p>
-<h2 class="plan-title plan-b">方案 2: V3b 平衡型  ★★ 备选 - 求最浅回撤者</h2>
-<p class="para-bold">特征：长债加厚至 58%，海外仅 5%，回撤最浅。</p>
-<p class="para">适合：极度厌恶回撤的保守型投资者，或对 QDII 限购/溢价有顾虑的人。</p>
+<h2 class="plan-title plan-b">方案 2: V3b 平衡型  ★ 保守</h2>
+<p class="para-bold">特征：长债加厚至 58%，海外仅 5%。各项指标三策略中最弱。</p>
+<p class="para">适合：坚持长债防守逻辑的投资者（各项指标最弱，一般不推荐）。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
@@ -583,9 +574,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 最大回撤 -9.56%，长债占比高导致久期风险较大</p>
 <p class="para">• Calmar 0.75，长债高波动拖累风险调整收益</p>
 <p class="para">• 海外仅 5%，QDII 摩擦小</p>
-<h2 class="plan-title plan-d">方案 3: V3d 商品偏重型  ★★ 备选 - 怕滞胀者</h2>
-<p class="para-bold">特征：商品桶加重至 27%（黄金 12% + 有色 7.5% + 豆粕 7.5%），长债压到 53%。</p>
-<p class="para">适合：判断未来 5 年大概率是高通胀/滞胀的投资者，愿意接受稍深回撤换通胀防御。</p>
+<h2 class="plan-title plan-d">方案 3: V3d 商品偏重型  ★★★ 强烈推荐</h2>
+<p class="para-bold">特征：商品桶 27%（黄金 12% + 有色 7.5% + 豆粕 7.5%），长债 53%，综合表现最优。</p>
+<p class="para">适合：大多数投资者。Sharpe 最高、回撤最浅、CAGR 最高，综合表现最优。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
 <table class="data-tbl" style="--header-color: #703000;">
 <thead><tr>
@@ -755,9 +746,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <table class="data-tbl" style="--header-color: #595959;">
 <thead><tr>
 <th>维度</th>
-<th>V3c 多元 ★★★</th>
-<th>V3b 平衡 ★★</th>
-<th>V3d 商品 ★★</th>
+<th>V3c 多元 ★★</th>
+<th>V3b 平衡 ★</th>
+<th>V3d 商品 ★★★</th>
 </tr></thead>
 <tbody>
 <tr>
@@ -964,18 +955,18 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">没特别判断 / 让组合自己平衡</td>
-<td class="td-num">V3c 多元 ★★★</td>
-<td class="td-num">综合最优：Sharpe 1.05、5 年下沿 +10.47%（推荐）</td>
+<td class="td-num">V3d 商品 ★★★</td>
+<td class="td-num">Sharpe 1.06 最高、回撤最浅 -8.19%、CAGR 7.89%（推荐）</td>
 </tr>
 <tr>
-<td class="td-first">最怕回撤、要睡得着</td>
-<td class="td-num">V3b 平衡 ★★</td>
-<td class="td-num">回撤 -9.56%、长债 58% 防守</td>
+<td class="td-first">看重国别分散 / 海外敞口</td>
+<td class="td-num">V3c 多元 ★★</td>
+<td class="td-num">海外 8% 国别分散、Sharpe 1.05</td>
 </tr>
 <tr>
-<td class="td-first">担心高通胀 / 滞胀重演</td>
-<td class="td-num">V3d 商品 ★★</td>
-<td class="td-num">通胀桶 27% 厚盾、滞胀情景损失最轻</td>
+<td class="td-first">长债偏好 / 传统防守</td>
+<td class="td-num">V3b 平衡 ★</td>
+<td class="td-num">长债 58%（各项指标最弱，不推荐）</td>
 </tr>
 </tbody></table>
 <p class="para">举例：你有 100 万退休金、不知道宏观会怎么样 → 70% RP 档 + V3c 多元。对照第三章 V3c 表的 70% RP 列就是你的目标持仓。</p>
