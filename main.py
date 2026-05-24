@@ -29,6 +29,10 @@ def main():
                         help="只拉取数据，不跑回测")
     parser.add_argument("--force-fetch", action="store_true",
                         help="强制重新拉取所有数据（覆盖已有）")
+    parser.add_argument("--start", default=None, metavar="YYYYMMDD",
+                        help="拉取数据起始日期，如 20180101（默认 20150101）")
+    parser.add_argument("--end", default=None, metavar="YYYYMMDD",
+                        help="拉取数据结束日期，如 20251231（默认 20251231）")
     args = parser.parse_args()
 
     # === 数据拉取 ===
@@ -36,14 +40,19 @@ def main():
         print("\n" + "=" * 60)
         print("  数据拉取")
         print("=" * 60)
-        fetch_all(force=args.force_fetch)
+        kwargs = {}
+        if args.start:
+            kwargs["start"] = args.start
+        if args.end:
+            kwargs["end"] = args.end
+        fetch_all(force=args.force_fetch, **kwargs)
         if args.fetch_only:
             return
 
     # === 检查数据齐全 ===
     ok, missing = check_data_complete()
     if not ok:
-        print(f"\n❌ 缺少必需数据文件: {missing}")
+        print(f"\n[ERROR] 缺少必需数据文件: {missing}")
         print(f"   请先运行: python main.py --fetch")
         sys.exit(1)
 

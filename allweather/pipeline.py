@@ -24,9 +24,9 @@ def step_1_load_data():
     t0 = time.time()
     panel = load_panel()
     rets = panel.pct_change().dropna()
-    print(f"  ✓ 数据期间: {panel.index.min().date()} ~ {panel.index.max().date()}")
-    print(f"  ✓ 资产数: {panel.shape[1]}, 交易日数: {len(panel)}")
-    print(f"  ✓ 用时: {time.time()-t0:.2f}s")
+    print(f"  ok 数据期间: {panel.index.min().date()} ~ {panel.index.max().date()}")
+    print(f"  ok 资产数: {panel.shape[1]}, 交易日数: {len(panel)}")
+    print(f"  ok 用时: {time.time()-t0:.2f}s")
     return panel, rets
 
 
@@ -44,9 +44,9 @@ def step_2_run_backtests(rets):
             nv, n = backtest(w, rets, cash_ratio=c)
             nv_results[(port, tier_label)] = nv
             n_rebal_total += n
-    print(f"  ✓ 完成 {len(nv_results)} 个回测")
-    print(f"  ✓ 总调仓次数: {n_rebal_total}")
-    print(f"  ✓ 用时: {time.time()-t0:.2f}s")
+    print(f"  ok 完成 {len(nv_results)} 个回测")
+    print(f"  ok 总调仓次数: {n_rebal_total}")
+    print(f"  ok 用时: {time.time()-t0:.2f}s")
     return weights, nv_results
 
 
@@ -63,7 +63,7 @@ def step_3_compute_metrics(nv_results, weights, rets):
     events = {p: event_returns(nv_results[(p, "100% RP")], STRESS_EVENTS)
               for p in weights}
     rolling = {p: rolling_stats(nv_results[(p, "100% RP")]) for p in weights}
-    print(f"  ✓ 用时: {time.time()-t0:.2f}s")
+    print(f"  ok 用时: {time.time()-t0:.2f}s")
     return {
         "perf": perf, "yearly": yearly, "risk_contrib": rc,
         "regime": regime, "events": events, "rolling": rolling,
@@ -77,7 +77,7 @@ def step_4_bootstrap(weights, rets):
     print("─" * 60)
     t0 = time.time()
     boot = {p: block_bootstrap(w, rets) for p, w in weights.items()}
-    print(f"  ✓ 用时: {time.time()-t0:.2f}s")
+    print(f"  ok 用时: {time.time()-t0:.2f}s")
     return boot
 
 
@@ -115,11 +115,11 @@ def step_6_save_outputs(nv_results, metrics, weights):
     p1 = reports.save_nv_curves(nv_results)
     p2 = reports.save_summary_json(metrics["perf"])
     p3 = reports.save_weights_csv(weights)
-    print(f"  ✓ {p1.name}")
-    print(f"  ✓ {p2.name}")
-    print(f"  ✓ {p3.name}")
-    print(f"  ✓ 输出目录: {p1.parent}")
-    print(f"  ✓ 用时: {time.time()-t0:.2f}s")
+    print(f"  ok {p1.name}")
+    print(f"  ok {p2.name}")
+    print(f"  ok {p3.name}")
+    print(f"  ok 输出目录: {p1.parent}")
+    print(f"  ok 用时: {time.time()-t0:.2f}s")
 
 
 def run_full_pipeline():
@@ -137,5 +137,5 @@ def run_full_pipeline():
     step_6_save_outputs(nv_results, metrics, weights)
 
     print("\n" + "=" * 60)
-    print(f"  ✅ 完成！总耗时 {time.time()-overall:.1f}s")
+    print(f"  完成！总耗时 {time.time()-overall:.1f}s")
     print("=" * 60)

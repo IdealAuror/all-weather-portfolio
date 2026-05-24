@@ -43,7 +43,10 @@ def load_panel() -> pd.DataFrame:
         "gold":     raw["gold"],
         "nonferr":  raw["nonferr"],
         "soymeal":  raw["soymeal"],
-    }).loc[BACKTEST_START:BACKTEST_END].ffill().dropna()
+    })
+    panel.index = pd.to_datetime(panel.index)
+    panel = panel.sort_index()
+    panel = panel.loc[BACKTEST_START:BACKTEST_END].ffill().dropna()
 
     return panel
 
