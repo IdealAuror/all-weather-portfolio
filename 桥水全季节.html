@@ -237,7 +237,175 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">All Seasons 是 Robbins 在《Money: Master the Game》里向 Dalio 求来的简化版，适合零售但忽略了风险贡献的动态变化。RPAR/ALLW 才是真正的风险平价 ETF。中国版借鉴 RPAR 的桶结构，但权重用样本协方差 + 长期波动率假设求解，避开窗口偏差。</p>
 <h2 class="ch-h1" id="ch2">三、中国版风险平价策略 - 三套方案</h2>
 <p class="para">以下三套方案都基于同一框架：9 资产 × 4 桶（增长↑权益、收益垫信用债、增长↓利率债、通胀↑商品+黄金）。差异在于桶内权重侧重——你可以根据自己对未来宏观的判断挑选。</p>
-<h2 class="plan-title plan-c">方案 1: V3c 多元型  ★★ 备选</h2>
+<h2 class="plan-title plan-d">方案 1: V3d 商品偏重型  ★★★ 强烈推荐</h2>
+<p class="para-bold">特征：商品桶 27%（黄金 12% + 有色 7.5% + 豆粕 7.5%），长债 53%，综合表现最优。</p>
+<p class="para">适合：大多数投资者。Sharpe 最高、回撤最浅、CAGR 最高，综合表现最优。</p>
+<h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
+<table class="data-tbl" style="--header-color: #703000;">
+<thead><tr>
+<th>桶</th>
+<th>资产</th>
+<th>代码</th>
+<th>100% RP</th>
+<th>85% RP</th>
+<th>70% RP</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">沪深 300 ETF</td>
+<td class="td-num">510300</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">红利 ETF（中证红利）</td>
+<td class="td-num">510880</td>
+<td class="td-num">7.0万</td>
+<td class="td-num">5.95万</td>
+<td class="td-num">4.9万</td>
+</tr>
+<tr>
+<td class="td-first">增长↑</td>
+<td class="td-num">标普 500 ETF（QDII）</td>
+<td class="td-num">513500</td>
+<td class="td-num">5.0万</td>
+<td class="td-num">4.25万</td>
+<td class="td-num">3.5万</td>
+</tr>
+<tr>
+<td class="td-first">收益垫</td>
+<td class="td-num">城投债 ETF</td>
+<td class="td-num">511220</td>
+<td class="td-num">3.0万</td>
+<td class="td-num">2.55万</td>
+<td class="td-num">2.1万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">10 年国债 ETF</td>
+<td class="td-num">511260</td>
+<td class="td-num">40.0万</td>
+<td class="td-num">34.0万</td>
+<td class="td-num">28.0万</td>
+</tr>
+<tr>
+<td class="td-first">增长↓</td>
+<td class="td-num">30 年国债 ETF</td>
+<td class="td-num">511130</td>
+<td class="td-num">13.0万</td>
+<td class="td-num">11.05万</td>
+<td class="td-num">9.1万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">黄金 ETF</td>
+<td class="td-num">518880</td>
+<td class="td-num">12.0万</td>
+<td class="td-num">10.2万</td>
+<td class="td-num">8.4万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">有色金属 ETF</td>
+<td class="td-num">159980</td>
+<td class="td-num">7.5万</td>
+<td class="td-num">6.375万</td>
+<td class="td-num">5.25万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↑</td>
+<td class="td-num">豆粕 ETF</td>
+<td class="td-num">159985</td>
+<td class="td-num">7.5万</td>
+<td class="td-num">6.375万</td>
+<td class="td-num">5.25万</td>
+</tr>
+<tr>
+<td class="td-first">通胀↓</td>
+<td class="td-num">货币基金</td>
+<td class="td-num">511880</td>
+<td class="td-num">—</td>
+<td class="td-num">15.0万</td>
+<td class="td-num">30.0万</td>
+</tr>
+<tr>
+<td class="td-first">合计</td>
+<td class="td-num"></td>
+<td class="td-num"></td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+<td class="td-num">100 万</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">📈 回测核心指标</h3>
+<table class="data-tbl" style="--header-color: #703000;">
+<thead><tr>
+<th>档位</th>
+<th>5.5y累计</th>
+<th>CAGR年化</th>
+<th>波动</th>
+<th>回撤</th>
+<th>Sharpe</th>
+<th>Calmar</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">100% RP</td>
+<td class="td-num">+48.70%</td>
+<td class="td-num">7.89%</td>
+<td class="td-num">7.47%</td>
+<td class="td-num">-8.19%</td>
+<td class="td-num">1.06</td>
+<td class="td-num">0.96</td>
+</tr>
+<tr>
+<td class="td-first">85% RP</td>
+<td class="td-num">+42.99%</td>
+<td class="td-num">7.09%</td>
+<td class="td-num">6.36%</td>
+<td class="td-num">-6.93%</td>
+<td class="td-num">1.11</td>
+<td class="td-num">1.02</td>
+</tr>
+<tr>
+<td class="td-first">70% RP</td>
+<td class="td-num">+36.91%</td>
+<td class="td-num">6.20%</td>
+<td class="td-num">5.23%</td>
+<td class="td-num">-5.65%</td>
+<td class="td-num">1.19</td>
+<td class="td-num">1.10</td>
+</tr>
+</tbody></table>
+<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
+<table class="data-tbl" style="--header-color: #703000;">
+<thead><tr>
+<th>2020*</th>
+<th>2021</th>
+<th>2022</th>
+<th>2023</th>
+<th>2024</th>
+<th>2025</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">+1.83%</td>
+<td class="td-num">+14.43%</td>
+<td class="td-num">-3.51%</td>
+<td class="td-num">+3.41%</td>
+<td class="td-num">+10.53%</td>
+<td class="td-num">+15.71%</td>
+</tr>
+</tbody></table>
+<h3 class="sec-h3">✅ 优势</h3>
+<p class="para">• CAGR 7.89% 三策略最高</p>
+<p class="para">• 滞胀情景（股熊+债熊）平均季度 -2.13%（V3b -2.71% / V3c -2.33%）</p>
+<p class="para">• 2022 股债双杀期间 -2.07%（三策略中最浅）</p>
+<p class="para">• 2025 关税冲击期 +3.71%（最强）</p>
+<h2 class="plan-title plan-c">方案 2: V3c 多元型  ★★ 备选</h2>
 <p class="para-bold">特征：海外权益加倍至 8%（A 股黑天鹅时国别分散），长债 55%，9 资产均衡。</p>
 <p class="para">适合：看重国别分散、希望保留 8% 海外敞口的投资者。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
@@ -406,7 +574,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 蒙特卡洛 5%-分位下沿 +10.47%（5 年），下沿最厚实</p>
 <p class="para">• 海外 8% 提供真分散，2025 年关税冲击期 +3.45%</p>
 <p class="para">• 6 年中有 1 年负收益（2022 -5.18%），其余5 年正收益</p>
-<h2 class="plan-title plan-b">方案 2: V3b 平衡型  ★ 保守</h2>
+<h2 class="plan-title plan-b">方案 3: V3b 平衡型  ★ 保守</h2>
 <p class="para-bold">特征：长债加厚至 58%，海外仅 5%。各项指标三策略中最弱。</p>
 <p class="para">适合：坚持长债防守逻辑的投资者（各项指标最弱，一般不推荐）。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
@@ -573,280 +741,78 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 最大回撤 -9.56%，长债占比高导致久期风险较大</p>
 <p class="para">• Calmar 0.75，长债高波动拖累风险调整收益</p>
 <p class="para">• 海外仅 5%，QDII 摩擦小</p>
-<h2 class="plan-title plan-d">方案 3: V3d 商品偏重型  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：商品桶 27%（黄金 12% + 有色 7.5% + 豆粕 7.5%），长债 53%，综合表现最优。</p>
-<p class="para">适合：大多数投资者。Sharpe 最高、回撤最浅、CAGR 最高，综合表现最优。</p>
-<h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
-<table class="data-tbl" style="--header-color: #703000;">
-<thead><tr>
-<th>桶</th>
-<th>资产</th>
-<th>代码</th>
-<th>100% RP</th>
-<th>85% RP</th>
-<th>70% RP</th>
-</tr></thead>
-<tbody>
-<tr>
-<td class="td-first">增长↑</td>
-<td class="td-num">沪深 300 ETF</td>
-<td class="td-num">510300</td>
-<td class="td-num">5.0万</td>
-<td class="td-num">4.25万</td>
-<td class="td-num">3.5万</td>
-</tr>
-<tr>
-<td class="td-first">增长↑</td>
-<td class="td-num">红利 ETF（中证红利）</td>
-<td class="td-num">510880</td>
-<td class="td-num">7.0万</td>
-<td class="td-num">5.95万</td>
-<td class="td-num">4.9万</td>
-</tr>
-<tr>
-<td class="td-first">增长↑</td>
-<td class="td-num">标普 500 ETF（QDII）</td>
-<td class="td-num">513500</td>
-<td class="td-num">5.0万</td>
-<td class="td-num">4.25万</td>
-<td class="td-num">3.5万</td>
-</tr>
-<tr>
-<td class="td-first">收益垫</td>
-<td class="td-num">城投债 ETF</td>
-<td class="td-num">511220</td>
-<td class="td-num">3.0万</td>
-<td class="td-num">2.55万</td>
-<td class="td-num">2.1万</td>
-</tr>
-<tr>
-<td class="td-first">增长↓</td>
-<td class="td-num">10 年国债 ETF</td>
-<td class="td-num">511260</td>
-<td class="td-num">40.0万</td>
-<td class="td-num">34.0万</td>
-<td class="td-num">28.0万</td>
-</tr>
-<tr>
-<td class="td-first">增长↓</td>
-<td class="td-num">30 年国债 ETF</td>
-<td class="td-num">511130</td>
-<td class="td-num">13.0万</td>
-<td class="td-num">11.05万</td>
-<td class="td-num">9.1万</td>
-</tr>
-<tr>
-<td class="td-first">通胀↑</td>
-<td class="td-num">黄金 ETF</td>
-<td class="td-num">518880</td>
-<td class="td-num">12.0万</td>
-<td class="td-num">10.2万</td>
-<td class="td-num">8.4万</td>
-</tr>
-<tr>
-<td class="td-first">通胀↑</td>
-<td class="td-num">有色金属 ETF</td>
-<td class="td-num">159980</td>
-<td class="td-num">7.5万</td>
-<td class="td-num">6.375万</td>
-<td class="td-num">5.25万</td>
-</tr>
-<tr>
-<td class="td-first">通胀↑</td>
-<td class="td-num">豆粕 ETF</td>
-<td class="td-num">159985</td>
-<td class="td-num">7.5万</td>
-<td class="td-num">6.375万</td>
-<td class="td-num">5.25万</td>
-</tr>
-<tr>
-<td class="td-first">通胀↓</td>
-<td class="td-num">货币基金</td>
-<td class="td-num">511880</td>
-<td class="td-num">—</td>
-<td class="td-num">15.0万</td>
-<td class="td-num">30.0万</td>
-</tr>
-<tr>
-<td class="td-first">合计</td>
-<td class="td-num"></td>
-<td class="td-num"></td>
-<td class="td-num">100 万</td>
-<td class="td-num">100 万</td>
-<td class="td-num">100 万</td>
-</tr>
-</tbody></table>
-<h3 class="sec-h3">📈 回测核心指标</h3>
-<table class="data-tbl" style="--header-color: #703000;">
-<thead><tr>
-<th>档位</th>
-<th>5.5y累计</th>
-<th>CAGR年化</th>
-<th>波动</th>
-<th>回撤</th>
-<th>Sharpe</th>
-<th>Calmar</th>
-</tr></thead>
-<tbody>
-<tr>
-<td class="td-first">100% RP</td>
-<td class="td-num">+48.70%</td>
-<td class="td-num">7.89%</td>
-<td class="td-num">7.47%</td>
-<td class="td-num">-8.19%</td>
-<td class="td-num">1.06</td>
-<td class="td-num">0.96</td>
-</tr>
-<tr>
-<td class="td-first">85% RP</td>
-<td class="td-num">+42.99%</td>
-<td class="td-num">7.09%</td>
-<td class="td-num">6.36%</td>
-<td class="td-num">-6.93%</td>
-<td class="td-num">1.11</td>
-<td class="td-num">1.02</td>
-</tr>
-<tr>
-<td class="td-first">70% RP</td>
-<td class="td-num">+36.91%</td>
-<td class="td-num">6.20%</td>
-<td class="td-num">5.23%</td>
-<td class="td-num">-5.65%</td>
-<td class="td-num">1.19</td>
-<td class="td-num">1.10</td>
-</tr>
-</tbody></table>
-<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
-<table class="data-tbl" style="--header-color: #703000;">
-<thead><tr>
-<th>2020*</th>
-<th>2021</th>
-<th>2022</th>
-<th>2023</th>
-<th>2024</th>
-<th>2025</th>
-</tr></thead>
-<tbody>
-<tr>
-<td class="td-first">+1.83%</td>
-<td class="td-num">+14.43%</td>
-<td class="td-num">-3.51%</td>
-<td class="td-num">+3.41%</td>
-<td class="td-num">+10.53%</td>
-<td class="td-num">+15.71%</td>
-</tr>
-</tbody></table>
-<h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• CAGR 7.89% 三策略最高</p>
-<p class="para">• 滞胀情景（股熊+债熊）平均季度 -2.13%（V3b -2.71% / V3c -2.33%）</p>
-<p class="para">• 2022 股债双杀期间 -2.07%（三策略中最浅）</p>
-<p class="para">• 2025 关税冲击期 +3.71%（最强）</p>
 <h2 class="ch-h1" id="ch3">四、三方案对比一表看清</h2>
 <table class="data-tbl" style="--header-color: #595959;">
 <thead><tr>
 <th>维度</th>
+<th>V3d 商品 ★★★</th>
 <th>V3c 多元 ★★</th>
 <th>V3b 平衡 ★</th>
-<th>V3d 商品 ★★★</th>
 </tr></thead>
-<tbody>
-<tr>
-<td class="td-first">哲学</td>
+<tbody><tr>
+<td class="td-first">哲学</td><td class="td-num">通胀盾最厚</td>
 <td class="td-num">国别分散最强</td>
-<td class="td-num">长债最厚</td>
-<td class="td-num">通胀盾最厚</td>
-</tr>
+<td class="td-num">长债最厚</td></tr>
 <tr>
-<td class="td-first">资产数</td>
+<td class="td-first">资产数</td><td class="td-num">9</td>
 <td class="td-num">9</td>
-<td class="td-num">9</td>
-<td class="td-num">9</td>
-</tr>
+<td class="td-num">9</td></tr>
 <tr>
-<td class="td-first">100% RP - CAGR</td>
+<td class="td-first">100% RP - CAGR</td><td class="td-num">7.89%</td>
 <td class="td-num">7.73%</td>
-<td class="td-num">7.19%</td>
-<td class="td-num">7.89%</td>
-</tr>
+<td class="td-num">7.19%</td></tr>
 <tr>
-<td class="td-first">100% RP - 回撤</td>
+<td class="td-first">100% RP - 回撤</td><td class="td-num">-8.19%</td>
 <td class="td-num">-8.97%</td>
-<td class="td-num">-9.56%</td>
-<td class="td-num">-8.19%</td>
-</tr>
+<td class="td-num">-9.56%</td></tr>
 <tr>
-<td class="td-first">100% RP - Sharpe</td>
+<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.06</td>
 <td class="td-num">1.05</td>
-<td class="td-num">0.94</td>
-<td class="td-num">1.06</td>
-</tr>
+<td class="td-num">0.94</td></tr>
 <tr>
-<td class="td-first">100% RP - Calmar</td>
+<td class="td-first">100% RP - Calmar</td><td class="td-num">0.96</td>
 <td class="td-num">0.86</td>
-<td class="td-num">0.75</td>
-<td class="td-num">0.96</td>
-</tr>
+<td class="td-num">0.75</td></tr>
 <tr>
-<td class="td-first">100万→5.5y后</td>
+<td class="td-first">100万→5.5y后</td><td class="td-num">148.7 万</td>
 <td class="td-num">147.5 万</td>
-<td class="td-num">143.7 万</td>
-<td class="td-num">148.7 万</td>
-</tr>
+<td class="td-num">143.7 万</td></tr>
 <tr>
-<td class="td-first">最大单仓</td>
+<td class="td-first">最大单仓</td><td class="td-num">10年债 40%</td>
 <td class="td-num">10年债 40%</td>
-<td class="td-num">10年债 43%</td>
-<td class="td-num">10年债 40%</td>
-</tr>
+<td class="td-num">10年债 43%</td></tr>
 <tr>
-<td class="td-first">海外 QDII 暴露</td>
+<td class="td-first">海外 QDII 暴露</td><td class="td-num">5%</td>
 <td class="td-num">8%</td>
-<td class="td-num">5%</td>
-<td class="td-num">5%</td>
-</tr>
+<td class="td-num">5%</td></tr>
 <tr>
-<td class="td-first">商品桶暴露</td>
+<td class="td-first">商品桶暴露</td><td class="td-num">27%</td>
 <td class="td-num">22%</td>
-<td class="td-num">20%</td>
-<td class="td-num">27%</td>
-</tr>
+<td class="td-num">20%</td></tr>
 <tr>
-<td class="td-first">蒙特卡洛 5%分位</td>
+<td class="td-first">蒙特卡洛 5%分位</td><td class="td-num">+12.64%</td>
 <td class="td-num">+10.47%</td>
-<td class="td-num">+7.15%</td>
-<td class="td-num">+12.64%</td>
-</tr>
+<td class="td-num">+7.15%</td></tr>
 <tr>
-<td class="td-first">蒙特卡洛 亏损概率</td>
+<td class="td-first">蒙特卡洛 亏损概率</td><td class="td-num">0.50%</td>
 <td class="td-num">0.70%</td>
-<td class="td-num">1.60%</td>
-<td class="td-num">0.50%</td>
-</tr>
+<td class="td-num">1.60%</td></tr>
 <tr>
-<td class="td-first">滞胀情景表现</td>
+<td class="td-first">滞胀情景表现</td><td class="td-num">-2.13%</td>
 <td class="td-num">-2.33%</td>
-<td class="td-num">-2.71%</td>
-<td class="td-num">-2.13%</td>
-</tr>
+<td class="td-num">-2.71%</td></tr>
 <tr>
-<td class="td-first">2022股债双杀</td>
+<td class="td-first">2022股债双杀</td><td class="td-num">-2.07%</td>
 <td class="td-num">-3.17%</td>
-<td class="td-num">-3.98%</td>
-<td class="td-num">-2.07%</td>
-</tr>
+<td class="td-num">-3.98%</td></tr>
 <tr>
-<td class="td-first">2024雪球危机</td>
+<td class="td-first">2024雪球危机</td><td class="td-num">+0.40%</td>
 <td class="td-num">+0.73%</td>
-<td class="td-num">+0.65%</td>
-<td class="td-num">+0.40%</td>
-</tr>
+<td class="td-num">+0.65%</td></tr>
 <tr>
-<td class="td-first">2025关税冲击</td>
+<td class="td-first">2025关税冲击</td><td class="td-num">+3.71%</td>
 <td class="td-num">+3.45%</td>
-<td class="td-num">+3.36%</td>
-<td class="td-num">+3.71%</td>
-</tr>
-</tbody></table>
+<td class="td-num">+3.36%</td></tr></tbody></table>
 <h2 class="ch-h1" id="ch4">五、调仓规则：半年节点 + 3% 偏离双触发</h2>
 <p class="para">调仓频率不是越勤越好。我们对 8 种调仓规则做了交叉回测，发现最优规则是：</p>
 <h3 class="sec-h3">规则定义</h3>
