@@ -51,11 +51,11 @@ jobs:
           import json
           with open('output/summary.json', encoding='utf-8') as f:
               data = json.load(f)
-          # V3c 多元 100% RP 应当：CAGR ≈ 8.77%, Sharpe ≈ 2.60
+          # V3c 多元 100% RP（11 年期 2015-2025）：CAGR ≈ 7.45%, Sharpe ≈ 1.26, MDD ≈ -6.71%
           v3c = data['V3c 多元_100% RP']
-          assert 0.080 < v3c['cagr']   < 0.095,   f'CAGR 偏离: {v3c[\"cagr\"]:.4f}'
-          assert 2.40  < v3c['sharpe'] < 2.80,    f'Sharpe 偏离: {v3c[\"sharpe\"]:.2f}'
-          assert -0.04 < v3c['mdd']    < -0.02,   f'MDD 偏离: {v3c[\"mdd\"]:.4f}'
+          assert 0.065 < v3c['cagr']   < 0.085,   f'CAGR 偏离: {v3c[\"cagr\"]:.4f}'
+          assert 0.95  < v3c['sharpe'] < 1.55,    f'Sharpe 偏离: {v3c[\"sharpe\"]:.2f}'
+          assert -0.09 < v3c['mdd']    < -0.04,   f'MDD 偏离: {v3c[\"mdd\"]:.4f}'
           print(f'✅ V3c 多元 验证通过: CAGR={v3c[\"cagr\"]*100:.2f}% Sharpe={v3c[\"sharpe\"]:.2f} MDD={v3c[\"mdd\"]*100:.2f}%')
           "
 

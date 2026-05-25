@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from .config import (
     BUCKETS, BOOTSTRAP_N_SIM, BOOTSTRAP_HORIZON_DAYS,
-    BOOTSTRAP_BLOCK_DAYS, BOOTSTRAP_SEED,
+    BOOTSTRAP_BLOCK_DAYS, BOOTSTRAP_SEED, RISK_FREE_ANNUAL,
 )
 
 
@@ -16,7 +16,8 @@ def perf_metrics(nv: pd.Series) -> dict:
     cagr = (1 + cum) ** (1 / n_years) - 1 if n_years > 0 else 0
     vol = r.std() * np.sqrt(252)
     mdd = ((nv / nv.cummax()) - 1).min()
-    sharpe = cagr / vol if vol > 0 else float("nan")
+    sharpe_raw = cagr / vol if vol > 0 else float("nan")
+    sharpe = (cagr - RISK_FREE_ANNUAL) / vol if vol > 0 else float("nan")
     calmar = cagr / abs(mdd) if mdd < 0 else float("nan")
     return {
         "n_years": n_years,
@@ -25,6 +26,7 @@ def perf_metrics(nv: pd.Series) -> dict:
         "vol": vol,
         "mdd": mdd,
         "sharpe": sharpe,
+        "sharpe_raw": sharpe_raw,
         "calmar": calmar,
         "final_nv": nv.iloc[-1],
     }

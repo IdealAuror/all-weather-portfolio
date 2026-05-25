@@ -210,7 +210,7 @@ def _section_holdings(weights_dict, principal=1_000_000):
             meta = ETF_META[asset]
             row = [bk, meta["name"], meta["code"]]
             for p in ports:
-                row.append(_money(weights_dict[p][asset] * principal))
+                row.append(_money(weights_dict[p].get(asset, 0) * principal))
             rows.append(row)
     rows.append(["**合计**", "", ""] + [_money(principal) for _ in ports])
     return [

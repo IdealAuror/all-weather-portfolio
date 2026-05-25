@@ -26,7 +26,8 @@ SAFETY_DEDUCT = {
 # === 调仓规则 ===
 REBAL_FREQ = "2QE"           # 半年节点
 REBAL_THRESHOLD = 0.03       # 3% 偏离阈值
-RISK_FREE_RATE = 0.022 / 252 # 货币基金年化 2.2%
+RISK_FREE_RATE = 0.022 / 252 # 货币基金年化 2.2%（日度）
+RISK_FREE_ANNUAL = 0.022         # 无风险利率年化，用于 Sharpe 修正
 
 # === 现金降杠杆档位 ===
 CASH_TIERS = [
@@ -43,6 +44,12 @@ ASSETS = [
     "gold", "nonferr", "soymeal",
 ]
 
+ASSETS_PLAN_A = [
+    "hs300", "div_idx", "us_sp500", "credit",
+    "bond_10y", "bond_30y", "short_bond",
+    "gold", "nonferr", "soymeal",
+]
+
 ETF_META = {
     "hs300":     {"code": "510300", "name": "沪深 300 ETF",        "bucket": "增长↑", "role": "A股大盘"},
     "div_idx":   {"code": "510880", "name": "红利 ETF（中证红利）",   "bucket": "增长↑", "role": "A股价值/股息"},
@@ -52,6 +59,7 @@ ETF_META = {
     "bond_30y":  {"code": "511130", "name": "30 年国债 ETF",       "bucket": "增长↓", "role": "长久期利率债"},
     "gold":      {"code": "518880", "name": "黄金 ETF",            "bucket": "通胀↑", "role": "实物黄金"},
     "nonferr":   {"code": "159980", "name": "有色金属 ETF",        "bucket": "通胀↑", "role": "工业金属"},
+    "short_bond": {"code": "511880", "name": "短久期债券 ETF",      "bucket": "增长↓", "role": "短久期利率债"},
     "soymeal":   {"code": "159985", "name": "豆粕 ETF",           "bucket": "通胀↑", "role": "农产品"},
 }
 
@@ -62,7 +70,7 @@ BUCKETS = {
     "增长↑权益(A股)":  ["hs300", "div_idx"],
     "增长↑权益(海外)": ["us_sp500"],
     "信用债":          ["credit"],
-    "增长↓利率债":    ["bond_10y", "bond_30y"],
+    "增长↓利率债":    ["bond_10y", "bond_30y", "short_bond"],
     "通胀↑黄金":      ["gold"],
     "通胀↑商品":      ["nonferr", "soymeal"],
 }
@@ -70,7 +78,7 @@ BUCKETS = {
 BUCKET_GROUPS = {
     "增长↑": ["hs300", "div_idx", "us_sp500"],
     "收益垫": ["credit"],
-    "增长↓": ["bond_10y", "bond_30y"],
+    "增长↓": ["bond_10y", "bond_30y", "short_bond"],
     "通胀↑": ["gold", "nonferr", "soymeal"],
 }
 
@@ -101,3 +109,18 @@ BOOTSTRAP_SEED = 42
 # === 交易成本估计 ===
 TURNOVER_PER_REBAL = 0.08
 COST_PER_SIDE = 0.0015
+
+# === 方案 A 常量（固定权重 + 三层风控）===
+TREND_LOOKBACK_MONTHS = 12       # 趋势过滤回顾窗口（月）
+DRAWDOWN_STOP = 0.08             # 回撤止损触发线
+DRAWDOWN_RECOVER = 0.04          # 回撤恢复线
+DRAWDOWN_TARGET_CAP = 0.50       # 回撤止损时目标仓位比例
+
+# === 方案 B 常量（分层风险平价 + 动态配置）===
+RISK_PARITY_WINDOW = 60          # 逆波动率窗口（交易日）
+RISK_PARITY_MAX_WEIGHT = 0.25    # 单资产权重上限
+RISK_PARITY_MIN_WEIGHT = 0.02    # 单资产权重下限
+CORR_BREAKER_THRESHOLD = 0.30    # 相关性断路器触发阈值
+CORR_BREAKER_RECOVER = 0.20      # 相关性恢复阈值
+CORR_BREAKER_CAP = 0.70          # 相关熔断时仓位上限
+VOL_TARGET = 0.06                # 年化目标波动率

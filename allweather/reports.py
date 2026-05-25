@@ -67,7 +67,7 @@ def print_yearly_table(yearly_results: dict, years=None):
     """分年化收益表。yearly_results: {port: pd.Series}"""
     print_header("【2】分年化收益（100% RP 档）")
     if years is None:
-        years = [2020, 2021, 2022, 2023, 2024, 2025]
+        years = list(range(2015, 2026))
     print(f"  {'方案':<14}" + "".join(f"{y:>9}" for y in years))
     for port, s in yearly_results.items():
         line = f"  {port:<14}"
@@ -152,7 +152,7 @@ def print_holdings(weights_dict: dict, principal: float = 1_000_000):
             meta = ETF_META[asset]
             line = f"  {bk:<8}{meta['name']:<22}{meta['code']:<10}"
             for p in ports:
-                w = weights_dict[p][asset]
+                w = weights_dict[p].get(asset, 0)
                 amt = w * principal
                 line += f"{amt:>13,.0f}"
             print(line)

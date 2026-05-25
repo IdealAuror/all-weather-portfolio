@@ -281,7 +281,7 @@ def _sheet_holdings(wb, weights_dict, principal=1_000_000):
             ws.cell(row=r, column=2, value=meta["name"]).alignment = LEFT
             ws.cell(row=r, column=3, value=meta["code"]).alignment = CENTER
             for j, p in enumerate(ports, start=4):
-                amt = weights_dict[p][asset] * principal
+                amt = weights_dict[p].get(asset, 0) * principal
                 cell = ws.cell(row=r, column=j, value=float(amt))
                 cell.number_format = INT_FMT
                 cell.alignment = RIGHT

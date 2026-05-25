@@ -229,6 +229,16 @@ def load_panel() -> pd.DataFrame:
     return panel
 
 
+def load_panel_extended() -> pd.DataFrame:
+    """加载 10 资产面板（9 基础 + short_bond，用于方案 A/B）。"""
+    panel = load_panel()
+    short_bond = load_series("bond_short")
+    full_idx = panel.index
+    short_bond = short_bond.reindex(full_idx).ffill()
+    panel["short_bond"] = short_bond
+    return panel.dropna()
+
+
 def get_returns() -> pd.DataFrame:
     """便捷函数：返回日收益率面板。"""
     return load_panel().pct_change().dropna()

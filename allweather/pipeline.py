@@ -4,7 +4,7 @@
 """
 import time
 import pandas as pd
-from .data import load_panel
+from .data import load_panel_extended
 from .portfolios import get_weights
 from .backtest import backtest
 from .stats import (
@@ -12,17 +12,20 @@ from .stats import (
     bucket_risk_contribution, regime_returns, rolling_stats,
     block_bootstrap,
 )
-from .config import CASH_TIERS, STRESS_EVENTS
+from .config import (
+    CASH_TIERS, STRESS_EVENTS,
+    RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
+)
 from . import reports
 
 
 def step_1_load_data():
-    """Step 1: 加载历史数据。"""
+    """Step 1: 加载历史数据（含 short_bond 用于方案 A/B）。"""
     print("\n" + "─" * 60)
     print("Step 1/6: 加载历史数据")
     print("─" * 60)
     t0 = time.time()
-    panel = load_panel()
+    panel = load_panel_extended()
     rets = panel.pct_change().dropna()
     print(f"  ok 数据期间: {panel.index.min().date()} ~ {panel.index.max().date()}")
     print(f"  ok 资产数: {panel.shape[1]}, 交易日数: {len(panel)}")
@@ -31,38 +34,81 @@ def step_1_load_data():
 
 
 def step_2_run_backtests(rets):
-    """Step 2: 三策略 × 三档现金共 9 组回测。"""
+    """Step 2: 原 V3b/V3c/V3d + 方案 A + 方案 B，× 三档现金。"""
     print("\n" + "─" * 60)
-    print("Step 2/6: 跑 9 个组合回测（3 策略 × 3 现金档）")
+    print("Step 2/6: 跑组合回测")
     print("─" * 60)
     t0 = time.time()
     weights = get_weights()
     nv_results = {}
     n_rebal_total = 0
+
+    # --- 原 V3b / V3c / V3d 固定权重回测 ---
     for port, w in weights.items():
+        if "V3-A" in port:
+            continue          # V3-A 在下文用 backtest_a 处理
         for tier_label, c in CASH_TIERS:
             nv, n = backtest(w, rets, cash_ratio=c)
             nv_results[(port, tier_label)] = nv
             n_rebal_total += n
-    print(f"  ok 完成 {len(nv_results)} 个回测")
+
+    # --- 方案 A: 轻量风控 ---
+    from .strategy_a import backtest_a
+    w_a = weights.get("V3-A 风控")
+    if w_a is not None:
+        for tier_label, c in CASH_TIERS:
+            nv, n, n_t, n_d = backtest_a(w_a, rets, cash_ratio=c)
+            nv_results[("V3-A 风控", tier_label)] = nv
+            n_rebal_total += n
+
+    # --- 方案 B: 真风险平价 + 动态配置 ---
+    from .strategy_b import backtest_b
+    for tier_label, c in CASH_TIERS:
+        for horizon in ["short", "mid", "long"]:
+            nv, n, n_cb = backtest_b(rets, cash_ratio=c, horizon=horizon)
+            nv_results[(f"V3-B {horizon}", tier_label)] = nv
+            n_rebal_total += n
+
+    total = len(nv_results)
+    print(f"  ok 完成 {total} 个回测")
     print(f"  ok 总调仓次数: {n_rebal_total}")
     print(f"  ok 用时: {time.time()-t0:.2f}s")
     return weights, nv_results
 
 
 def step_3_compute_metrics(nv_results, weights, rets):
-    """Step 3: 计算所有衍生指标。"""
+    """Step 3: 计算所有衍生指标（含方案 A/B）。"""
     print("\n" + "─" * 60)
     print("Step 3/6: 计算衍生指标")
     print("─" * 60)
     t0 = time.time()
     perf = {key: perf_metrics(nv) for key, nv in nv_results.items()}
-    yearly = {p: yearly_returns(nv_results[(p, "100% RP")]) for p in weights}
-    rc = {p: bucket_risk_contribution(weights[p], rets) for p in weights}
-    regime = {p: regime_returns(nv_results[(p, "100% RP")], rets) for p in weights}
-    events = {p: event_returns(nv_results[(p, "100% RP")], STRESS_EVENTS)
-              for p in weights}
-    rolling = {p: rolling_stats(nv_results[(p, "100% RP")]) for p in weights}
+
+    yearly = {}
+    rc = {}
+    regime = {}
+    events = {}
+    rolling = {}
+
+    for p in weights:
+        key = (p, "100% RP")
+        if key not in nv_results:
+            continue
+        rets_for_p = rets[list(weights[p].index)]
+        yearly[p] = yearly_returns(nv_results[key])
+        rc[p] = bucket_risk_contribution(weights[p], rets_for_p)
+        regime[p] = regime_returns(nv_results[key], rets)
+        events[p] = event_returns(nv_results[key], STRESS_EVENTS)
+        rolling[p] = rolling_stats(nv_results[key])
+
+    # V3-B 无固定权重，跳过风险贡献分解
+    for (p, tier), nv_s in nv_results.items():
+        if "V3-B" in p and tier == "100% RP":
+            yearly[p] = yearly_returns(nv_s)
+            regime[p] = regime_returns(nv_s, rets)
+            events[p] = event_returns(nv_s, STRESS_EVENTS)
+            rolling[p] = rolling_stats(nv_s)
+
     print(f"  ok 用时: {time.time()-t0:.2f}s")
     return {
         "perf": perf, "yearly": yearly, "risk_contrib": rc,
@@ -70,13 +116,40 @@ def step_3_compute_metrics(nv_results, weights, rets):
     }
 
 
-def step_4_bootstrap(weights, rets):
-    """Step 4: Block Bootstrap 蒙特卡洛模拟。"""
+def step_4_bootstrap(weights, rets, nv_results=None):
+    """Step 4: Block Bootstrap 蒙特卡洛模拟。
+
+    固定权重策略直接用；V3-B 用最近窗口逆波动率权重作代理。
+    """
     print("\n" + "─" * 60)
     print("Step 4/6: Block Bootstrap 蒙特卡洛（1000 次 × 5 年）")
     print("─" * 60)
     t0 = time.time()
-    boot = {p: block_bootstrap(w, rets) for p, w in weights.items()}
+
+    boot = {}
+    for p, w in weights.items():
+        rets_for_p = rets[list(w.index)]
+        boot[p] = block_bootstrap(w, rets_for_p)
+
+    # V3-B: 用最近窗口的分层风险平价权重作代理
+    from .risk import hierarchical_rp_weights
+    from .config import BUCKET_GROUPS as BOOT_BG
+    rp_buckets_boot = {
+        k: [a for a in v if a != "short_bond"]
+        for k, v in BOOT_BG.items()
+    }
+    rp_buckets_boot = {k: v for k, v in rp_buckets_boot.items() if v}
+    for (portfolio, tier), _nv in (nv_results or {}).items():
+        if "V3-B" in portfolio and tier == "100% RP":
+            boot_rets = rets[[c for c in rets.columns if c != "short_bond"]]
+            proxy_w = hierarchical_rp_weights(
+                boot_rets.tail(RISK_PARITY_WINDOW),
+                rp_buckets_boot, RISK_PARITY_WINDOW,
+                RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
+            )
+            rets_for_p = rets[list(proxy_w.index)]
+            boot[portfolio] = block_bootstrap(proxy_w, rets_for_p)
+
     print(f"  ok 用时: {time.time()-t0:.2f}s")
     return boot
 
@@ -169,7 +242,7 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True):
     panel, rets = step_1_load_data()
     weights, nv_results = step_2_run_backtests(rets)
     metrics = step_3_compute_metrics(nv_results, weights, rets)
-    boot = step_4_bootstrap(weights, rets)
+    boot = step_4_bootstrap(weights, rets, nv_results=nv_results)
     step_5_print_reports(metrics, boot, weights)
     step_6_save_outputs(nv_results, metrics, weights, boot=boot,
                          excel=excel, markdown=markdown)

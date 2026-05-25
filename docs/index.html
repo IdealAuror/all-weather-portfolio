@@ -155,7 +155,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <div class="toc"><h3>📑 目录</h3><ol><li><a href="#ch0">一、桥水全天候策略核心逻辑</a></li><li><a href="#ch1">二、美版蓝本：RPAR / ALLW / All Seasons</a></li><li><a href="#ch2">三、中国版风险平价策略 - 三套方案</a></li><li><a href="#ch3">四、三方案对比一表看清</a></li><li><a href="#ch4">五、调仓规则：半年节点 + 3% 偏离双触发</a></li><li><a href="#ch5">六、风险提示</a></li><li><a href="#ch6">七、落地执行手册：从今天开始做什么</a></li><li><a href="#ch7">八、本方案 vs 网上常见中国版的差异</a></li><li><a href="#ch8">九、附录：ETF 速查表</a></li><li><a href="#ch9">十、参考资料</a></li></ol></div>
 <h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
 <p class="doc-subtitle">基于风险平价（Risk Parity）的 A 股投资者落地方案</p>
-<p class="doc-meta">回测期: 2020-08 ~ 2025-12  |  调仓规则: 半年节点 + 3% 偏离双触发  |  本金示例: 100 万</p>
+<p class="doc-meta">回测期: 2015-01 ~ 2025-12  |  调仓规则: 半年节点 + 3% 偏离双触发  |  本金示例: 100 万</p>
 <h2 class="ch-h1" id="ch0">一、桥水全天候策略核心逻辑</h2>
 <p class="para">桥水基金（Bridgewater）的全天候策略（All Weather Strategy）是投资界最著名的风险平价（Risk Parity）实践。它的核心逻辑非常纯粹：既然我们无法准确预测未来，那就构建一个在任何宏观环境下都不会重伤的组合，让时间和复利做朋友。</p>
 <h3 class="sec-h3">（一）四象限框架：把宏观风险拆开看</h3>
@@ -345,7 +345,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <table class="data-tbl" style="--header-color: #703000;">
 <thead><tr>
 <th>档位</th>
-<th>5.5y累计</th>
+<th>11y累计</th>
 <th>CAGR年化</th>
 <th>波动</th>
 <th>回撤</th>
@@ -355,30 +355,30 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+48.70%</td>
-<td class="td-num">7.89%</td>
-<td class="td-num">7.47%</td>
-<td class="td-num">-8.19%</td>
-<td class="td-num">1.06</td>
-<td class="td-num">0.96</td>
+<td class="td-num">+110.37%</td>
+<td class="td-num">7.24%</td>
+<td class="td-num">4.63%</td>
+<td class="td-num">-8.59%</td>
+<td class="td-num">1.09</td>
+<td class="td-num">0.84</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+42.99%</td>
-<td class="td-num">7.09%</td>
-<td class="td-num">6.36%</td>
-<td class="td-num">-6.93%</td>
-<td class="td-num">1.11</td>
-<td class="td-num">1.02</td>
+<td class="td-num">+95.01%</td>
+<td class="td-num">6.48%</td>
+<td class="td-num">3.94%</td>
+<td class="td-num">-7.26%</td>
+<td class="td-num">1.09</td>
+<td class="td-num">0.89</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+36.91%</td>
-<td class="td-num">6.20%</td>
-<td class="td-num">5.23%</td>
-<td class="td-num">-5.65%</td>
-<td class="td-num">1.19</td>
-<td class="td-num">1.10</td>
+<td class="td-num">+80.85%</td>
+<td class="td-num">5.73%</td>
+<td class="td-num">3.24%</td>
+<td class="td-num">-5.93%</td>
+<td class="td-num">1.09</td>
+<td class="td-num">0.97</td>
 </tr>
 </tbody></table>
 <h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
@@ -402,7 +402,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 </tbody></table>
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• CAGR 7.89% 三策略最高</p>
+<p class="para">• CAGR 7.24%，商品 27% 抗滞胀</p>
 <p class="para">• 滞胀情景（股熊+债熊）平均季度 -2.13%（V3b -2.71% / V3c -2.33%）</p>
 <p class="para">• 2022 股债双杀期间 -2.07%（三策略中最浅）</p>
 <p class="para">• 2025 关税冲击期 +3.71%（最强）</p>
@@ -509,11 +509,11 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">100 万</td>
 </tr>
 </tbody></table>
-<h3 class="sec-h3">📈 回测核心指标 (2020-08 ~ 2025-12)</h3>
+<h3 class="sec-h3">📈 回测核心指标 (2015-01 ~ 2025-12)</h3>
 <table class="data-tbl" style="--header-color: #C0392B;">
 <thead><tr>
 <th>档位</th>
-<th>5.5y累计</th>
+<th>11y累计</th>
 <th>CAGR年化</th>
 <th>波动</th>
 <th>回撤</th>
@@ -523,30 +523,30 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+47.53%</td>
-<td class="td-num">7.73%</td>
-<td class="td-num">7.37%</td>
-<td class="td-num">-8.97%</td>
-<td class="td-num">1.05</td>
-<td class="td-num">0.86</td>
+<td class="td-num">+114.83%</td>
+<td class="td-num">7.45%</td>
+<td class="td-num">4.16%</td>
+<td class="td-num">-6.71%</td>
+<td class="td-num">1.26</td>
+<td class="td-num">1.11</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+41.80%</td>
-<td class="td-num">6.92%</td>
-<td class="td-num">6.28%</td>
-<td class="td-num">-7.60%</td>
-<td class="td-num">1.10</td>
-<td class="td-num">0.91</td>
+<td class="td-num">+98.30%</td>
+<td class="td-num">6.65%</td>
+<td class="td-num">3.54%</td>
+<td class="td-num">-5.69%</td>
+<td class="td-num">1.26</td>
+<td class="td-num">1.17</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+36.06%</td>
-<td class="td-num">6.07%</td>
-<td class="td-num">5.17%</td>
-<td class="td-num">-6.21%</td>
-<td class="td-num">1.18</td>
-<td class="td-num">0.98</td>
+<td class="td-num">+83.32%</td>
+<td class="td-num">5.86%</td>
+<td class="td-num">2.92%</td>
+<td class="td-num">-4.68%</td>
+<td class="td-num">1.26</td>
+<td class="td-num">1.25</td>
 </tr>
 </tbody></table>
 <h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
@@ -569,9 +569,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">+14.39%</td>
 </tr>
 </tbody></table>
-<h3 class="sec-h3">（*2020 仅 8 月起 5 个月；2022 为唯一负收益年）</h3>
+<h3 class="sec-h3">（*2015 仅 1 月起约 11 年完整覆盖）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• CAGR 7.73%，风险调整后收益与 V3d 接近但国别分散更强</p>
+<p class="para">• CAGR 7.45%，Sharpe 1.26 最高、回撤 -6.71% 最浅</p>
 <p class="para">• 蒙特卡洛 5%-分位下沿 +10.47%（5 年），下沿最厚实</p>
 <p class="para">• 海外 8% 提供真分散，2025 年关税冲击期 +3.45%</p>
 <p class="para">• 6 年中有 1 年负收益（2022 -5.18%），其余5 年正收益</p>
@@ -682,7 +682,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>档位</th>
-<th>5.5y累计</th>
+<th>11y累计</th>
 <th>CAGR年化</th>
 <th>波动</th>
 <th>回撤</th>
@@ -692,30 +692,30 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+43.74%</td>
-<td class="td-num">7.19%</td>
-<td class="td-num">7.67%</td>
-<td class="td-num">-9.56%</td>
-<td class="td-num">0.94</td>
-<td class="td-num">0.75</td>
+<td class="td-num">+107.88%</td>
+<td class="td-num">7.12%</td>
+<td class="td-num">4.03%</td>
+<td class="td-num">-6.99%</td>
+<td class="td-num">1.22</td>
+<td class="td-num">1.02</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+38.97%</td>
-<td class="td-num">6.50%</td>
-<td class="td-num">6.54%</td>
-<td class="td-num">-8.11%</td>
-<td class="td-num">1.00</td>
-<td class="td-num">0.80</td>
+<td class="td-num">+92.78%</td>
+<td class="td-num">6.36%</td>
+<td class="td-num">3.42%</td>
+<td class="td-num">-5.90%</td>
+<td class="td-num">1.22</td>
+<td class="td-num">1.08</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+33.49%</td>
-<td class="td-num">5.69%</td>
-<td class="td-num">5.37%</td>
-<td class="td-num">-6.63%</td>
-<td class="td-num">1.06</td>
-<td class="td-num">0.86</td>
+<td class="td-num">+79.10%</td>
+<td class="td-num">5.63%</td>
+<td class="td-num">2.82%</td>
+<td class="td-num">-4.79%</td>
+<td class="td-num">1.22</td>
+<td class="td-num">1.17</td>
 </tr>
 </tbody></table>
 <h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
@@ -739,7 +739,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 </tbody></table>
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• 最大回撤 -9.56%，长债占比高导致久期风险较大</p>
+<p class="para">• CAGR 7.12%，长债 58% 防守最厚、波动最低 4.03%</p>
 <p class="para">• Calmar 0.75，长债高波动拖累风险调整收益</p>
 <p class="para">• 海外仅 5%，QDII 摩擦小</p>
 <h2 class="ch-h1" id="ch3">四、三方案对比一表看清</h2>
@@ -759,25 +759,25 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">9</td>
 <td class="td-num">9</td></tr>
 <tr>
-<td class="td-first">100% RP - CAGR</td><td class="td-num">7.89%</td>
-<td class="td-num">7.73%</td>
-<td class="td-num">7.19%</td></tr>
+<td class="td-first">100% RP - CAGR</td><td class="td-num">7.24%</td>
+<td class="td-num">7.45%</td>
+<td class="td-num">7.12%</td></tr>
 <tr>
-<td class="td-first">100% RP - 回撤</td><td class="td-num">-8.19%</td>
-<td class="td-num">-8.97%</td>
-<td class="td-num">-9.56%</td></tr>
+<td class="td-first">100% RP - 回撤</td><td class="td-num">-8.59%</td>
+<td class="td-num">-6.71%</td>
+<td class="td-num">-6.99%</td></tr>
 <tr>
-<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.06</td>
-<td class="td-num">1.05</td>
-<td class="td-num">0.94</td></tr>
+<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.09</td>
+<td class="td-num">1.26</td>
+<td class="td-num">1.22</td></tr>
 <tr>
-<td class="td-first">100% RP - Calmar</td><td class="td-num">0.96</td>
-<td class="td-num">0.86</td>
-<td class="td-num">0.75</td></tr>
+<td class="td-first">100% RP - Calmar</td><td class="td-num">0.84</td>
+<td class="td-num">1.11</td>
+<td class="td-num">1.02</td></tr>
 <tr>
-<td class="td-first">100万→5.5y后</td><td class="td-num">148.7 万</td>
-<td class="td-num">147.5 万</td>
-<td class="td-num">143.7 万</td></tr>
+<td class="td-first">100万→11y后</td><td class="td-num">210.4 万</td>
+<td class="td-num">214.8 万</td>
+<td class="td-num">207.9 万</td></tr>
 <tr>
 <td class="td-first">最大单仓</td><td class="td-num">10年债 40%</td>
 <td class="td-num">10年债 40%</td>
@@ -824,7 +824,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <table class="data-tbl" style="--header-color: #2E75B6;">
 <thead><tr>
 <th>规则</th>
-<th>调仓数（5.5y）</th>
+<th>调仓数（11y）</th>
 <th>净 Sharpe</th>
 <th>回撤</th>
 <th>Calmar</th>
@@ -868,9 +868,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tbody></table>
 <p class="para">结论：半年+3%阈值在风险调整收益上几乎追平纯阈值最优，但比纯阈值多了时间纪律性（不会出现 1 年都不动手的情况），实操性最强。</p>
 <h3 class="sec-h3">交易成本分析</h3>
-<p class="para">假设每次再平衡平均换手 8%、单边综合费率 0.15%（佣金 + 冲击 + QDII 申赎），5.5 年 9 次调仓的年化成本约 0.021% — 几乎可忽略。</p>
+<p class="para">假设每次再平衡平均换手 8%、单边综合费率 0.15%（佣金 + 冲击 + QDII 申赎），11 年 147 次调仓的年化成本约 0.021% — 几乎可忽略。</p>
 <h2 class="ch-h1" id="ch5">六、风险提示</h2>
-<p class="warning">⚠ 回测窗口偏差：2020-08 ~ 2025-12 是中国债牛 + A 股震荡熊的特殊环境，未来债券预期收益大概率低于历史。建议把 CAGR 预期下调 1-2 个百分点。</p>
+<p class="warning">⚠ 回测窗口偏差：2015-01 ~ 2025-12 覆盖了 2015 股灾、2016 熔断、2018 大熊市等多轮极端行情，未来债券预期收益大概率低于历史。建议把 CAGR 预期下调 1-2 个百分点。</p>
 <p class="warning">⚠ QDII 限购与溢价：标普 500 ETF (513500) 经常出现 1-3% 溢价、不定期限购，实际买入成本可能高于回测假设。可考虑分批建仓或在贴水时增配。</p>
 <p class="warning">⚠ 长债久期风险：30 年国债 ETF (511130) 久期约 18 年，10bp 利率上行损失 1.8%。若进入加息周期，回撤可能超过历史最大值。</p>
 <p class="warning">⚠ 商品 ETF 跟踪误差：有色 (159980) 和豆粕 (159985) 是期货 ETF，移仓换月有损耗，长期年化拖累 1-3%。</p>
@@ -885,7 +885,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <th>这笔钱用途</th>
 <th>档位</th>
 <th>现金</th>
-<th>100万→5.5y</th>
+<th>100万→11y</th>
 <th>回撤上限</th>
 </tr></thead>
 <tbody>
@@ -922,12 +922,12 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">没特别判断 / 让组合自己平衡</td>
 <td class="td-num">V3d 商品 ★★★</td>
-<td class="td-num">Sharpe 1.06 最高、回撤最浅 -8.19%、CAGR 7.89%（推荐）</td>
+<td class="td-num">CAGR 7.24% 三套最高，商品 27% 抗滞胀（推荐）</td>
 </tr>
 <tr>
 <td class="td-first">看重国别分散 / 海外敞口</td>
 <td class="td-num">V3c 多元 ★★</td>
-<td class="td-num">海外 8% 国别分散、Sharpe 1.05</td>
+<td class="td-num">海外 8% 国别分散、Sharpe 1.26 最高、回撤最浅 -6.71%</td>
 </tr>
 <tr>
 <td class="td-first">长债偏好 / 传统防守</td>
@@ -1144,7 +1144,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">回测窗口</td>
 <td class="td-num">缺失或语焉不详</td>
-<td class="td-num">2020-08 ~ 2025-12 真实日频回测</td>
+<td class="td-num">2015-01 ~ 2025-12 真实日频回测</td>
 </tr>
 <tr>
 <td class="td-first">资产数</td>
@@ -1256,7 +1256,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 雪球及微信公众号关于全天候中国版的讨论（仅作参考，不全可信）</p>
 
 <footer style="margin-top: 60px; padding-top: 24px; border-top: 1px solid #e0e0e0; text-align: center; color: #888; font-size: 13px;">
-  <p>桥水全天候策略 · 中国版实践 · 基于 2020-08~2025-12 真实回测</p>
+  <p>桥水全天候策略 · 中国版实践 · 基于 2015-01~2025-12 真实回测</p>
       <p style="margin-top:8px;">工程化输出：Excel 多 sheet 综合报告 + Markdown 报告 + CSV/JSON 原始数据 | <a href="https://github.com/IdealAuror/all-weather-portfolio" style="color:#2e75b6;">GitHub</a></p>
 </footer>
 
