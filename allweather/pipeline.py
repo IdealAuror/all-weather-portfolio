@@ -52,21 +52,22 @@ def step_2_run_backtests(rets):
             nv_results[(port, tier_label)] = nv
             n_rebal_total += n
 
-    # --- 方案 A: 轻量风控 ---
+    # --- 方案 A: 纯固定权重（含 short_bond）---
     from .strategy_a import backtest_a
-    w_a = weights.get("V3-A 风控")
+    w_a = weights.get("V3-A 保守")
     if w_a is not None:
         for tier_label, c in CASH_TIERS:
-            nv, n, n_t, n_d = backtest_a(w_a, rets, cash_ratio=c)
-            nv_results[("V3-A 风控", tier_label)] = nv
+            nv, n = backtest_a(w_a, rets, cash_ratio=c)
+            nv_results[("V3-A 保守", tier_label)] = nv
             n_rebal_total += n
 
-    # --- 方案 B: 真风险平价 + 动态配置 ---
+    # --- 方案 B: 分层风险平价（60d/120d 两窗口）---
     from .strategy_b import backtest_b
     for tier_label, c in CASH_TIERS:
-        for horizon in ["short", "mid", "long"]:
-            nv, n, n_cb = backtest_b(rets, cash_ratio=c, horizon=horizon)
-            nv_results[(f"V3-B {horizon}", tier_label)] = nv
+        for rp_window in [60, 120]:
+            window_label = f"V3-B 风险平价({rp_window}d)"
+            nv, n = backtest_b(rets, cash_ratio=c, rp_window=rp_window)
+            nv_results[(window_label, tier_label)] = nv
             n_rebal_total += n
 
     total = len(nv_results)
@@ -133,7 +134,9 @@ def step_4_bootstrap(weights, rets, nv_results=None):
 
     # V3-B: 用最近窗口的分层风险平价权重作代理
     from .risk import hierarchical_rp_weights
-    from .config import BUCKET_GROUPS as BOOT_BG
+    from .config import (
+        BUCKET_GROUPS as BOOT_BG, RISK_PARITY_WINDOW_LONG,
+    )
     rp_buckets_boot = {
         k: [a for a in v if a != "short_bond"]
         for k, v in BOOT_BG.items()
@@ -142,9 +145,9 @@ def step_4_bootstrap(weights, rets, nv_results=None):
     for (portfolio, tier), _nv in (nv_results or {}).items():
         if "V3-B" in portfolio and tier == "100% RP":
             boot_rets = rets[[c for c in rets.columns if c != "short_bond"]]
+            win = RISK_PARITY_WINDOW_LONG if "120" in portfolio else RISK_PARITY_WINDOW
             proxy_w = hierarchical_rp_weights(
-                boot_rets.tail(RISK_PARITY_WINDOW),
-                rp_buckets_boot, RISK_PARITY_WINDOW,
+                boot_rets.tail(win), rp_buckets_boot, win,
                 RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
             )
             rets_for_p = rets[list(proxy_w.index)]

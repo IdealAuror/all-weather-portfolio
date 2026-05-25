@@ -56,8 +56,11 @@ def _section_recommendation():
     items = sorted(PORTFOLIO_TAGS.items(), key=lambda kv: -len(kv[1]["stars"]))
     notes = {
         "V3c 多元": "海外 8% 国别分散最强，综合 Sharpe 最高，蒙特卡洛下沿最厚实",
-        "V3b 平衡": "长债 58%，回撤最浅 -2.26%，求稳者首选",
+        "V3b 平衡": "长债 58%，防御属性突出，低波动首选",
         "V3d 商品偏重": "商品 27%，CAGR 最高，抗滞胀但回撤更深",
+        "V3-A 保守": "含 20% 短债，久期更短，保守稳健",
+        "V3-B 风险平价(60d)": "分层风险平价，月度调仓，逆波动率动态权重",
+        "V3-B 风险平价(120d)": "长窗口风险平价，权重更稳定，接近桥水战略定位",
     }
     rows = [(tag["stars"], port, tag["label"], notes.get(port, ""))
             for port, tag in items]

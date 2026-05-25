@@ -110,17 +110,8 @@ BOOTSTRAP_SEED = 42
 TURNOVER_PER_REBAL = 0.08
 COST_PER_SIDE = 0.0015
 
-# === 方案 A 常量（固定权重 + 三层风控）===
-TREND_LOOKBACK_MONTHS = 12       # 趋势过滤回顾窗口（月）
-DRAWDOWN_STOP = 0.08             # 回撤止损触发线
-DRAWDOWN_RECOVER = 0.04          # 回撤恢复线
-DRAWDOWN_TARGET_CAP = 0.50       # 回撤止损时目标仓位比例
-
-# === 方案 B 常量（分层风险平价 + 动态配置）===
-RISK_PARITY_WINDOW = 60          # 逆波动率窗口（交易日）
+# === 方案 B 常量（分层风险平价）===
+RISK_PARITY_WINDOW = 60          # 逆波动率窗口（交易日），默认版本
+RISK_PARITY_WINDOW_LONG = 120    # 长窗口版本，更接近桥水战略定位
 RISK_PARITY_MAX_WEIGHT = 0.25    # 单资产权重上限
 RISK_PARITY_MIN_WEIGHT = 0.02    # 单资产权重下限
-CORR_BREAKER_THRESHOLD = 0.30    # 相关性断路器触发阈值
-CORR_BREAKER_RECOVER = 0.20      # 相关性恢复阈值
-CORR_BREAKER_CAP = 0.70          # 相关熔断时仓位上限
-VOL_TARGET = 0.06                # 年化目标波动率
