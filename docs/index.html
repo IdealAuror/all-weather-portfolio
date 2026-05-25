@@ -236,11 +236,12 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 </tbody></table>
 <p class="para">All Seasons 是 Robbins 在《Money: Master the Game》里向 Dalio 求来的简化版，适合零售但忽略了风险贡献的动态变化。RPAR/ALLW 才是真正的风险平价 ETF。中国版借鉴 RPAR 的桶结构，但权重用样本协方差 + 长期波动率假设求解，避开窗口偏差。</p>
-<h2 class="ch-h1" id="ch2">三、中国版风险平价策略 - 三套方案</h2>
-<p class="para">以下三套方案都基于同一框架：9 资产 × 4 桶（增长↑权益、收益垫信用债、增长↓利率债、通胀↑商品+黄金）。差异在于桶内权重侧重——你可以根据自己对未来宏观的判断挑选。</p>
-<h2 class="plan-title plan-d">方案 1: V3d 商品偏重型  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：商品桶 27%（黄金 12% + 有色 7.5% + 豆粕 7.5%），长债 53%，综合表现最优。</p>
-<p class="para">适合：大多数投资者。Sharpe 最高、回撤最浅、CAGR 最高，综合表现最优。</p>
+<h2 class="ch-h1" id="ch2">三、中国版风险平价策略</h2>
+<p class="para">以下三套固定权重方案基于同一框架：9 资产 × 4 桶（增长↑权益、收益垫信用债、增长↓利率债、通胀↑商品+黄金）。差异在于桶内权重侧重。</p>
+<p class="para">另外提供 V3-A（含 20% 短债保守配置）和 V3-B（分层风险平价月度调仓，60d/120d 双窗口）作为动态配置备选。详见 <a href="https://github.com/IdealAuror/all-weather-portfolio/blob/main/README.md">README 速查表</a>。</p>
+<h2 class="plan-title plan-d">方案 2: V3d 商品偏重型  ★★ 备选</h2>
+<p class="para-bold">特征：商品桶 27%（黄金 12% + 有色 7.5% + 豆粕 7.5%），长债 53%，CAGR 7.24% 仅次于 V3c，回撤最深 -8.59%。</p>
+<p class="para">适合：看好商品、愿意用更高回撤换通胀保护的投资者。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
 <table class="data-tbl" style="--header-color: #703000;">
 <thead><tr>
@@ -405,10 +406,10 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• CAGR 7.24%，商品 27% 抗滞胀</p>
 <p class="para">• 滞胀情景（股熊+债熊）平均季度 -2.13%（V3b -2.71% / V3c -2.33%）</p>
 <p class="para">• 2022 股债双杀期间 -2.07%（三策略中最浅）</p>
-<p class="para">• 2025 关税冲击期 +3.71%（最强）</p>
-<h2 class="plan-title plan-c">方案 2: V3c 多元型  ★★ 备选</h2>
-<p class="para-bold">特征：海外权益加倍至 8%（A 股黑天鹅时国别分散），长债 55%，9 资产均衡。</p>
-<p class="para">适合：看重国别分散、希望保留 8% 海外敞口的投资者。</p>
+<p class="para">• 2025 关税冲击期 +2.95%（三策略中最强）</p>
+<h2 class="plan-title plan-c">方案 1: V3c 多元型  ★★★ 强烈推荐</h2>
+<p class="para-bold">特征：海外权益加倍至 8%（A 股黑天鹅时国别分散），长债 55%，9 资产均衡。综合 Sharpe 1.26 最高、回撤 -6.71% 最浅、CAGR 7.45% 最高。</p>
+<p class="para">适合：大多数投资者。各项指标全面领先，默认推荐方案。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
 <table class="data-tbl" style="--header-color: #C0392B;">
 <thead><tr>
@@ -572,12 +573,12 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h3 class="sec-h3">（*2015 仅 1 月起约 11 年完整覆盖）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
 <p class="para">• CAGR 7.45%，Sharpe 1.26 最高、回撤 -6.71% 最浅</p>
-<p class="para">• 蒙特卡洛 5%-分位下沿 +10.47%（5 年），下沿最厚实</p>
-<p class="para">• 海外 8% 提供真分散，2025 年关税冲击期 +3.45%</p>
-<p class="para">• 6 年中有 1 年负收益（2022 -5.18%），其余5 年正收益</p>
-<h2 class="plan-title plan-b">方案 3: V3b 平衡型  ★ 保守</h2>
-<p class="para-bold">特征：长债加厚至 58%，海外仅 5%。各项指标三策略中最弱。</p>
-<p class="para">适合：坚持长债防守逻辑的投资者（各项指标最弱，一般不推荐）。</p>
+<p class="para">• 蒙特卡洛 5%-分位下沿 +22.05%（5 年），下沿最厚实</p>
+<p class="para">• 海外 8% 提供真分散，2025 年关税冲击期 +2.70%</p>
+<p class="para">• 11 年全部正收益，无亏损年份</p>
+<h2 class="plan-title plan-b">方案 3: V3b 平衡型  ★★ 备选</h2>
+<p class="para-bold">特征：长债加厚至 58%，海外仅 5%。CAGR 7.12%，波动 4.03% 三策略中最低。</p>
+<p class="para">适合：偏爱低波动、以长债为防守核心的投资者。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
@@ -742,78 +743,78 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• CAGR 7.12%，长债 58% 防守最厚、波动最低 4.03%</p>
 <p class="para">• Calmar 0.75，长债高波动拖累风险调整收益</p>
 <p class="para">• 海外仅 5%，QDII 摩擦小</p>
-<h2 class="ch-h1" id="ch3">四、三方案对比一表看清</h2>
+<h2 class="ch-h1" id="ch3">四、方案对比一表看清</h2>
 <table class="data-tbl" style="--header-color: #595959;">
 <thead><tr>
 <th>维度</th>
-<th>V3d 商品 ★★★</th>
-<th>V3c 多元 ★★</th>
-<th>V3b 平衡 ★</th>
+<th>V3c 多元 ★★★</th>
+<th>V3d 商品 ★★</th>
+<th>V3b 平衡 ★★</th>
 </tr></thead>
 <tbody><tr>
-<td class="td-first">哲学</td><td class="td-num">通胀盾最厚</td>
-<td class="td-num">国别分散最强</td>
+<td class="td-first">哲学</td><td class="td-num">国别分散最强</td>
+<td class="td-num">通胀盾最厚</td>
 <td class="td-num">长债最厚</td></tr>
 <tr>
 <td class="td-first">资产数</td><td class="td-num">9</td>
 <td class="td-num">9</td>
 <td class="td-num">9</td></tr>
 <tr>
-<td class="td-first">100% RP - CAGR</td><td class="td-num">7.24%</td>
-<td class="td-num">7.45%</td>
+<td class="td-first">100% RP - CAGR</td><td class="td-num">7.45%</td>
+<td class="td-num">7.24%</td>
 <td class="td-num">7.12%</td></tr>
 <tr>
-<td class="td-first">100% RP - 回撤</td><td class="td-num">-8.59%</td>
-<td class="td-num">-6.71%</td>
+<td class="td-first">100% RP - 回撤</td><td class="td-num">-6.71%</td>
+<td class="td-num">-8.59%</td>
 <td class="td-num">-6.99%</td></tr>
 <tr>
-<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.09</td>
-<td class="td-num">1.26</td>
+<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.26</td>
+<td class="td-num">1.09</td>
 <td class="td-num">1.22</td></tr>
 <tr>
-<td class="td-first">100% RP - Calmar</td><td class="td-num">0.84</td>
-<td class="td-num">1.11</td>
+<td class="td-first">100% RP - Calmar</td><td class="td-num">1.11</td>
+<td class="td-num">0.84</td>
 <td class="td-num">1.02</td></tr>
 <tr>
-<td class="td-first">100万→11y后</td><td class="td-num">210.4 万</td>
-<td class="td-num">214.8 万</td>
+<td class="td-first">100万→11y后</td><td class="td-num">214.8 万</td>
+<td class="td-num">210.4 万</td>
 <td class="td-num">207.9 万</td></tr>
 <tr>
 <td class="td-first">最大单仓</td><td class="td-num">10年债 40%</td>
 <td class="td-num">10年债 40%</td>
 <td class="td-num">10年债 43%</td></tr>
 <tr>
-<td class="td-first">海外 QDII 暴露</td><td class="td-num">5%</td>
-<td class="td-num">8%</td>
+<td class="td-first">海外 QDII 暴露</td><td class="td-num">8%</td>
+<td class="td-num">5%</td>
 <td class="td-num">5%</td></tr>
 <tr>
-<td class="td-first">商品桶暴露</td><td class="td-num">27%</td>
-<td class="td-num">22%</td>
+<td class="td-first">商品桶暴露</td><td class="td-num">22%</td>
+<td class="td-num">27%</td>
 <td class="td-num">20%</td></tr>
 <tr>
-<td class="td-first">蒙特卡洛 5%分位</td><td class="td-num">+12.64%</td>
-<td class="td-num">+10.47%</td>
-<td class="td-num">+7.15%</td></tr>
+<td class="td-first">蒙特卡洛 5%分位</td><td class="td-num">+22.05%</td>
+<td class="td-num">+19.13%</td>
+<td class="td-num">+20.81%</td></tr>
 <tr>
-<td class="td-first">蒙特卡洛 亏损概率</td><td class="td-num">0.50%</td>
-<td class="td-num">0.70%</td>
-<td class="td-num">1.60%</td></tr>
+<td class="td-first">蒙特卡洛 亏损概率</td><td class="td-num">0.00%</td>
+<td class="td-num">0.10%</td>
+<td class="td-num">0.00%</td></tr>
 <tr>
-<td class="td-first">滞胀情景表现</td><td class="td-num">-2.13%</td>
-<td class="td-num">-2.33%</td>
-<td class="td-num">-2.71%</td></tr>
+<td class="td-first">滞胀情景(股熊+债熊 季均)</td><td class="td-num">+1.01%</td>
+<td class="td-num">+1.15%</td>
+<td class="td-num">+0.78%</td></tr>
 <tr>
-<td class="td-first">2022股债双杀</td><td class="td-num">-2.07%</td>
-<td class="td-num">-3.17%</td>
-<td class="td-num">-3.98%</td></tr>
+<td class="td-first">2022股债双杀</td><td class="td-num">+4.96%</td>
+<td class="td-num">+5.69%</td>
+<td class="td-num">+4.48%</td></tr>
 <tr>
-<td class="td-first">2024雪球危机</td><td class="td-num">+0.40%</td>
-<td class="td-num">+0.73%</td>
-<td class="td-num">+0.65%</td></tr>
+<td class="td-first">2024雪球危机</td><td class="td-num">+2.20%</td>
+<td class="td-num">+1.76%</td>
+<td class="td-num">+2.17%</td></tr>
 <tr>
-<td class="td-first">2025关税冲击</td><td class="td-num">+3.71%</td>
-<td class="td-num">+3.45%</td>
-<td class="td-num">+3.36%</td></tr></tbody></table>
+<td class="td-first">2025关税冲击</td><td class="td-num">+2.70%</td>
+<td class="td-num">+2.95%</td>
+<td class="td-num">+2.55%</td></tr></tbody></table>
 <h2 class="ch-h1" id="ch4">五、调仓规则：半年节点 + 3% 偏离双触发</h2>
 <p class="para">调仓频率不是越勤越好。我们对 8 种调仓规则做了交叉回测，发现最优规则是：</p>
 <h3 class="sec-h3">规则定义</h3>
@@ -921,18 +922,18 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">没特别判断 / 让组合自己平衡</td>
-<td class="td-num">V3d 商品 ★★★</td>
-<td class="td-num">CAGR 7.24% 三套最高，商品 27% 抗滞胀（推荐）</td>
+<td class="td-num">V3c 多元 ★★★</td>
+<td class="td-num">Sharpe 1.26 最高、回撤 -6.71% 最浅、CAGR 7.45% 最高（默认推荐）</td>
 </tr>
 <tr>
-<td class="td-first">看重国别分散 / 海外敞口</td>
-<td class="td-num">V3c 多元 ★★</td>
-<td class="td-num">海外 8% 国别分散、Sharpe 1.26 最高、回撤最浅 -6.71%</td>
+<td class="td-first">看重商品 / 通胀保护</td>
+<td class="td-num">V3d 商品 ★★</td>
+<td class="td-num">商品 27% 抗滞胀，CAGR 7.24%，回撤最深 -8.59%</td>
 </tr>
 <tr>
-<td class="td-first">长债偏好 / 传统防守</td>
-<td class="td-num">V3b 平衡 ★</td>
-<td class="td-num">长债 58%（各项指标最弱，不推荐）</td>
+<td class="td-first">长债偏好 / 低波动</td>
+<td class="td-num">V3b 平衡 ★★</td>
+<td class="td-num">长债 58%，波动 4.03% 最低，CAGR 7.12%</td>
 </tr>
 </tbody></table>
 <p class="para">举例：你有 100 万退休金、不知道宏观会怎么样 → 70% RP 档 + V3c 多元。对照第三章 V3c 表的 70% RP 列就是你的目标持仓。</p>
