@@ -14,9 +14,9 @@ DEFAULT_END   = "20251231"
 
 # 资产清单：name -> (kind, symbol)
 TARGETS = {
-    # A 股权益指数
-    "hs300":      ("idx", "sh000300"),
-    "div_lowvol": ("idx", "sh000922"),  # 中证红利
+    # A 股权益 ETF NAV（含分红，不用价格指数）
+    "hs300":      ("etf_nav", "510300"),
+    "div_lowvol": ("etf_nav", "510880"),
     # 债券指数
     "cb_10y_idx": ("idx_em", "sh000139"),  # 上证 10 年国债
     # ETF 净值（避开折溢价）
@@ -27,6 +27,11 @@ TARGETS = {
     "soymeal":      ("etf_nav", "159985"),
     # QDII
     "us_sp500":     ("etf_nav", "513500"),
+    # 短债/货币
+    "bond_short":   ("etf_nav", "511880"),
+    # 缝合用替代数据
+    "nonferr_idx":  ("idx_em", "sw2_850400"),   # 申万有色金属指数
+    "soymeal_fut":  ("fut_dce", "M"),            # 豆粕期货主力连续
 }
 
 
@@ -72,6 +77,18 @@ def _fetch_etf_hist(code, start, end):
     return df[["date", "close"]].sort_values("date")
 
 
+def _fetch_fut_dce(sym, start, end):
+    """拉取 DCE 期货主力连续合约日频数据。"""
+    import akshare as ak
+    df = ak.futures_main_sina(symbol=sym)
+    df = df.rename(columns={"日期": "date", "收盘价": "close"})
+    df["date"] = pd.to_datetime(df["date"])
+    df["close"] = pd.to_numeric(df["close"], errors="coerce")
+    df = df.dropna(subset=["date", "close"])
+    df = df[(df["date"] >= pd.to_datetime(start)) & (df["date"] <= pd.to_datetime(end))]
+    return df[["date", "close"]].sort_values("date")
+
+
 def fetch_one(name, kind, sym, start=DEFAULT_START, end=DEFAULT_END):
     last_err = None
     for attempt in range(1, RETRY_TIMES + 1):
@@ -88,6 +105,8 @@ def fetch_one(name, kind, sym, start=DEFAULT_START, end=DEFAULT_END):
                         raise ValueError("数据不足，降级到腾讯")
                 except Exception:
                     df = _fetch_idx_tx(sym)
+            elif kind == "fut_dce":
+                df = _fetch_fut_dce(sym, start, end)
             elif kind == "etf_nav":
                 df = _fetch_etf_nav(sym, start, end)
                 if df.empty:
@@ -104,6 +123,23 @@ def fetch_one(name, kind, sym, start=DEFAULT_START, end=DEFAULT_END):
                 print(f"    重试 {attempt}/{RETRY_TIMES - 1}，等待 {RETRY_DELAY}s... ({e})", flush=True)
                 time.sleep(RETRY_DELAY)
     raise last_err
+
+
+def fetch_cgb_yields():
+    """拉取中债国债收益率曲线。失败返回 None。
+
+    返回的 DataFrame 通过位置匹配列名，避免中文编码问题。
+    """
+    try:
+        import akshare as ak
+        df = ak.bond_china_yield()
+        if df is None or df.empty:
+            return None
+        if "曲线名称" in df.columns:
+            df = df[df["曲线名称"].str.contains("国债", na=False)]
+        return df
+    except Exception:
+        return None
 
 
 def fetch_all(force: bool = False, start: str = DEFAULT_START, end: str = DEFAULT_END):
@@ -134,6 +170,16 @@ def fetch_all(force: bool = False, start: str = DEFAULT_START, end: str = DEFAUL
             errors[name] = str(e)[:200]
             print(f"    ERR  {e}")
 
+    # 尝试拉取中债国债收益率曲线
+    print(f"  >> cgb_yields (bond_china_yield)", flush=True)
+    yield_df = fetch_cgb_yields()
+    if yield_df is not None and not yield_df.empty:
+        yield_path = DATA_DIR / "cgb_yields.csv"
+        yield_df.to_csv(yield_path, index=False, encoding="utf-8")
+        print(f"    ok  n={len(yield_df)}")
+    else:
+        print(f"    WARN  中债收益率曲线拉取失败，将使用久期放大回退方案合成 30Y")
+
     print(f"\n=== 拉取摘要 ===")
     print(f"  成功: {len(ok)}    跳过(已有): {len(skipped)}    失败: {len(errors)}")
     if errors:
@@ -144,9 +190,9 @@ def fetch_all(force: bool = False, start: str = DEFAULT_START, end: str = DEFAUL
 
 
 def check_data_complete() -> bool:
-    """检查回测必需的 9 个 CSV 是否齐全。"""
+    """检查回测必需的 CSV 是否齐全。"""
     required = ["hs300", "div_lowvol", "cb_10y_idx", "bond_30y_etf",
-                "bond_credit", "gold", "nonferr", "soymeal", "us_sp500"]
+                "bond_credit", "gold", "nonferr", "soymeal", "us_sp500", "bond_short"]
     missing = [n for n in required if not (DATA_DIR / f"{n}.csv").exists()]
     return len(missing) == 0, missing
 
