@@ -29,16 +29,17 @@ def stitch_series(etf: pd.Series, proxy: pd.Series,
 
     # 合并日历：保留 proxy 的全部历史 + ETF 的交易日历
     combined_cal = proxy.index.union(etf.index).sort_values()
+    # 保存首日，在 pct_change/dropna 后会丢失
+    first_date = combined_cal[0]
     proxy = proxy.reindex(combined_cal).ffill()
 
-    # 安全扣减应用于 proxy 日收益率（对原始 proxy 段做）
+    # 安全扣减应用于 proxy 日收益率
     daily_deduct = annual_deduct / 252.0
     proxy_ret = proxy.pct_change().dropna()
     proxy_ret = proxy_ret - daily_deduct
     proxy = (1 + proxy_ret).cumprod()
-    # 补回首日（cumprod 从 index=1 开始）
-    first_val = proxy.iloc[0] / (1 + proxy_ret.iloc[0]) if len(proxy_ret) > 0 else 1.0
-    proxy = pd.concat([pd.Series(first_val, index=[proxy.index[0]]), proxy])
+    # 补回首日（归一化从 1.0 起）
+    proxy = pd.concat([pd.Series(1.0, index=[first_date]), proxy]).sort_index()
 
     # 在 etf 起始日归一化
     stitch_date = etf.index.min()
