@@ -4,7 +4,7 @@
 """
 import time
 import pandas as pd
-from .data import load_panel_extended
+from .data import load_panel
 from .portfolios import get_weights
 from .backtest import backtest
 from .stats import (
@@ -20,12 +20,12 @@ from . import reports
 
 
 def step_1_load_data():
-    """Step 1: 加载历史数据（含 short_bond 用于方案 A/B）。"""
+    """Step 1: 加载历史数据（9 资产）。"""
     print("\n" + "─" * 60)
     print("Step 1/6: 加载历史数据")
     print("─" * 60)
     t0 = time.time()
-    panel = load_panel_extended()
+    panel = load_panel()
     rets = panel.pct_change().dropna()
     print(f"  ok 数据期间: {panel.index.min().date()} ~ {panel.index.max().date()}")
     print(f"  ok 资产数: {panel.shape[1]}, 交易日数: {len(panel)}")
@@ -43,23 +43,13 @@ def step_2_run_backtests(rets):
     nv_results = {}
     n_rebal_total = 0
 
-    # --- 原 V3b / V3c / V3d 固定权重回测 ---
+    # --- 固定权重回测（V3c）---
     for port, w in weights.items():
-        if "V3-A" in port:
-            continue          # V3-A 在下文用 backtest_a 处理
         for tier_label, c in CASH_TIERS:
             nv, n = backtest(w, rets, cash_ratio=c)
             nv_results[(port, tier_label)] = nv
             n_rebal_total += n
 
-    # --- 方案 A: 纯固定权重（含 short_bond）---
-    from .strategy_a import backtest_a
-    w_a = weights.get("V3-A 保守")
-    if w_a is not None:
-        for tier_label, c in CASH_TIERS:
-            nv, n = backtest_a(w_a, rets, cash_ratio=c)
-            nv_results[("V3-A 保守", tier_label)] = nv
-            n_rebal_total += n
 
     # --- 方案 B: 分层风险平价（60d/120d 两窗口）---
     from .strategy_b import backtest_b
@@ -137,14 +127,10 @@ def step_4_bootstrap(weights, rets, nv_results=None):
     from .config import (
         BUCKET_GROUPS as BOOT_BG, RISK_PARITY_WINDOW_LONG,
     )
-    rp_buckets_boot = {
-        k: [a for a in v if a != "short_bond"]
-        for k, v in BOOT_BG.items()
-    }
-    rp_buckets_boot = {k: v for k, v in rp_buckets_boot.items() if v}
+    rp_buckets_boot = {k: list(v) for k, v in BOOT_BG.items()}
     for (portfolio, tier), _nv in (nv_results or {}).items():
         if "V3-B" in portfolio and tier == "100% RP":
-            boot_rets = rets[[c for c in rets.columns if c != "short_bond"]]
+            boot_rets = rets
             win = RISK_PARITY_WINDOW_LONG if "120" in portfolio else RISK_PARITY_WINDOW
             proxy_w = hierarchical_rp_weights(
                 boot_rets.tail(win), rp_buckets_boot, win,
