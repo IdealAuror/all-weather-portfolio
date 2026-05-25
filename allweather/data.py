@@ -19,7 +19,7 @@ def stitch_series(etf: pd.Series, proxy: pd.Series,
                   annual_deduct: float = 0.0) -> pd.Series:
     """ETF 上市前用 proxy，归一化对齐 + 安全扣减后拼接。
 
-    1. proxy 先做交易日对齐（reindex 到 A 股日历，ffill）
+    1. 合并 proxy + etf 交易日历，proxy reindex + ffill（对齐不同市场日历）
     2. proxy 日收益扣减 safety margin
     3. 在 etf 起始日归一化：proxy *= etf[0] / proxy[stitch_date]
     4. 拼接 proxy[:stitch_date) + etf[stitch_date:]
@@ -27,15 +27,16 @@ def stitch_series(etf: pd.Series, proxy: pd.Series,
     if proxy.empty or etf.empty:
         raise ValueError("proxy 或 etf 数据为空，无法缝合")
 
-    ashare_cal = etf.index.sort_values()
-    proxy = proxy.reindex(ashare_cal).ffill().dropna()
+    # 合并日历：保留 proxy 的全部历史 + ETF 的交易日历
+    combined_cal = proxy.index.union(etf.index).sort_values()
+    proxy = proxy.reindex(combined_cal).ffill()
 
-    # 安全扣减应用于 proxy 日收益率
+    # 安全扣减应用于 proxy 日收益率（对原始 proxy 段做）
     daily_deduct = annual_deduct / 252.0
     proxy_ret = proxy.pct_change().dropna()
     proxy_ret = proxy_ret - daily_deduct
     proxy = (1 + proxy_ret).cumprod()
-    # 补回首日
+    # 补回首日（cumprod 从 index=1 开始）
     first_val = proxy.iloc[0] / (1 + proxy_ret.iloc[0]) if len(proxy_ret) > 0 else 1.0
     proxy = pd.concat([pd.Series(first_val, index=[proxy.index[0]]), proxy])
 
