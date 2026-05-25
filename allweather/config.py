@@ -8,12 +8,20 @@ RESULTS_DIR = ROOT / "results"
 OUTPUT_DIR = ROOT / "output"
 
 # === 回测期间 ===
-BACKTEST_START = "2020-08-01"
+BACKTEST_START = "2015-01-01"
 BACKTEST_END   = "2025-12-31"
 
 # === 30 年国债合成参数 ===
 # 2024-03 之前没有 30Y ETF 数据，用 10Y 国债指数 × 久期放大系数合成
 BOND_30Y_AMP = 3.0
+
+# === 合成数据安全扣减（年化）===
+# 仅对合成段（ETF 上市前的替代数据）应用，ETF 真实数据段不扣减
+SAFETY_DEDUCT = {
+    "nonferr":  0.005,   # 申万有色指数不含管理费、跟踪误差
+    "soymeal":  0.020,   # 豆粕期货展期损耗+管理费+contango+无现货锚
+    "bond_30y": 0.003,   # ×3.0 久期放大的期权费率差
+}
 
 # === 调仓规则 ===
 REBAL_FREQ = "2QE"           # 半年节点
