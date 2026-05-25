@@ -158,6 +158,18 @@ def synthesize_bond_30y(s_10y: pd.Series, s_30y_etf: pd.Series) -> pd.Series:
     return synth.sort_index()
 
 
+def _load_bond_10y() -> pd.Series:
+    """加载 10Y 国债序列：bond_10y_etf (2017-08+) + bond_credit proxy(2015-2017-08)。
+
+    cb_10y_idx (sh000139) 在 2015-2019 数据受股灾污染，改用信用债 ETF
+    作为 pre-ETF 替代（2015-2017，约 2.5 年），信用债与国债久期相近。
+    """
+    etf = load_series("bond_10y_etf")  # 511260, 2017-08-04 起
+    proxy = load_series("bond_credit")  # 511220, 2015+，作为国债替代
+
+    return stitch_series(etf, proxy, annual_deduct=0.0)
+
+
 def load_panel() -> pd.DataFrame:
     """加载 9 资产收盘价面板（含缝合，对齐到回测期间，前向填充）。
 
@@ -166,13 +178,16 @@ def load_panel() -> pd.DataFrame:
     """
     # 直接加载的资产（ETF NAV 从 2015 起）
     direct = {k: load_series(k) for k in [
-        "hs300", "div_lowvol", "cb_10y_idx",
+        "hs300", "div_lowvol",
         "bond_credit", "gold", "us_sp500",
     ]}
 
-    # bond_30y: 三阶段合成
+    # bond_10y: bond_10y_etf(2017-08+) + cb_10y_idx清洗版(2015-2017)
+    bond_10y = _load_bond_10y()
+
+    # bond_30y: 三阶段合成（依赖 bond_10y）
     s_30y_etf = load_series("bond_30y_etf")
-    bond_30y = synthesize_bond_30y(direct["cb_10y_idx"], s_30y_etf)
+    bond_30y = synthesize_bond_30y(bond_10y, s_30y_etf)
 
     # nonferr: 申万有色指数(2015-2019) + ETF(2019+)
     nonferr_etf = load_series("nonferr")
@@ -201,7 +216,7 @@ def load_panel() -> pd.DataFrame:
         "div_idx":  direct["div_lowvol"],
         "us_sp500": direct["us_sp500"],
         "credit":   direct["bond_credit"],
-        "bond_10y": direct["cb_10y_idx"],
+        "bond_10y": bond_10y,
         "bond_30y": bond_30y,
         "gold":     direct["gold"],
         "nonferr":  nonferr,
