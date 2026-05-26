@@ -267,7 +267,7 @@
 
 **结论**：不要尝试任何形式的补仓/抄底机制。30% 最优用途就是留在 RP 核心里不动。保守选 risk_parity 100%，进取选 V3c。
 
-**代码**：`allweather/strategy_c.py`，`allweather/grid_search_c.py`（保留作为实验记录）
+**代码**：已删除（2026-05-26 代码清理），结论保留在此文档中备查
 
 ---
 
@@ -294,16 +294,14 @@
 │   ├── strategy_b.py           方案 B：分层风险平价（60d/120d）+ 月度调仓
 │   ├── strategy_c.py           方案 C：动态补仓实验（负结果，保留备查）
 │   ├── grid_search_b.py        V3-B 参数网格搜索（36 组合）
-│   ├── grid_search_c.py        方案 C 参数网格搜索（12 组合）
 │   ├── stats.py                perf / yearly / 风险贡献 / regime / Bootstrap
 │   ├── reports.py              控制台 + JSON/CSV 持久化
 │   ├── excel_export.py         多 sheet Excel 导出（openpyxl）
 │   ├── markdown_report.py      Markdown 综合报告
 │   └── pipeline.py             6 步流水线编排
 │
-├── data/                       历史 CSV（27 个，含原始/合成/对照）
+├── data/                       历史 CSV（~35 个，含原始/合成/对照）
 ├── docs/                       GitHub Pages 站点（index.html + .nojekyll）
-├── results/                    早期回测中间结果（保留备查）
 └── output/                     当前回测产物（运行后自动生成）
     ├── nv_curves.csv           9 条净值曲线（宽表）
     ├── summary.json            核心指标汇总
@@ -421,6 +419,8 @@
 | 2026-05-26 | V3-B max_w 优化：网格搜索 0.10-0.20 发现原 0.25 从未绑定（实际权重≤20%）。0.18 四项指标全面改善（CAGR 8.19→8.48%, MDD -9.02→-8.19%, Sharpe 1.22→1.24, Calmar 0.91→1.04），压制10Y国债过度集中释放的2%分散到其他资产。保守增强保持0.25不变（压低会变激进）。 |
 | 2026-05-26 | HS300 抄底倍数优化：35%阈值下网格搜索 2.0-4.0x。3.5x以上收益消失/MDD恶化。2.5x最优（V3-B CAGR 8.11→8.19%, Sharpe 1.20→1.22），3.0x过度加杠杆。保守增强2.5x MDD改善（-3.81→-3.63%）。统一改为35%/2.5x。A股11次熊市回撤中位数=45%，35%阈值处于32-43%无差别区低位，阈值不变。 |
 | 2026-05-26 | **回测延长至2008**：通过 akshare 多数据源拼接，回测期从 2015-2025（11年）扩展到 2008-2025（~18年）。新增数据源：CSI 300/红利/企债指数（Sina）、国债总指数（CBond）、伦敦金 XAU（foreign_fut）、沪铜 CU0（sina_fut）、S&P500 .INX（index_us_stock_sina）、USDCNY（currency_boc_sina）。数据拼接：权益=指数+ETF、黄金=伦敦金×CNY+ETF、S&P500=.INX×CNY+ETF、10Y国债=国债总指数+ETF、nonferr=沪铜+申万有色指数+ETF、soymeal=DCE M0+ETF。2008 GFC 对各策略冲击明显：V3-B CAGR 9.62→8.11%（-1.51%），MDD -4.14→-8.92%（翻倍），Sharpe 1.80→1.20。保守增强在2008年表现最佳（+13.27% vs V3-B +7.49%）。2009年反弹中 V3-B 领跑（+23.50%）。 |
+| 2026-05-26 | **Git Flow 分支规范落地**：采用标准 4 分支模型（main/develop/feature/hotfix），main 和 develop 设置 GitHub 分支保护（PR 门禁 + CI 回测门禁），禁止直接 push。历史里程碑打 Tag（v1.0-gold-dip ~ v4.0-hs300-3x）。规范文档写入 CLAUDE.md + README.md。 |
+| 2026-05-26 | **代码清理**：删除 `results/`（19个旧CSV，V3之前探索产出）、`strategy_c.py` + `grid_search_c.py`（方案C失败实验，结论已保留）、`diagnose_drag.py`（一次性诊断脚本）。risk.py 4 个闲置函数保留作为参考库。删除 3 个陈旧分支（worktree/sako-branch/feature/hs300-dip-3x）。 |
 
 ---
 
