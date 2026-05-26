@@ -60,6 +60,15 @@ def step_2_run_backtests(rets):
             nv_results[(window_label, tier_label)] = nv
             n_rebal_total += n
 
+    # --- 方案 B 增强: risk_parity 桶 + nonferr 趋势过滤 ---
+    for tier_label, c in CASH_TIERS:
+        nv, n = backtest_b(rets, cash_ratio=c, rp_window=60,
+                            bucket_method="risk_parity", max_w=0.30,
+                            nonferr_control="trend_filter",
+                            nonferr_trend_window=90)
+        nv_results[("V3-B 保守增强(60d)", tier_label)] = nv
+        n_rebal_total += n
+
     total = len(nv_results)
     print(f"  ok 完成 {total} 个回测")
     print(f"  ok 总调仓次数: {n_rebal_total}")
@@ -131,10 +140,18 @@ def step_4_bootstrap(weights, rets, nv_results=None):
     for (portfolio, tier), _nv in (nv_results or {}).items():
         if "V3-B" in portfolio and tier == "100% RP":
             boot_rets = rets
-            win = RISK_PARITY_WINDOW_LONG if "120" in portfolio else RISK_PARITY_WINDOW
+            if "保守增强" in portfolio:
+                win = 60
+                bucket_m = "risk_parity"
+                mw = 0.30
+            else:
+                win = RISK_PARITY_WINDOW_LONG if "120" in portfolio else RISK_PARITY_WINDOW
+                bucket_m = "equal"
+                mw = RISK_PARITY_MAX_WEIGHT
             proxy_w = hierarchical_rp_weights(
                 boot_rets.tail(win), rp_buckets_boot, win,
-                RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
+                mw, RISK_PARITY_MIN_WEIGHT,
+                bucket_method=bucket_m,
             )
             rets_for_p = rets[list(proxy_w.index)]
             boot[portfolio] = block_bootstrap(proxy_w, rets_for_p)

@@ -14,6 +14,7 @@ PORTFOLIO_TAGS = {
     "V3c 多元":            {"stars": "★★★", "label": "实战派 — 固定权重，11年回测最优"},
     "V3-B 风险平价(60d)":  {"stars": "★★★", "label": "学院派 — 分层风险平价，月度调仓（战术）"},
     "V3-B 风险平价(120d)": {"stars": "★★★", "label": "学院派 — 分层风险平价，长窗口（战略）"},
+    "V3-B 保守增强(60d)":  {"stars": "★★★", "label": "保守增强 — risk_parity桶 + nonferr趋势过滤，Sharpe最优"},
 }
 
 
