@@ -76,7 +76,16 @@
       "Bash(ls \".venv/Scripts/python.exe\")",
       "Bash(\".venv/Scripts/python\" -c \"import pandas; print\\('pandas ok'\\)\")",
       "Bash(python *)",
-      "Bash(/c/Users/MOSS/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/brainstorming/scripts/stop-server.sh *)"
+      "Bash(/c/Users/MOSS/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/brainstorming/scripts/stop-server.sh *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --env-filter ' *)",
+      "Bash(git stash *)",
+      "Bash(git checkout *)",
+      "Bash(git fetch *)",
+      "Bash(git branch *)",
+      "WebFetch(domain:cloud.tencent.com)",
+      "Bash(curl -sL --max-time 15 \"https://cloud.tencent.com/developer/article/2589917\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
+      "Bash(gh repo *)",
+      "Bash(git tag *)"
     ]
   }
 }

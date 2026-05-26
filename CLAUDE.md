@@ -2,6 +2,52 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git commit rules
+
+- Commit message 中禁止包含任何 Co-Authored-By 署名（包括但不限于 Claude、Anthropic、noreply@anthropic.com 等任何 AI 相关署名）
+- 所有提交仅保留用户本人的 git author 信息
+- 创建 PR 时同样不添加任何 AI 合作者信息
+
+## Git branch rules（Git Flow）
+
+项目采用精简 Git Flow 分支策略，所有协作者必须遵守：
+
+### 分支职责
+
+| 分支 | 用途 | 规则 |
+|------|------|------|
+| `main` | 生产就绪代码 | **禁止直接 push**，只通过 PR 从 develop 合入；每次合入打 Tag 做版本 |
+| `develop` | 集成测试 | **禁止直接 push**，只通过 PR 从 feature/hotfix 合入 |
+| `feature/xxx` | 新功能/策略优化 | 从 develop 拉，完成后提 PR 回合 develop，**回测必须通过才能合并** |
+| `hotfix/xxx` | 紧急修复 | 从 main 拉，修复后提 PR 同时合入 main（打 Tag）和 develop |
+
+### 工作流
+
+```
+日常开发：
+  develop → feature/xxx → 开发+回测 → PR → develop → PR → main（打 Tag 发版）
+
+紧急修复：
+  main → hotfix/xxx → 修复+回测 → PR → main（打 Tag）+ develop（同步修复）
+```
+
+### 提交规范
+
+- 遵循 Conventional Commits：`feat:` / `fix:` / `docs:` / `refactor:`
+- 每个 commit 做一件事，commit message 说明动机而非罗列文件
+- 大改动先开 feature 分支，**严禁直接在 main 上堆积 WIP**
+
+### Tag 版本管理
+
+- 每次 main 合入必须打 Tag，命名：`v<major>.<minor>-<slug>`（如 `v3.0-hs300-3x`）
+- Tag message 写清楚里程碑变更和关键指标
+- `git tag -l -n` 可快速查看版本历史
+
+### 回测门禁
+
+- feature 分支合并前必须跑通 `python main.py`，Sharpe/MDD 不劣化
+- CI（`.github/workflows/backtest.yml`）在 PR 上自动验证
+
 ## Project identity
 
 Bridgewater All Weather portfolio localized to China A-share ETFs. Pure research/backtesting — not a library, not a web app. The goal: weight schemes that ordinary investors can copy-paste.
@@ -52,9 +98,9 @@ allweather/
 
 ### 3 strategies (2026-05-26)
 
-- **V3c 多元** ★★★: Fixed weights (defined in `portfolios.py::WEIGHTS`). Monthly rebalancing + nonferr trend filter 60d. "实战派" — simple to execute, CAGR 7.76%, MDD -4.68%.
-- **V3-B 风险平价(20d)** ★★★: 5-bucket hierarchical RP (10Y/30Y split) monthly rebalance, 20d lookback + nonferr trend filter 75d + gold dip-buying (15% DD threshold, 2.0x boost) + hs300 dip-buying (35% DD threshold, 3.0x boost). "学院派" — best CAGR (9.62%), best cumulative return, MDD -4.14%, Sharpe 1.80.
-- **V3-B 保守增强(20d)** ★★★: Inverse vol weighting (no bucket hierarchy) + nonferr trend filter 75d SMA + gold/hs300 dip-buying, 20d window, max_w=0.25. "保守派" — lowest MDD (-3.57%), highest Sharpe (2.04).
+- **V3c 多元** ★★★: Fixed weights (defined in `portfolios.py::WEIGHTS`). Monthly rebalancing + nonferr trend filter 60d. "实战派" — simple to execute, CAGR 6.64%, MDD -6.90%.
+- **V3-B 风险平价(20d)** ★★★: 5-bucket hierarchical RP (10Y/30Y split) monthly rebalance, 20d lookback + nonferr trend filter 75d + gold dip-buying (15% DD threshold, 2.0x boost) + hs300 dip-buying (35% DD threshold, 2.5x boost). "学院派" — best CAGR (8.48%), best cumulative return, MDD -8.19%, Sharpe 1.24.
+- **V3-B 保守增强(20d)** ★★★: Inverse vol weighting (no bucket hierarchy) + nonferr trend filter 75d SMA + gold/hs300 dip-buying, 20d window, max_w=0.25. "保守派" — lowest MDD (-3.63%), highest Sharpe (1.52).
 
 ### Fixed-weight vs dynamic rebalancing
 
@@ -70,7 +116,7 @@ Every strategy × 3 cash levels: 100% RP (0% cash), 85% RP (15% cash), 70% RP (3
 ### 30Y bond synthesis (`data.py::synthesize_bond_30y`)
 
 ETF 511130 launched 2024-03. Three-stage synthesis:
-1. 2015-01 ~ 2020-02: 10Y returns × 3.0 duration multiplier (deduct 0.3%/yr)
+1. 2008-01 ~ 2020-02: 10Y returns × 3.0 duration multiplier (deduct 0.3%/yr)
 2. 2020-02 ~ 2024-03: yield curve spread method (10Y-30Y spread × duration 18.0)
 3. 2024-03 ~ now: real ETF NAV
 
@@ -98,18 +144,18 @@ Defined in `config.py::BUCKET_GROUPS`. 10Y/30Y split is the key improvement over
 
 | Constant | Value | Purpose |
 |---|---|---|
-| `BACKTEST_START/END` | 2015-01-01 / 2025-12-31 | ~11 year window |
+| `BACKTEST_START/END` | 2008-01-01 / 2025-12-31 | ~18 year window |
 | `REBAL_FREQ` | "ME" | Monthly rebalance (V3c) |
 | `REBAL_THRESHOLD` | 0.03 | 3% deviation trigger |
 | `RISK_FREE_ANNUAL` | 0.022 | Sharpe correction |
 | `RISK_PARITY_WINDOW` | 20 | V3-B 20d lookback (trading days) |
-| `RISK_PARITY_MAX_WEIGHT` | 0.25 | Single asset cap in V3-B |
+| `RISK_PARITY_MAX_WEIGHT` | 0.18 | Single asset cap in V3-B (grid-search optimal, prevents 10Y bond over-concentration) |
 | `RISK_PARITY_MIN_WEIGHT` | 0.02 | Single asset floor in V3-B |
 | `BOND_30Y_AMP` | 3.0 | Fallback duration multiplier |
 | `GOLD_DIP_THRESHOLD` | 0.15 | Gold dip-buy trigger (15% DD from peak) |
 | `GOLD_DIP_BOOST` | 2.0 | Gold weight boost multiplier when triggered |
 | `HS300_DIP_THRESHOLD` | 0.35 | hs300 dip-buy trigger (35% DD, catastrophic only) |
-| `HS300_DIP_BOOST` | 3.0 | hs300 weight boost multiplier when triggered (3x) |
+| `HS300_DIP_BOOST` | 2.5 | hs300 weight boost multiplier when triggered (2.5x, grid-search optimal) |
 | `BOOTSTRAP_N_SIM` | 1000 | Monte Carlo iterations |
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5-year horizon |
 | `BOOTSTRAP_BLOCK_DAYS` | 21 | ~1 month blocks |
