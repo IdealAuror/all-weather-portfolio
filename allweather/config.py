@@ -114,4 +114,4 @@ RISK_PARITY_MIN_WEIGHT = 0.02    # 单资产权重下限
 GOLD_DIP_THRESHOLD = 0.15        # 黄金从高点回撤超过此阈值触发抄底
 GOLD_DIP_BOOST = 2.0             # 触发后黄金权重翻倍倍数（2.0 = 翻倍）
 HS300_DIP_THRESHOLD = 0.35       # 沪深300从高点回撤超过此阈值触发抄底（仅史诗级股灾）
-HS300_DIP_BOOST = 2.0            # 触发后沪深300权重翻倍倍数
+HS300_DIP_BOOST = 3.0            # 触发后沪深300权重翻倍倍数（3x，仅史诗级股灾触发）
