@@ -164,7 +164,7 @@ def _sheet_perf(wb, perf_results):
 def _sheet_yearly(wb, yearly_results, years=None):
     ws = wb.create_sheet("分年化收益")
     if years is None:
-        years = [2020, 2021, 2022, 2023, 2024, 2025]
+        years = list(range(2008, 2026))
     _write_title(ws, 1, f"分年化收益（100% RP 档）", len(years) + 1)
     _write_headers(ws, 3, ["方案"] + [str(y) for y in years])
     for i, (port, s) in enumerate(yearly_results.items(), start=4):

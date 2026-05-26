@@ -9,7 +9,7 @@ from .config import DATA_DIR
 RETRY_TIMES = 3
 RETRY_DELAY = 5  # 秒
 
-DEFAULT_START = "20150101"
+DEFAULT_START = "20080101"
 DEFAULT_END   = "20251231"
 
 # 资产清单：name -> (kind, symbol)
@@ -21,6 +21,7 @@ TARGETS = {
     "cb_10y_idx": ("idx_em", "sh000139"),  # 上证 10 年国债
     # ETF 净值（避开折溢价）
     "bond_30y_etf": ("etf_nav", "511130"),
+    "bond_10y_etf": ("etf_nav", "511260"),
     "bond_credit":  ("etf_nav", "511220"),
     "gold":         ("etf_nav", "518880"),
     "nonferr":      ("etf_nav", "159980"),
@@ -32,6 +33,15 @@ TARGETS = {
     # 缝合用替代数据
     "nonferr_idx":  ("idx", "sh000823"),   # 中证有色金属指数
     "soymeal_fut":  ("fut_dce", "M0"),     # 豆粕期货主力连续（DCE）
+    # 2008+ 延长回测数据源
+    "hs300_idx":    ("idx", "sh000300"),   # CSI 300 指数 (2008+)
+    "div_idx_src":  ("idx", "sh000922"),   # 中证红利指数 (2008+)
+    "credit_idx":   ("idx", "sh000013"),   # 上证企债指数 (2008+)
+    "treasury_idx": ("treasury", None),    # 国债总指数 (2008+)
+    "london_gold":  ("foreign_fut", "XAU"),  # 伦敦金 USD/oz (2006+)
+    "shfe_copper":  ("sina_fut", "CU0"),   # 沪铜连续 (2005+)
+    "usdcny":       ("fx_boc", "USDCNY"),  # 美元人民币汇率 (2008+)
+    "sp500_idx":    ("sp500", None),       # S&P500 指数 USD (2008+)
 }
 
 
@@ -111,6 +121,16 @@ def fetch_one(name, kind, sym, start=DEFAULT_START, end=DEFAULT_END):
                 df = _fetch_etf_nav(sym, start, end)
                 if df.empty:
                     df = _fetch_etf_hist(sym, start, end)
+            elif kind == "treasury":
+                df = _fetch_treasury_idx(start, end)
+            elif kind == "foreign_fut":
+                df = _fetch_foreign_fut(sym, start, end)
+            elif kind == "sina_fut":
+                df = _fetch_sina_fut(sym, start, end)
+            elif kind == "fx_boc":
+                df = _fetch_fx_boc(start, end)
+            elif kind == "sp500":
+                df = _fetch_sp500_idx(start, end)
             else:
                 raise ValueError(f"unknown kind: {kind}")
             df = df[(df["date"] >= pd.to_datetime(start)) & (df["date"] <= pd.to_datetime(end))]
@@ -123,6 +143,58 @@ def fetch_one(name, kind, sym, start=DEFAULT_START, end=DEFAULT_END):
                 print(f"    重试 {attempt}/{RETRY_TIMES - 1}，等待 {RETRY_DELAY}s... ({e})", flush=True)
                 time.sleep(RETRY_DELAY)
     raise last_err
+
+
+def _fetch_treasury_idx(start, end):
+    """国债总指数 (bond_treasury_index_cbond)，2008+。"""
+    import akshare as ak
+    df = ak.bond_treasury_index_cbond()
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.rename(columns={"value": "close"})
+    df = df[(df["date"] >= pd.to_datetime(start)) & (df["date"] <= pd.to_datetime(end))]
+    return df[["date", "close"]].sort_values("date")
+
+
+def _fetch_foreign_fut(sym, start, end):
+    """国际期货历史数据 (futures_foreign_hist)，例如 XAU 伦敦金。"""
+    import akshare as ak
+    df = ak.futures_foreign_hist(symbol=sym)
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.rename(columns={"close": "close"})
+    df = df[(df["date"] >= pd.to_datetime(start)) & (df["date"] <= pd.to_datetime(end))]
+    return df[["date", "close"]].sort_values("date")
+
+
+def _fetch_sina_fut(sym, start, end):
+    """新浪期货主力连续 (futures_main_sina)，如 CU0 沪铜。"""
+    import akshare as ak
+    df = ak.futures_main_sina(symbol=sym)
+    df = df.rename(columns={"日期": "date", "收盘价": "close"})
+    df["date"] = pd.to_datetime(df["date"])
+    df["close"] = pd.to_numeric(df["close"], errors="coerce")
+    df = df.dropna(subset=["date", "close"])
+    df = df[(df["date"] >= pd.to_datetime(start)) & (df["date"] <= pd.to_datetime(end))]
+    return df[["date", "close"]].sort_values("date")
+
+
+def _fetch_fx_boc(start, end):
+    """美元人民币汇率 (currency_boc_sina)，取央行中间价。"""
+    import akshare as ak
+    df = ak.currency_boc_sina(symbol="美元", start_date=start, end_date=end)
+    df = df.rename(columns={"日期": "date", "央行中间价": "close"})
+    df["date"] = pd.to_datetime(df["date"])
+    df["close"] = pd.to_numeric(df["close"], errors="coerce") / 100.0  # 分→元
+    df = df.dropna(subset=["date", "close"])
+    return df[["date", "close"]].sort_values("date")
+
+
+def _fetch_sp500_idx(start, end):
+    """S&P500 指数 USD (index_us_stock_sina .INX)。"""
+    import akshare as ak
+    df = ak.index_us_stock_sina(symbol=".INX")
+    df["date"] = pd.to_datetime(df["date"])
+    df = df[(df["date"] >= pd.to_datetime(start)) & (df["date"] <= pd.to_datetime(end))]
+    return df[["date", "close"]].sort_values("date")
 
 
 def fetch_cgb_yields():
