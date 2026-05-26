@@ -8,6 +8,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 所有提交仅保留用户本人的 git author 信息
 - 创建 PR 时同样不添加任何 AI 合作者信息
 
+## Git branch rules（Git Flow）
+
+项目采用精简 Git Flow 分支策略，所有协作者必须遵守：
+
+### 分支职责
+
+| 分支 | 用途 | 规则 |
+|------|------|------|
+| `main` | 生产就绪代码 | **禁止直接 push**，只通过 PR 从 develop 合入；每次合入打 Tag 做版本 |
+| `develop` | 集成测试 | **禁止直接 push**，只通过 PR 从 feature/hotfix 合入 |
+| `feature/xxx` | 新功能/策略优化 | 从 develop 拉，完成后提 PR 回合 develop，**回测必须通过才能合并** |
+| `hotfix/xxx` | 紧急修复 | 从 main 拉，修复后提 PR 同时合入 main（打 Tag）和 develop |
+
+### 工作流
+
+```
+日常开发：
+  develop → feature/xxx → 开发+回测 → PR → develop → PR → main（打 Tag 发版）
+
+紧急修复：
+  main → hotfix/xxx → 修复+回测 → PR → main（打 Tag）+ develop（同步修复）
+```
+
+### 提交规范
+
+- 遵循 Conventional Commits：`feat:` / `fix:` / `docs:` / `refactor:`
+- 每个 commit 做一件事，commit message 说明动机而非罗列文件
+- 大改动先开 feature 分支，**严禁直接在 main 上堆积 WIP**
+
+### Tag 版本管理
+
+- 每次 main 合入必须打 Tag，命名：`v<major>.<minor>-<slug>`（如 `v3.0-hs300-3x`）
+- Tag message 写清楚里程碑变更和关键指标
+- `git tag -l -n` 可快速查看版本历史
+
+### 回测门禁
+
+- feature 分支合并前必须跑通 `python main.py`，Sharpe/MDD 不劣化
+- CI（`.github/workflows/backtest.yml`）在 PR 上自动验证
+
 ## Project identity
 
 Bridgewater All Weather portfolio localized to China A-share ETFs. Pure research/backtesting — not a library, not a web app. The goal: weight schemes that ordinary investors can copy-paste.

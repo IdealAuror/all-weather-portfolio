@@ -104,6 +104,17 @@ weights, nv = step_2_run_backtests(rets)
 # ...
 ```
 
+## 🌿 分支规范
+
+项目采用 Git Flow 分支策略：
+
+- `main` — 生产分支，打 Tag 发版，**禁止直接 push**
+- `develop` — 集成测试，feature/hotfix 合入后验证
+- `feature/xxx` — 新功能开发，从 develop 拉，**回测通过后**提 PR 回合
+- `hotfix/xxx` — 紧急修复，从 main 拉，修复合入 main+develop
+
+提交遵循 Conventional Commits（`feat:` / `fix:` / `docs:` / `refactor:`）。详见 [CLAUDE.md](CLAUDE.md)。
+
 ## 📊 文档
 
 详细策略论证、回测过程、风险提示、落地手册见：
