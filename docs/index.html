@@ -135,7 +135,14 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
     scrollbar-width: thin;
     scrollbar-color: #c0c0c0 #f0f0f0;
 }
-.tbl-scroll table { margin: 0; box-shadow: none; }
+.tbl-scroll table {
+    margin: 0;
+    box-shadow: none;
+    width: auto;
+    min-width: 100%;
+    white-space: nowrap;
+}
+.tbl-scroll th, .tbl-scroll td { white-space: nowrap; }
 .tbl-scroll .td-first {
     position: sticky;
     left: 0;
