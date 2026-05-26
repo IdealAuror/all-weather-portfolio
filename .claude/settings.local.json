@@ -85,7 +85,9 @@
       "WebFetch(domain:cloud.tencent.com)",
       "Bash(curl -sL --max-time 15 \"https://cloud.tencent.com/developer/article/2589917\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
       "Bash(gh repo *)",
-      "Bash(git tag *)"
+      "Bash(git tag *)",
+      "Bash(git rm *)",
+      "Bash(git worktree *)"
     ]
   }
 }
