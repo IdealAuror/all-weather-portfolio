@@ -1,0 +1,74 @@
+<h2>设计方案 — 第一节：代码变更</h2>
+<p class="subtitle">3 策略 × 3 现金档 = 9 回测（从 18 减半）</p>
+
+<div class="section">
+  <h3>删除的文件</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family: monospace; font-size: 14px; line-height: 2.2;">
+      <span style="color:#ef4444">✕</span> <b>allweather/strategy_a.py</b> — V3-A 移除后无调用方，整文件删除<br>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>修改的文件（核心变更）</h3>
+
+  <div class="mockup" style="margin-bottom: 12px;">
+    <div class="mockup-header">allweather/portfolios.py</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> 删除 WEIGHTS["V3b 平衡"]、["V3d 商品偏重"]、["V3-A 保守"]<br>
+      <span style="color:#ef4444">−</span> 删除 PORTFOLIO_TAGS 中对应条目<br>
+      <span style="color:#ef4444">−</span> 删除 ASSETS_PLAN_A 导入<br>
+      <span style="color:#ef4444">−</span> 删除 get_weights() 中 V3-A 特判逻辑<br>
+      <span style="color:#22c55e">+</span> PORTFOLIO_TAGS 只保留 3 个条目，均为 ★★★<br>
+    </div>
+  </div>
+
+  <div class="mockup" style="margin-bottom: 12px;">
+    <div class="mockup-header">allweather/pipeline.py</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> step_2: 删除 V3-A backtest_a 调用块<br>
+      <span style="color:#ef4444">−</span> step_2: 不再需要 skip V3-A 的判断<br>
+      <span style="color:#ef4444">−</span> step_4: 删除 V3-A 相关逻辑<br>
+      <span style="color:#ef4444">−</span> 删除 strategy_a 导入<br>
+      <span style="color:#22c55e">+</span> 简化循环逻辑，只处理 V3c + V3-B 60d/120d<br>
+    </div>
+  </div>
+
+  <div class="mockup" style="margin-bottom: 12px;">
+    <div class="mockup-header">allweather/config.py</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> 删除 ASSETS_PLAN_A（仅 V3-A 使用）<br>
+      <span style="color:#ef4444">−</span> 删除 short_bond 的 ETF_META 条目<br>
+      <span style="color:#ef4444">−</span> BUCKETS/BUCKET_GROUPS 移除 short_bond<br>
+      <span style="color:#22c55e">+</span> 保留 RISK_PARITY_WINDOW / RISK_PARITY_WINDOW_LONG（V3-B 仍用）<br>
+    </div>
+  </div>
+
+  <div class="mockup" style="margin-bottom: 12px;">
+    <div class="mockup-header">allweather/strategy_b.py</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> 移除 SHORT_BOND_FIXED 及所有 short_bond 处理<br>
+      <span style="color:#ef4444">−</span> _compute_weights 简化：不再需要 has_short_bond 参数<br>
+      <span style="color:#ef4444">−</span> backtest_b 简化：不再检查 "short_bond" in cols<br>
+      <span style="color:#22c55e">+</span> 纯 9 资产分层风险平价，更干净<br>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">allweather/data.py</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> load_panel_extended() 重命名回 load_panel()<br>
+      <span style="color:#ef4444">−</span> 移除 short_bond 列（不再需要）<br>
+      <span style="color:#888">  pipeline.py step_1 同步改调用</span><br>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>不变的文件</h3>
+  <p style="color:#888">
+    backtest.py · stats.py · reports.py · risk.py · excel_export.py · markdown_report.py（逻辑不变，只更新推荐文案）<br>
+    fetch.py · main.py（入口不变）
+  </p>
+</div>

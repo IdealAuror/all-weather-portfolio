@@ -51,14 +51,12 @@ def step_2_run_backtests(rets):
             n_rebal_total += n
 
 
-    # --- 方案 B: 分层风险平价（60d/120d 两窗口）---
+    # --- 方案 B: 分层风险平价（60d）---
     from .strategy_b import backtest_b
     for tier_label, c in CASH_TIERS:
-        for rp_window in [60, 120]:
-            window_label = f"V3-B 风险平价({rp_window}d)"
-            nv, n = backtest_b(rets, cash_ratio=c, rp_window=rp_window)
-            nv_results[(window_label, tier_label)] = nv
-            n_rebal_total += n
+        nv, n = backtest_b(rets, cash_ratio=c, rp_window=60)
+        nv_results[("V3-B 风险平价(60d)", tier_label)] = nv
+        n_rebal_total += n
 
     # --- 方案 B 增强: risk_parity 桶 + nonferr 趋势过滤 ---
     for tier_label, c in CASH_TIERS:
@@ -133,21 +131,15 @@ def step_4_bootstrap(weights, rets, nv_results=None):
 
     # V3-B: 用最近窗口的分层风险平价权重作代理
     from .risk import hierarchical_rp_weights
-    from .config import (
-        BUCKET_GROUPS as BOOT_BG, RISK_PARITY_WINDOW_LONG,
-    )
+    from .config import BUCKET_GROUPS as BOOT_BG
     rp_buckets_boot = {k: list(v) for k, v in BOOT_BG.items()}
     for (portfolio, tier), _nv in (nv_results or {}).items():
         if "V3-B" in portfolio and tier == "100% RP":
             boot_rets = rets
             if "保守增强" in portfolio:
-                win = 60
-                bucket_m = "risk_parity"
-                mw = 0.30
+                win, bucket_m, mw = 60, "risk_parity", 0.30
             else:
-                win = RISK_PARITY_WINDOW_LONG if "120" in portfolio else RISK_PARITY_WINDOW
-                bucket_m = "equal"
-                mw = RISK_PARITY_MAX_WEIGHT
+                win, bucket_m, mw = RISK_PARITY_WINDOW, "equal", RISK_PARITY_MAX_WEIGHT
             proxy_w = hierarchical_rp_weights(
                 boot_rets.tail(win), rp_buckets_boot, win,
                 mw, RISK_PARITY_MIN_WEIGHT,

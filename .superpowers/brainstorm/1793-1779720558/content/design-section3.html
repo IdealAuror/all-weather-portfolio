@@ -1,0 +1,64 @@
+<h2>设计方案 — 第三节：文档 & 报告变更</h2>
+<p class="subtitle">同步精简所有对外文档和报告输出</p>
+
+<div class="section">
+  <h3>README.md 变更</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> 删除"固定权重（V3b/V3c/V3d）"子表 → 合并为单表 3 策略<br>
+      <span style="color:#ef4444">−</span> 删除"动态风险平价（V3-A/V3-B）"子表<br>
+      <span style="color:#22c55e">+</span> 新表：3 策略速查，两列定位（实战派 / 学院派）<br>
+      <span style="color:#22c55e">+</span> 更新数据：18→9 条净值曲线，6→3 策略权重<br>
+      <span style="color:#22c55e">+</span> 增加一句话解释 V3c vs V3-B 的选择逻辑<br>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>docs/index.html 变更</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> 删除 V3b / V3d / V3-A 的策略详情卡片<br>
+      <span style="color:#ef4444">−</span> 删除对应的事件收益 / 蒙特卡洛 / 持仓行<br>
+      <span style="color:#22c55e">+</span> 对比表只保留 3 列：V3c | V3-B 60d | V3-B 120d<br>
+      <span style="color:#22c55e">+</span> 新增一小节"V3c vs V3-B：怎么选"<br>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>PROJECT_HISTORY.md 变更</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> 删除 4.2（V3b）、4.3（V3d）、4.5（V3-A）小节<br>
+      <span style="color:#ef4444">−</span> 4.6（V3-B）精简 short_bond 相关内容<br>
+      <span style="color:#22c55e">+</span> 新增 5.7 决策记录：奥卡姆剃刀精简（本文）<br>
+      <span style="color:#22c55e">+</span> 项目结构更新：删 strategy_a.py，pipeline 9 回测<br>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>markdown_report.py 变更</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.6;">
+      <span style="color:#ef4444">−</span> _section_recommendation() 简化 notes 字典<br>
+      <span style="color:#ef4444">−</span> _section_holdings() / _section_weights() 不再有 V3b/V3d/V3-A 列<br>
+      <span style="color:#22c55e">+</span> 推荐表改两行定位说明（实战派 / 学院派）<br>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>变更汇总</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.8;">
+      <b>删除文件：</b>strategy_a.py<br>
+      <b>修改代码：</b>portfolios.py · pipeline.py · config.py · strategy_b.py · data.py<br>
+      <b>修改文档：</b>README.md · PROJECT_HISTORY.md · docs/index.html · markdown_report.py<br>
+      <b>不变：</b>backtest.py · stats.py · reports.py · risk.py · excel_export.py · fetch.py · main.py<br>
+      <br>
+      <b>回测数：</b>18 → 9 &nbsp;|&nbsp; <b>策略数：</b>6 → 3 &nbsp;|&nbsp; <b>代码行数：</b>预计净删 ~300 行<br>
+    </div>
+  </div>
+</div>
