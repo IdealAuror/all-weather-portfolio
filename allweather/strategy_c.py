@@ -1,14 +1,17 @@
-"""方案 C：风险平价核心 + 动态现金补仓（70/30 分仓）。
+"""方案 C：风险平价核心 + 动态补仓储备（70/30 分仓）。
 
 核心 70% 跑 V3-B risk_parity 月度再平衡；
-现金 30% 在资产回撤超过阈值时补仓，盈利达标后卖回现金。
+储备 30% 超配信用债（城投债 ETF），资产回撤超阈值时赎回信用债补仓，
+盈利达标后卖回信用债。
 """
 import numpy as np
 import pandas as pd
 from .config import (
-    RISK_FREE_RATE, RISK_PARITY_MIN_WEIGHT, BUCKET_GROUPS,
+    RISK_PARITY_MIN_WEIGHT, BUCKET_GROUPS,
 )
 from .risk import hierarchical_rp_weights
+
+RESERVE_ASSET = "credit"  # 储备锚定资产：城投债 ETF
 
 
 def backtest_c(
@@ -21,13 +24,13 @@ def backtest_c(
     core_window: int = 90,
     core_max_w: float = 0.30,
 ) -> dict:
-    """动态现金补仓回测。
+    """动态补仓回测 — 储备超配信用债，赎回补仓，盈利后买回。
 
     Args:
         rets: 日收益率 DataFrame（9 资产）
         core_ratio: 核心仓位占比（默认 70%）
         trigger_threshold: 资产从峰值回撤触发补仓的阈值（如 -0.15 = -15%）
-        deploy_pct: 单次补仓占总资产比例
+        deploy_pct: 单次补仓金额（初始总资产占比）
         exit_threshold: 补仓盈利退出阈值（如 0.15 = +15%）
         cooldown_days: 同资产两次补仓最少间隔（交易日）
         core_window: 核心 RP 计算窗口
@@ -39,7 +42,6 @@ def backtest_c(
     """
     cols = list(rets.columns)
     rp_buckets = {k: list(v) for k, v in BUCKET_GROUPS.items()}
-    rf_daily = RISK_FREE_RATE
 
     # --- Prices for drawdown tracking ---
     prices = (1 + rets[cols]).cumprod()
@@ -56,8 +58,8 @@ def backtest_c(
     core_h = pd.Series(initial_w.values * core_ratio, index=cols)
     core_v = core_ratio
 
-    # --- Reserve state ---
-    cash = 1.0 - core_ratio
+    # --- Reserve: overweight credit bond, not idle cash ---
+    reserve_shares = (1.0 - core_ratio) / prices.iloc[0][RESERVE_ASSET]
 
     # --- Deployment tracking ---
     asset_peaks = prices.iloc[0].copy()
@@ -68,6 +70,9 @@ def backtest_c(
 
     # --- Final output ---
     total_nv = pd.Series(1.0, index=rets.index, dtype=float)
+
+    # Assets eligible for deployment (exclude the reserve asset itself)
+    deployable = [c for c in cols if c != RESERVE_ASSET]
 
     for i, d in enumerate(rets.index):
         if i == 0:
@@ -101,19 +106,21 @@ def backtest_c(
             )
             core_h = pd.Series(new_w.values * core_ratio, index=cols)
 
-        # --- Accrue interest on cash ---
-        cash *= 1 + rf_daily
+        # --- Reserve value (marked to credit bond price) ---
+        reserve_value = reserve_shares * day_prices[RESERVE_ASSET]
 
         # --- Check deployment triggers ---
-        for asset in cols:
+        for asset in deployable:
             peak = asset_peaks[asset]
             curr = day_prices[asset]
             if peak <= 0:
                 continue
             dd = (curr / peak) - 1
-            if dd <= trigger_threshold and cash >= deploy_pct:
+            if dd <= trigger_threshold and reserve_value >= deploy_pct:
                 if i - last_deploy[asset] >= cooldown_days:
-                    cash -= deploy_pct
+                    # Sell credit shares → buy distressed asset
+                    credit_shares_to_sell = deploy_pct / day_prices[RESERVE_ASSET]
+                    reserve_shares -= credit_shares_to_sell
                     active_deps.append({
                         "asset": asset,
                         "entry_day": i,
@@ -128,15 +135,18 @@ def backtest_c(
         for dep in active_deps:
             curr = day_prices[dep["asset"]]
             if (curr / dep["entry_price"] - 1) >= exit_threshold:
-                cash += dep["shares"] * curr
+                # Sell asset → buy back credit shares
+                exit_value = dep["shares"] * curr
+                reserve_shares += exit_value / day_prices[RESERVE_ASSET]
                 n_exit += 1
             else:
                 remaining.append(dep)
         active_deps = remaining
 
-        # --- Total NV = core + cash + active deployments ---
+        # --- Total NV = core + reserve + active deployments ---
         dep_value = sum(d["shares"] * day_prices[d["asset"]] for d in active_deps)
-        total_nv.loc[d] = core_v + cash + dep_value
+        reserve_value = reserve_shares * day_prices[RESERVE_ASSET]
+        total_nv.loc[d] = core_v + reserve_value + dep_value
 
     return {
         "nv": total_nv,
