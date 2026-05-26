@@ -5,6 +5,7 @@ from .config import (
     RISK_FREE_RATE, RISK_PARITY_WINDOW,
     RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT, BUCKET_GROUPS,
     GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
+    HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
 )
 from .risk import hierarchical_rp_weights, inverse_vol_weights
 
@@ -38,8 +39,10 @@ def backtest_b(
     weighting_method: str = "hierarchical_rp",
     gold_dip_threshold: float | None = GOLD_DIP_THRESHOLD,
     gold_dip_boost: float = GOLD_DIP_BOOST,
+    hs300_dip_threshold: float | None = HS300_DIP_THRESHOLD,
+    hs300_dip_boost: float = HS300_DIP_BOOST,
 ) -> tuple:
-    """Plan B backtest — 分层风险平价 / 逆波动率 + 可选 nonferr 风控 + gold 抄底。
+    """Plan B backtest — 分层风险平价 / 逆波动率 + 可选 nonferr 风控 + gold 抄底 + hs300 抄底。
 
     Args:
         weighting_method: "hierarchical_rp" (default) or "inverse_vol"
@@ -48,6 +51,8 @@ def backtest_b(
         nonferr_trend_window: trend_filter 模式的 SMA 窗口（交易日）
         gold_dip_threshold: 黄金回撤阈值（None=禁用抄底）
         gold_dip_boost: 触发后黄金权重增幅倍数（1.5=增加50%）
+        hs300_dip_threshold: 沪深300回撤阈值（None=禁用，默认35%仅史诗级股灾触发）
+        hs300_dip_boost: 触发后沪深300权重增幅倍数
 
     Returns:
         nv (pd.Series), n_rebal (int)
@@ -82,6 +87,13 @@ def backtest_b(
             prices = (1 + rets_rp).cumprod()
         gold_peak = prices.iloc[0]["gold"]
 
+    # --- hs300 dip-buying state ---
+    hs300_peak = 1.0
+    if hs300_dip_threshold is not None and "hs300" in cols:
+        if prices is None:
+            prices = (1 + rets_rp).cumprod()
+        hs300_peak = prices.iloc[0]["hs300"]
+
     for i, d in enumerate(rets.index):
         if i == 0:
             nv.loc[d] = 1.0
@@ -107,6 +119,12 @@ def backtest_b(
             curr_au = prices.iloc[i]["gold"]
             if curr_au > gold_peak:
                 gold_peak = curr_au
+
+        # --- Update hs300 peak ---
+        if hs300_dip_threshold is not None and prices is not None:
+            curr_hs = prices.iloc[i]["hs300"]
+            if curr_hs > hs300_peak:
+                hs300_peak = curr_hs
 
         # Monthly rebalance
         if d.month != rets.index[i - 1].month and i > rp_window:
@@ -141,6 +159,16 @@ def backtest_b(
                     boost = orig_gold * gold_dip_boost
                     if w.get("credit", 0) >= boost:
                         w["gold"] = orig_gold + boost
+                        w["credit"] = w["credit"] - boost
+
+            # --- hs300 dip-buying: 史诗级股灾(35%)才触发，从 credit 提取 ---
+            if hs300_dip_threshold is not None and prices is not None and w.get("hs300", 0) > 0:
+                hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
+                if hs300_dd <= -hs300_dip_threshold:
+                    orig_hs = w["hs300"]
+                    boost = orig_hs * hs300_dip_boost
+                    if w.get("credit", 0) >= boost:
+                        w["hs300"] = orig_hs + boost
                         w["credit"] = w["credit"] - boost
 
             h = w

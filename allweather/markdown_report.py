@@ -56,8 +56,8 @@ def _section_recommendation():
     items = sorted(PORTFOLIO_TAGS.items(), key=lambda kv: -len(kv[1]["stars"]))
     notes = {
         "V3c 多元": "实战派 — 固定权重月度再平衡 + nonferr 趋势过滤（7.76%）",
-        "V3-B 风险平价(20d)": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold抄底，CAGR 8.47%",
-        "V3-B 保守增强(20d)": "保守增强 — 逆波动率+nonferr趋势过滤+Gold抄底，Sharpe 最高（1.99）",
+        "V3-B 风险平价(20d)": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold/HS300抄底，CAGR 9.24%",
+        "V3-B 保守增强(20d)": "保守增强 — 逆波动率+nonferr趋势过滤+Gold/HS300抄底，Sharpe 最高（2.05）",
     }
     rows = [(tag["stars"], port, tag["label"], notes.get(port, ""))
             for port, tag in items]
