@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>桥水全天候策略 · 中国版实践</title>
-<meta name="description" content="基于真实 A 股 / 债 / 商品 ETF 数据的风险平价（Risk Parity）回测工程，含 V3c / V3-B 三套推荐方案。">
+<meta name="description" content="基于真实 A 股 / 债 / 商品 ETF 数据的风险平价（Risk Parity）回测工程，含 V3c / V3-B 风险平价 / V3-B 保守增强三套推荐方案。">
 <style>
 * { box-sizing: border-box; }
 body {
@@ -152,10 +152,10 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </head>
 <body>
 
-<div class="toc"><h3>📑 目录</h3><ol><li><a href="#ch0">一、桥水全天候策略核心逻辑</a></li><li><a href="#ch1">二、美版蓝本：RPAR / ALLW / All Seasons</a></li><li><a href="#ch2">三、中国版风险平价策略 - V3c / V3-B</a></li><li><a href="#ch3">四、三方案对比一表看清</a></li><li><a href="#ch4">五、调仓规则：半年节点 + 3% 偏离双触发</a></li><li><a href="#ch5">六、风险提示</a></li><li><a href="#ch6">七、落地执行手册：从今天开始做什么</a></li><li><a href="#ch7">八、本方案 vs 网上常见中国版的差异</a></li><li><a href="#ch8">九、附录：ETF 速查表</a></li><li><a href="#ch9">十、参考资料</a></li></ol></div>
+<div class="toc"><h3>📑 目录</h3><ol><li><a href="#ch0">一、桥水全天候策略核心逻辑</a></li><li><a href="#ch1">二、美版蓝本：RPAR / ALLW / All Seasons</a></li><li><a href="#ch2">三、中国版风险平价策略 — V3c / V3-B 风险平价 / V3-B 保守增强</a></li><li><a href="#ch3">四、三方案对比一表看清</a></li><li><a href="#ch4">五、调仓规则：月度再平衡 + nonferr 趋势过滤</a></li><li><a href="#ch5">六、风险提示</a></li><li><a href="#ch6">七、落地执行手册：从今天开始做什么</a></li><li><a href="#ch7">八、本方案 vs 网上常见中国版的差异</a></li><li><a href="#ch8">九、附录：ETF 速查表</a></li><li><a href="#ch9">十、参考资料</a></li></ol></div>
 <h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
 <p class="doc-subtitle">基于风险平价（Risk Parity）的 A 股投资者落地方案</p>
-<p class="doc-meta">回测期: 2015-01 ~ 2025-12  |  调仓规则: 半年节点 + 3% 偏离双触发  |  本金示例: 100 万</p>
+<p class="doc-meta">回测期: 2015-01 ~ 2025-12  |  调仓规则: 月度调仓 + nonferr 趋势过滤  |  本金示例: 100 万</p>
 <h2 class="ch-h1" id="ch0">一、桥水全天候策略核心逻辑</h2>
 <p class="para">桥水基金（Bridgewater）的全天候策略（All Weather Strategy）是投资界最著名的风险平价（Risk Parity）实践。它的核心逻辑非常纯粹：既然我们无法准确预测未来，那就构建一个在任何宏观环境下都不会重伤的组合，让时间和复利做朋友。</p>
 <h3 class="sec-h3">（一）四象限框架：把宏观风险拆开看</h3>
@@ -237,10 +237,10 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tbody></table>
 <p class="para">All Seasons 是 Robbins 在《Money: Master the Game》里向 Dalio 求来的简化版，适合零售但忽略了风险贡献的动态变化。RPAR/ALLW 才是真正的风险平价 ETF。中国版借鉴 RPAR 的桶结构，但权重用样本协方差 + 长期波动率假设求解，避开窗口偏差。</p>
 <h2 class="ch-h1" id="ch2">三、中国版风险平价策略</h2>
-<p class="para">V3c 是固定权重方案（9 资产 × 4 桶），基于 11 年回测优化。另外提供 <strong>V3-B 分层风险平价</strong>（60d/120d 双窗口，月度调仓）——路线不同但同为 ★★★ 推荐。</p>
-<p class="para"><strong>V3c vs V3-B 怎么选？</strong> V3c 是实战答案（Sharpe 1.26 最高，简单省心）；V3-B 是方法论正统（分层风险平价，桥水真经）。选哪个取决于你更信回测还是更信哲学。详见 <a href="https://github.com/IdealAuror/all-weather-portfolio/blob/main/README.md">README 速查表</a>。</p>
+<p class="para">三套策略，三条路线，均为 ★★★ 推荐。V3c 是固定权重方案（9 资产 × 5 桶，月度调仓 + nonferr 趋势过滤）；<strong>V3-B 风险平价</strong> 是 5 桶分层风险平价（10Y/30Y 国债分拆）；<strong>V3-B 保守增强</strong> 是逆波动率 + 趋势过滤（Sharpe 最高）。</p>
+<p class="para"><strong>怎么选？</strong> V3-B（5桶RP）CAGR 最高 8.13%；V3c 固定权重最简单落地；保守增强 Sharpe 最高 1.98、回撤最浅。详见 <a href="https://github.com/IdealAuror/all-weather-portfolio/blob/main/README.md">README 速查表</a>。</p>
 <h2 class="plan-title plan-c">方案 1: V3c 多元型  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：海外权益加倍至 8%（A 股黑天鹅时国别分散），长债 55%，9 资产均衡。综合 Sharpe 1.26 最高、回撤 -6.71% 最浅、CAGR 7.45% 最高。</p>
+<p class="para-bold">特征：固定权重月度再平衡 + nonferr 趋势过滤(60d)。海外权益 8%（国别分散），长债 55%，9 资产均衡。CAGR 7.76%、回撤 -4.68%、Sharpe 1.44。</p>
 <p class="para">适合：大多数投资者。各项指标全面领先，默认推荐方案。</p>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
 <table class="data-tbl" style="--header-color: #C0392B;">
@@ -356,30 +356,30 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+114.83%</td>
-<td class="td-num">7.45%</td>
-<td class="td-num">4.16%</td>
-<td class="td-num">-6.71%</td>
-<td class="td-num">1.26</td>
-<td class="td-num">1.11</td>
+<td class="td-num">+121.37%</td>
+<td class="td-num">7.76%</td>
+<td class="td-num">3.86%</td>
+<td class="td-num">-4.68%</td>
+<td class="td-num">1.44</td>
+<td class="td-num">1.66</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+98.30%</td>
-<td class="td-num">6.65%</td>
-<td class="td-num">3.54%</td>
-<td class="td-num">-5.69%</td>
-<td class="td-num">1.26</td>
-<td class="td-num">1.17</td>
+<td class="td-num">+103.72%</td>
+<td class="td-num">6.92%</td>
+<td class="td-num">3.28%</td>
+<td class="td-num">-3.98%</td>
+<td class="td-num">1.44</td>
+<td class="td-num">1.74</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+83.32%</td>
-<td class="td-num">5.86%</td>
-<td class="td-num">2.92%</td>
-<td class="td-num">-4.68%</td>
-<td class="td-num">1.26</td>
-<td class="td-num">1.25</td>
+<td class="td-num">+87.42%</td>
+<td class="td-num">6.08%</td>
+<td class="td-num">2.70%</td>
+<td class="td-num">-3.27%</td>
+<td class="td-num">1.44</td>
+<td class="td-num">1.86</td>
 </tr>
 </tbody></table>
 <h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
@@ -400,67 +400,69 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">V3c 多元</td>
-<td class="td-num">+4.86%</td>
-<td class="td-num">+4.62%</td>
-<td class="td-num">+2.00%</td>
-<td class="td-num">+9.29%</td>
-<td class="td-num">+8.41%</td>
-<td class="td-num">+7.90%</td>
-<td class="td-num">+5.23%</td>
-<td class="td-num">+8.04%</td>
-<td class="td-num">+12.13%</td>
-<td class="td-num">+7.79%</td>
-</tr>
-<tr>
-<td class="td-first">V3-B (60d)</td>
-<td class="td-num">+6.82%</td>
-<td class="td-num">+6.39%</td>
-<td class="td-num">-0.34%</td>
-<td class="td-num">+12.01%</td>
-<td class="td-num">+7.90%</td>
-<td class="td-num">+7.80%</td>
-<td class="td-num">+3.92%</td>
-<td class="td-num">+6.20%</td>
-<td class="td-num">+10.16%</td>
-<td class="td-num">+8.76%</td>
-</tr>
-<tr>
-<td class="td-first">V3-B (120d)</td>
-<td class="td-num">+6.88%</td>
-<td class="td-num">+6.59%</td>
-<td class="td-num">-0.29%</td>
-<td class="td-num">+11.45%</td>
-<td class="td-num">+8.72%</td>
+<td class="td-num">+4.97%</td>
+<td class="td-num">+4.24%</td>
+<td class="td-num">+3.97%</td>
+<td class="td-num">+9.24%</td>
+<td class="td-num">+7.51%</td>
+<td class="td-num">+7.81%</td>
+<td class="td-num">+6.29%</td>
 <td class="td-num">+7.85%</td>
-<td class="td-num">+3.75%</td>
-<td class="td-num">+6.76%</td>
-<td class="td-num">+10.39%</td>
-<td class="td-num">+8.13%</td>
+<td class="td-num">+12.12%</td>
+<td class="td-num">+7.55%</td>
+</tr>
+<tr>
+<td class="td-first">V3-B 风险平价(20d)</td>
+<td class="td-num">+5.65%</td>
+<td class="td-num">+4.67%</td>
+<td class="td-num">+5.65%</td>
+<td class="td-num">+9.69%</td>
+<td class="td-num">+8.63%</td>
+<td class="td-num">+8.80%</td>
+<td class="td-num">+5.48%</td>
+<td class="td-num">+7.30%</td>
+<td class="td-num">+12.32%</td>
+<td class="td-num">+5.81%</td>
+</tr>
+<tr>
+<td class="td-first">V3-B 保守增强(20d)</td>
+<td class="td-num">+3.82%</td>
+<td class="td-num">+4.73%</td>
+<td class="td-num">+5.63%</td>
+<td class="td-num">+6.50%</td>
+<td class="td-num">+8.58%</td>
+<td class="td-num">+6.52%</td>
+<td class="td-num">+4.41%</td>
+<td class="td-num">+5.62%</td>
+<td class="td-num">+10.03%</td>
+<td class="td-num">+5.18%</td>
 </tr>
 </tbody></table>
 <h3 class="sec-h3">（2015 为建仓年，分年收益从 2016 起计，共 10 个完整年度）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• CAGR 7.45%，Sharpe 1.26 最高、回撤 -6.71% 最浅</p>
+<p class="para">• CAGR 7.76%，Sharpe 1.44，回撤 -4.68%</p>
 <p class="para">• 蒙特卡洛 5%-分位下沿 +22.05%（5 年），下沿最厚实</p>
+<p class="para">• 月度调仓 + nonferr 趋势过滤（跌破 60d SMA 清仓有色→转投信用债）</p>
 <p class="para">• 海外 8% 提供真分散，2025 年关税冲击期 +2.70%</p>
 <p class="para">• 11 年全部正收益，无亏损年份</p>
-<h2 class="plan-title plan-b">方案 2: V3-B 风险平价(60d)  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：分层风险平价（Hierarchical Risk Parity），4 个宏观桶各 25% 风险预算，桶内逆波动率加权，月度调仓。60 天短窗口响应更快，回撤最浅 -6.29%。</p>
-<p class="para">适合：认同桥水方法论、希望组合动态适应市场变化的投资者。无固定权重——每个月根据过去 60 个交易日的波动率重新计算，涨多的资产自然降权、跌出性价比的资产自然升权。</p>
+<h2 class="plan-title plan-b">方案 2: V3-B 风险平价(20d)  ★★★ 强烈推荐</h2>
+<p class="para-bold">特征：5 桶分层风险平价（Hierarchical Risk Parity），10Y/30Y 国债分拆为独立桶（关键升级），月度调仓 + nonferr 趋势过滤(75d)。CAGR 8.13% 全策略最高，Sharpe 1.69。</p>
+<p class="para">适合：认同桥水方法论、追求最高收益的投资者。无固定权重——每月根据过去 20 个交易日波动率重新计算，5 桶各 20% 风险预算。</p>
 <h3 class="sec-h3">⚙️ 权重计算机制（每月自动执行）</h3>
-<p class="para"><strong>第一层 — 桶间等权：</strong>增长↑ / 收益垫 / 增长↓ / 通胀↑ 四个宏观桶各分配 25% 风险预算（桥水原版逻辑）。</p>
-<p class="para"><strong>第二层 — 桶内逆波动率：</strong>每个桶内部，波动率越低的资产权重越大。单资产上限 25%、下限 2%，防止极端集中。</p>
-<p class="para"><strong>窗口 = 60 个交易日（约 3 个月）：</strong>较短窗口让权重更快响应市场变化，战术灵活。</p>
+<p class="para"><strong>第一层 — 桶间等权：</strong>增长↑ / 收益垫 / 增长↓10Y / 增长↓30Y / 通胀↑ 五个桶各分配 20% 风险预算。</p>
+<p class="para"><strong>第二层 — 桶内逆波动率：</strong>每个桶内部，波动率越低的资产权重越大。单资产上限 25%、下限 2%。</p>
+<p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。最关键的风控增强。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
-<th>桶（各 25%）</th>
+<th>桶（各 20%）</th>
 <th>包含资产</th>
 <th>权重逻辑</th>
 </tr></thead>
 <tbody>
 <tr><td class="td-first">增长↑</td><td class="td-num">沪深300 / 红利 / 标普500</td><td class="td-num">桶内逆波动率加权</td></tr>
-<tr><td class="td-first">收益垫</td><td class="td-num">城投债</td><td class="td-num">独占 25%</td></tr>
-<tr><td class="td-first">增长↓</td><td class="td-num">10年国债 / 30年国债</td><td class="td-num">桶内逆波动率加权</td></tr>
+<tr><td class="td-first">收益垫</td><td class="td-num">城投债</td><td class="td-num">独占 20%</td></tr>
+<tr><td class="td-first">增长↓10Y</td><td class="td-num">10年国债</td><td class="td-num">独占 20%（久期~8年）</td></tr>
+<tr><td class="td-first">增长↓30Y</td><td class="td-num">30年国债</td><td class="td-num">独占 20%（久期~18年）</td></tr>
 <tr><td class="td-first">通胀↑</td><td class="td-num">黄金 / 有色 / 豆粕</td><td class="td-num">桶内逆波动率加权</td></tr>
 </tbody></table>
 <h3 class="sec-h3">📈 回测核心指标 (2015-01 ~ 2025-12)</h3>
@@ -477,66 +479,45 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+111.00%</td>
-<td class="td-num">7.27%</td>
-<td class="td-num">4.45%</td>
-<td class="td-num">-6.29%</td>
-<td class="td-num">1.14</td>
-<td class="td-num">1.16</td>
+<td class="td-num">+129.75%</td>
+<td class="td-num">8.13%</td>
+<td class="td-num">3.52%</td>
+<td class="td-num">-4.14%</td>
+<td class="td-num">1.69</td>
+<td class="td-num">1.97</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+95.65%</td>
-<td class="td-num">6.51%</td>
-<td class="td-num">3.79%</td>
-<td class="td-num">-5.34%</td>
-<td class="td-num">1.14</td>
-<td class="td-num">1.22</td>
+<td class="td-num">+110.22%</td>
+<td class="td-num">7.23%</td>
+<td class="td-num">2.99%</td>
+<td class="td-num">-3.50%</td>
+<td class="td-num">1.68</td>
+<td class="td-num">2.06</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+81.33%</td>
-<td class="td-num">5.75%</td>
-<td class="td-num">3.12%</td>
-<td class="td-num">-4.39%</td>
-<td class="td-num">1.14</td>
-<td class="td-num">1.31</td>
+<td class="td-num">+92.30%</td>
+<td class="td-num">6.34%</td>
+<td class="td-num">2.46%</td>
+<td class="td-num">-2.87%</td>
+<td class="td-num">1.68</td>
+<td class="td-num">2.21</td>
 </tr>
 </tbody></table>
-<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
-<table class="data-tbl" style="--header-color: #1F4E79;">
-<thead><tr>
-<th>方案</th>
-<th>2016</th><th>2017</th><th>2018</th><th>2019</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th>
-</tr></thead>
-<tbody>
-<tr>
-<td class="td-first">V3-B (60d)</td>
-<td class="td-num">+6.82%</td><td class="td-num">+6.39%</td><td class="td-num">-0.34%</td><td class="td-num">+12.01%</td><td class="td-num">+7.90%</td><td class="td-num">+7.80%</td><td class="td-num">+3.92%</td><td class="td-num">+6.20%</td><td class="td-num">+10.16%</td><td class="td-num">+8.76%</td>
-</tr>
-</tbody></table>
-<h3 class="sec-h3">（2015 为建仓年，分年收益从 2016 起计，共 10 个完整年度）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• 回撤 -6.29%，三策略中最浅，睡得最踏实</p>
-<p class="para">• 月度自动调仓，涨多降权、跌深升权，内置低买高卖纪律</p>
-<p class="para">• 蒙特卡洛 5%-分位下沿 +8.87%（5 年），亏损概率 1.00%</p>
-<p class="para">• 滞胀情景季均 +1.93%，三策略中抗滞胀最强</p>
+<p class="para">• CAGR 8.13% 全策略最高，累计收益 +129.75%</p>
+<p class="para">• 5 桶结构：10Y/30Y 分拆是最关键的升级（久期差一倍，不应共享桶）</p>
+<p class="para">• 月度自动调仓 + nonferr 趋势过滤，内置低买高卖纪律</p>
+<p class="para">• 蒙特卡洛 5%-分位 +20.01%，亏损概率 0.00%</p>
 <p class="para">• 权重完全由数据驱动，无人工判断偏差</p>
-<h2 class="plan-title plan-b">方案 3: V3-B 风险平价(120d)  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：与 60d 版本相同的分层风险平价框架，但使用 120 个交易日（约 6 个月）的长窗口。权重更稳定、调仓更少，更接近桥水原版的战略配置理念。</p>
-<p class="para">适合：认同桥水方法论但偏好更低换手率、更长持股周期的投资者。120d 窗口让权重变化更平滑，减少短期噪音干扰。</p>
-<h3 class="sec-h3">⚙️ 与 60d 版本的区别</h3>
-<table class="data-tbl" style="--header-color: #1F4E79;">
-<thead><tr>
-<th>维度</th><th>V3-B 60d（战术）</th><th>V3-B 120d（战略）</th>
-</tr></thead>
-<tbody>
-<tr><td class="td-first">波动率计算窗口</td><td class="td-num">60 个交易日（~3 个月）</td><td class="td-num">120 个交易日（~6 个月）</td></tr>
-<tr><td class="td-first">权重变化速度</td><td class="td-num">较快，响应近期市场</td><td class="td-num">较慢，过滤短期噪音</td></tr>
-<tr><td class="td-first">调仓频率</td><td class="td-num">月度（波动率变化大时权重变化大）</td><td class="td-num">月度（但权重更稳定）</td></tr>
-<tr><td class="td-first">理念</td><td class="td-num">战术灵活，快速适应</td><td class="td-num">战略稳定，接近桥水原教旨</td></tr>
-</tbody></table>
-<h3 class="sec-h3">📈 回测核心指标 (2015-01 ~ 2025-12)</h3>
+<h2 class="plan-title plan-b">方案 3: V3-B 保守增强(20d)  ★★★ 强烈推荐</h2>
+<p class="para-bold">特征：直接逆波动率加权（无桶层级），nonferr 趋势过滤(75d)。不设宏观桶——9 个资产自由竞争权重。Sharpe 1.98 全策略最高，回撤 -3.57% 最浅。</p>
+<p class="para">适合：最重视低波动和睡得着觉的投资者。逆波动率让低波资产（债券）自然获得高权重，高波资产（商品）被自动压制。</p>
+<h3 class="sec-h3">⚙️ 权重计算机制（每月自动执行）</h3>
+<p class="para"><strong>逆波动率直接加权：</strong>不经过桶层级，对 9 个资产直接按 1/波动率 计算权重。20 个交易日短窗口，快速响应。</p>
+<p class="para"><strong>单资产上限 25%：</strong>防止极端行情下个别资产权重过高。下限 2%。</p>
+<p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。最关键的风控增强。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>档位</th>
@@ -550,107 +531,90 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+107.32%</td>
-<td class="td-num">7.09%</td>
-<td class="td-num">4.47%</td>
-<td class="td-num">-6.72%</td>
-<td class="td-num">1.09</td>
-<td class="td-num">1.06</td>
+<td class="td-num">+102.63%</td>
+<td class="td-num">6.86%</td>
+<td class="td-num">2.36%</td>
+<td class="td-num">-3.57%</td>
+<td class="td-num">1.98</td>
+<td class="td-num">1.92</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+92.74%</td>
-<td class="td-num">6.36%</td>
-<td class="td-num">3.80%</td>
-<td class="td-num">-5.63%</td>
-<td class="td-num">1.09</td>
-<td class="td-num">1.13</td>
+<td class="td-num">+88.85%</td>
+<td class="td-num">6.16%</td>
+<td class="td-num">2.00%</td>
+<td class="td-num">-3.02%</td>
+<td class="td-num">1.98</td>
+<td class="td-num">2.04</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+79.11%</td>
-<td class="td-num">5.63%</td>
-<td class="td-num">3.13%</td>
-<td class="td-num">-4.56%</td>
-<td class="td-num">1.10</td>
-<td class="td-num">1.23</td>
+<td class="td-num">+75.98%</td>
+<td class="td-num">5.46%</td>
+<td class="td-num">1.65%</td>
+<td class="td-num">-2.47%</td>
+<td class="td-num">1.97</td>
+<td class="td-num">2.21</td>
 </tr>
 </tbody></table>
-<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
-<table class="data-tbl" style="--header-color: #1F4E79;">
-<thead><tr>
-<th>方案</th>
-<th>2016</th><th>2017</th><th>2018</th><th>2019</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th>
-</tr></thead>
-<tbody>
-<tr>
-<td class="td-first">V3-B (120d)</td>
-<td class="td-num">+6.88%</td><td class="td-num">+6.59%</td><td class="td-num">-0.29%</td><td class="td-num">+11.45%</td><td class="td-num">+8.72%</td><td class="td-num">+7.85%</td><td class="td-num">+3.75%</td><td class="td-num">+6.76%</td><td class="td-num">+10.39%</td><td class="td-num">+8.13%</td>
-</tr>
-</tbody></table>
-<h3 class="sec-h3">（2015 为建仓年，分年收益从 2016 起计，共 10 个完整年度）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• 长窗口权重更稳定，月度调仓幅度更小，交易成本更低</p>
-<p class="para">• CAGR 7.09%，与 60d 版的 7.27% 差距仅 0.18 个百分点</p>
-<p class="para">• 接近桥水原版「战略配置不择时」的投资哲学</p>
-<p class="para">• 蒙特卡洛 5%-分位下沿 +8.81%（5 年），亏损概率 1.10%</p>
-<p class="para">• 适合「设好就忘、半年看一次」的极简投资者</p>
+<p class="para">• Sharpe 1.98 全策略最高，风险调整后收益极优</p>
+<p class="para">• 回撤 -3.57% 最浅，波动仅 2.36%，睡得最踏实</p>
+<p class="para">• 不设桶层级——9 资产自由竞争，避免桶结构人为扭曲权重</p>
+<p class="para">• 蒙特卡洛亏损概率 0.10%，几乎不会亏</p>
+<p class="para">• 适合养老金、教育金等不能承受大幅回撤的资金</p>
 <h2 class="ch-h1" id="ch3">四、方案对比一表看清</h2>
 <table class="data-tbl" style="--header-color: #595959;">
 <thead><tr>
 <th>维度</th>
 <th>V3c 多元 ★★★</th>
-<th>V3-B 风险平价(60d) ★★★</th>
-<th>V3-B 风险平价(120d) ★★★</th>
+<th>V3-B 风险平价(20d) ★★★</th>
+<th>V3-B 保守增强(20d) ★★★</th>
 </tr></thead>
 <tbody><tr>
-<td class="td-first">哲学</td><td class="td-num">国别分散最强</td>
-<td class="td-num">分层风险平价（月度调仓）</td>
-<td class="td-num">分层风险平价（月度调仓）</td></tr>
+<td class="td-first">哲学</td><td class="td-num">固定权重，最简单落地</td>
+<td class="td-num">5桶分层风险平价（10Y/30Y分拆）</td>
+<td class="td-num">逆波动率直接加权（无桶层级）</td></tr>
 <tr>
 <td class="td-first">资产数</td><td class="td-num">9</td>
 <td class="td-num">9</td>
 <td class="td-num">9</td></tr>
 <tr>
-<td class="td-first">100% RP - CAGR</td><td class="td-num">7.45%</td>
-<td class="td-num">7.27%</td>
-<td class="td-num">7.09%</td></tr>
+<td class="td-first">100% RP - CAGR</td><td class="td-num">7.76%</td>
+<td class="td-num">8.13%</td>
+<td class="td-num">6.86%</td></tr>
 <tr>
-<td class="td-first">100% RP - 回撤</td><td class="td-num">-6.71%</td>
-<td class="td-num">-6.29%</td>
-<td class="td-num">-6.72%</td></tr>
+<td class="td-first">100% RP - 回撤</td><td class="td-num">-4.68%</td>
+<td class="td-num">-4.14%</td>
+<td class="td-num">-3.57%</td></tr>
 <tr>
-<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.26</td>
-<td class="td-num">1.14</td>
-<td class="td-num">1.09</td></tr>
+<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.44</td>
+<td class="td-num">1.69</td>
+<td class="td-num">1.98</td></tr>
 <tr>
-<td class="td-first">100% RP - 波动</td><td class="td-num">4.16%</td>
-<td class="td-num">4.45%</td>
-<td class="td-num">4.47%</td></tr>
+<td class="td-first">100% RP - 波动</td><td class="td-num">3.86%</td>
+<td class="td-num">3.52%</td>
+<td class="td-num">2.36%</td></tr>
 <tr>
-<td class="td-first">100% RP - Calmar</td><td class="td-num">1.11</td>
-<td class="td-num">1.16</td>
-<td class="td-num">1.06</td></tr>
+<td class="td-first">100% RP - Calmar</td><td class="td-num">1.66</td>
+<td class="td-num">1.97</td>
+<td class="td-num">1.92</td></tr>
 <tr>
-<td class="td-first">100万→11y后</td><td class="td-num">214.8 万</td>
-<td class="td-num">211.0 万</td>
-<td class="td-num">207.3 万</td></tr>
+<td class="td-first">100万→11y后</td><td class="td-num">221.4 万</td>
+<td class="td-num">229.8 万</td>
+<td class="td-num">202.6 万</td></tr>
 <tr>
 <td class="td-first">最大单仓</td><td class="td-num">10年债 40%</td>
 <td class="td-num">动态调整</td>
 <td class="td-num">动态调整</td></tr>
 <tr>
-<td class="td-first">海外 QDII 暴露</td><td class="td-num">8%</td>
-<td class="td-num">~8%（动态）</td>
-<td class="td-num">~8%（动态）</td></tr>
-<tr>
-<td class="td-first">商品桶暴露</td><td class="td-num">22%</td>
-<td class="td-num">~22%（动态）</td>
-<td class="td-num">~22%（动态）</td></tr>
+<td class="td-first">调仓频率</td><td class="td-num">月度 + nonferr趋势过滤</td>
+<td class="td-num">月度 + nonferr趋势过滤</td>
+<td class="td-num">月度 + nonferr趋势过滤</td></tr>
 <tr>
 <td class="td-first">蒙特卡洛 5%分位</td><td class="td-num">+22.05%</td>
-<td class="td-num">+8.87%</td>
-<td class="td-num">+8.81%</td></tr>
+<td class="td-num">+20.01%</td>
+<td class="td-num">+15.84%</td></tr>
 <tr>
 <td class="td-first">蒙特卡洛 亏损概率</td><td class="td-num">0.00%</td>
 <td class="td-num">1.00%</td>
@@ -671,61 +635,29 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-first">2025关税冲击</td><td class="td-num">+2.70%</td>
 <td class="td-num">+2.68%</td>
 <td class="td-num">+2.21%</td></tr></tbody></table>
-<h2 class="ch-h1" id="ch4">五、调仓规则：半年节点 + 3% 偏离双触发</h2>
-<p class="para">调仓频率不是越勤越好。我们对 8 种调仓规则做了交叉回测，发现最优规则是：</p>
-<h3 class="sec-h3">规则定义</h3>
-<ul class="bullet-list"><li class="bullet">时间触发：每半年（6 月底、12 月底）强制检查一次，不论权重是否漂移；</li>
-<li class="bullet">空间触发：任意一个 ETF 的权重相对目标偏离绝对值 ≥ 3%，立刻调仓；</li>
-<li class="bullet">两个条件任一满足即执行 - 形成双保险。</li>
-</ul><h3 class="sec-h3">为什么这套规则最优</h3>
+<h2 class="ch-h1" id="ch4">五、调仓规则：月度再平衡 + nonferr 趋势过滤</h2>
+<p class="para">三策略统一采用月度再平衡 + nonferr 趋势过滤。调仓频率提升带来两个关键收益：更紧贴目标权重 + 趋势过滤可以生效（半年频率来不及反应趋势信号）。</p>
+<h3 class="sec-h3">各策略调仓规则</h3>
+<ul class="bullet-list"><li class="bullet"><strong>V3c 多元：</strong>固定目标权重，月度检查 + nonferr 趋势过滤(60d SMA)。触发时清仓有色→信用债；</li>
+<li class="bullet"><strong>V3-B 风险平价(20d)：</strong>每月重算 5 桶逆波动率权重 + nonferr 趋势过滤(75d SMA)；</li>
+<li class="bullet"><strong>V3-B 保守增强(20d)：</strong>每月重算直接逆波动率权重（无桶层级）+ nonferr 趋势过滤(75d SMA)。</li>
+</ul>
+<h3 class="sec-h3">为什么月度 + 趋势过滤是最优组合</h3>
 <table class="data-tbl" style="--header-color: #2E75B6;">
 <thead><tr>
-<th>规则</th>
-<th>调仓数（11y）</th>
-<th>净 Sharpe</th>
-<th>回撤</th>
-<th>Calmar</th>
+<th>策略</th>
+<th>趋势窗口</th>
+<th>触发条件</th>
+<th>重定向</th>
 </tr></thead>
 <tbody>
-<tr>
-<td class="td-first">半年+3%阈值（推荐）</td>
-<td class="td-num">9</td>
-<td class="td-num">2.50</td>
-<td class="td-num">-2.86%</td>
-<td class="td-num">3.08 (最高)</td>
-</tr>
-<tr>
-<td class="td-first">纯阈值 3%</td>
-<td class="td-num">3</td>
-<td class="td-num">2.56 (最高)</td>
-<td class="td-num">-2.94%</td>
-<td class="td-num">3.04</td>
-</tr>
-<tr>
-<td class="td-first">季度调仓（基线）</td>
-<td class="td-num">20</td>
-<td class="td-num">2.50</td>
-<td class="td-num">-2.96%</td>
-<td class="td-num">2.97</td>
-</tr>
-<tr>
-<td class="td-first">月度调仓</td>
-<td class="td-num">48</td>
-<td class="td-num">2.51</td>
-<td class="td-num">-2.92%</td>
-<td class="td-num">2.96</td>
-</tr>
-<tr>
-<td class="td-first">年度调仓</td>
-<td class="td-num">6</td>
-<td class="td-num">2.53</td>
-<td class="td-num">-3.11%</td>
-<td class="td-num">2.85</td>
-</tr>
+<tr><td class="td-first">V3c 多元</td><td class="td-num">60d SMA</td><td class="td-num">有色 &lt; 60日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
+<tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
+<tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
 </tbody></table>
-<p class="para">结论：半年+3%阈值在风险调整收益上几乎追平纯阈值最优，但比纯阈值多了时间纪律性（不会出现 1 年都不动手的情况），实操性最强。</p>
-<h3 class="sec-h3">交易成本分析</h3>
-<p class="para">假设每次再平衡平均换手 8%、单边综合费率 0.15%（佣金 + 冲击 + QDII 申赎），11 年 147 次调仓的年化成本约 0.021% — 几乎可忽略。</p>
+<p class="para"><strong>回测验证：</strong>V3c 半年调仓时加趋势过滤无效（CAGR 7.45%→7.36%），改为月度后 CAGR 升至 7.76%、MDD 从 -6.71% 降至 -4.68%。趋势过滤需要月度或更高频调仓才能发挥。</p>
+<h3 class="sec-h3">交易成本</h3>
+<p class="para">月度调仓约 132 次/策略/11年，每次平均换手 8%、单边费率 0.15%，年化成本约 0.018% — 几乎可忽略。</p>
 <h2 class="ch-h1" id="ch5">六、风险提示</h2>
 <p class="warning">⚠ 回测窗口偏差：2015-01 ~ 2025-12 覆盖了 2015 股灾、2016 熔断、2018 大熊市等多轮极端行情，未来债券预期收益大概率低于历史。建议把 CAGR 预期下调 1-2 个百分点。</p>
 <p class="warning">⚠ QDII 限购与溢价：标普 500 ETF (513500) 经常出现 1-3% 溢价、不定期限购，实际买入成本可能高于回测假设。可考虑分批建仓或在贴水时增配。</p>
@@ -768,7 +700,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">约 -6.2%</td>
 </tr>
 </tbody></table>
-<p class="para-bold">问题 2：你怎么看未来 5 年的宏观？这决定方案（V3c / V3-B）。</p>
+<p class="para-bold">问题 2：你怎么看未来 5 年的宏观？这决定方案（V3c / V3-B 风险平价 / V3-B 保守增强）。</p>
 <table class="data-tbl" style="--header-color: #2E75B6;">
 <thead><tr>
 <th>你的判断</th>
@@ -779,17 +711,17 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">没特别判断 / 让组合自己平衡</td>
 <td class="td-num">V3c 多元 ★★★</td>
-<td class="td-num">Sharpe 1.26 最高、CAGR 7.45% 最高、最简单省心（默认推荐）</td>
+<td class="td-num">固定权重最简单落地，CAGR 7.76%，月度调仓+趋势过滤</td>
 </tr>
 <tr>
-<td class="td-first">认同桥水方法论 / 要动态适应</td>
-<td class="td-num">V3-B 风险平价(60d) ★★★</td>
-<td class="td-num">分层风险平价，月度调仓，回撤最浅 -6.29%</td>
+<td class="td-first">认同桥水方法论 / 追求最高收益</td>
+<td class="td-num">V3-B 风险平价(20d) ★★★</td>
+<td class="td-num">5桶分层风险平价(10Y/30Y分拆)，CAGR 8.13% 最高</td>
 </tr>
 <tr>
-<td class="td-first">认同桥水方法论 / 要战略稳定</td>
-<td class="td-num">V3-B 风险平价(120d) ★★★</td>
-<td class="td-num">长窗口风险平价，权重更稳定，接近桥水战略定位</td>
+<td class="td-first">最怕回撤 / 睡得着觉最重要</td>
+<td class="td-num">V3-B 保守增强(20d) ★★★</td>
+<td class="td-num">逆波动率+趋势过滤，Sharpe 1.98 最高，回撤 -3.57% 最浅</td>
 </tr>
 </tbody></table>
 <p class="para">举例：你有 100 万退休金、不知道宏观会怎么样 → 70% RP 档 + V3c 多元。对照第三章 V3c 表的 70% RP 列就是你的目标持仓。</p>
@@ -861,15 +793,15 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">❌ 一般不动</td>
 </tr>
 <tr>
-<td class="td-first">每半年节点（6/12 月最后一个交易日）</td>
+<td class="td-first">每月最后一个交易日</td>
 <td class="td-num">30 分钟</td>
-<td class="td-num">强制再平衡（详见 Step 4）</td>
+<td class="td-num">月度再平衡 + 检查 nonferr 趋势信号（详见 Step 4）</td>
 <td class="td-num">✅ 必须</td>
 </tr>
 <tr>
-<td class="td-first">阈值触发（任一 ETF 偏离 ≥ 3%）</td>
-<td class="td-num">30 分钟</td>
-<td class="td-num">立刻再平衡</td>
+<td class="td-first">nonferr 趋势过滤触发（有色 &lt; SMA）</td>
+<td class="td-num">即时</td>
+<td class="td-num">清仓有色 → 信用债，其余资产按目标权重调回</td>
 <td class="td-num">✅ 必须</td>
 </tr>
 <tr>
@@ -880,8 +812,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 </tbody></table>
 <p class="warning">⚠ 重要纪律：除了上面 4 个时点，平时不要动！不要看到某个资产涨了就加仓、跌了就割肉。组合的全部价值就在于「该来的来、该走的走，自己别瞎插手」。</p>
-<h3 class="step-h">🔧 Step 4：再平衡的具体操作（半年节点 / 阈值触发都用这套）</h3>
-<p class="para-bold">再平衡 = 把每个 ETF 调回目标权重。具体三步：</p>
+<h3 class="step-h">🔧 Step 4：再平衡的具体操作（月度执行）</h3>
+<p class="para-bold">再平衡 = 把每个 ETF 调回目标权重 + 检查 nonferr 趋势信号。具体三步：</p>
 <p class="para-bold">① 先算偏离</p>
 <p class="para">打开账户记录每个 ETF 的当前市值、占比，和目标权重对比。用 Excel 或纸笔都行。</p>
 <p class="para-bold">② 再决定动谁</p>
@@ -890,7 +822,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 实际权重 ≈ 目标（差 <0.5%） → 不用动，省手续费</p>
 <p class="para-bold">③ 操作顺序：先卖后买，避免动用追加资金</p>
 <p class="para">把所有要卖的 ETF 卖出后，资金到账（T+0 可用）再买入要补的 ETF。QDII 要 T+1 资金到账，分两天做。</p>
-<p class="para-bold">举例（V3c 100% RP 档，假设到 2025 年 6 月底检查）：</p>
+<p class="para-bold">举例（V3c 100% RP 档，月末检查 + nonferr 趋势过滤）：</p>
 <table class="data-tbl" style="--header-color: #2E75B6;">
 <thead><tr>
 <th>ETF</th>
@@ -933,16 +865,16 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h3 class="step-h">❓ Step 5：常见疑问 FAQ</h3>
 <p class="faq-q">Q：买不到标普 500（QDII 限购）怎么办？</p>
 <p class="faq-a">A：三个备选：① 用场外联接 050025（华夏标普500A），无限购但 T+2 赎回；② 改用 159612（标普500等权重）或 159659；③ 实在买不到，把这 5-8% 暂时放到货币基金，等限购解除再加仓。切勿因此减少海外暴露——这是组合的关键分散来源。</p>
-<p class="faq-q">Q：半年到了，但市场剧烈波动，能不能延后调仓？</p>
-<p class="faq-a">A：不能。再平衡的全部价值就在于「机械执行」。回测里 2022 年 3 月（股债双杀谷底）阈值触发的那次调仓，事后看就是抄底。你的人脑判断大概率打不过纪律。</p>
-<p class="faq-q">Q：某个 ETF 偏离 3% 触发了，但我觉得它还会涨/跌，能等等吗？</p>
-<p class="faq-a">A：不能。同上，纪律压倒预测。唯一例外：偏离来源是大额申购/赎回（你自己刚加钱），那不算触发，按比例补即可。</p>
+<p class="faq-q">Q：月度调仓日到了，但市场剧烈波动，能不能延后？</p>
+<p class="faq-a">A：不能。再平衡的全部价值就在于「机械执行」。2022 年股债双杀期间 nonferr 趋势过滤触发，事后看就是精准避险。你的人脑判断大概率打不过纪律。</p>
+<p class="faq-q">Q：nonferr 趋势过滤触发了，但我觉得有色还会涨，能等等吗？</p>
+<p class="faq-a">A：不能。纪律压倒预测。回测已证明硬过滤（清仓）优于软过滤（减半），转投信用债是经过验证的最优重定向。</p>
 <p class="faq-q">Q：能不能用银行的「全天候」基金代替自己买 ETF？</p>
 <p class="faq-a">A：不推荐。① 这类基金管理费 1-1.5%，年化吃掉 1 个百分点；② 大多是固收+偏债配置，不是真正的风险平价；③ 你看不到底层持仓，无法判断是否符合 RP 框架。自己买 9 个 ETF 总费率约 0.3%/年。</p>
 <p class="faq-q">Q：现金那部分（85%/70% 档）放哪里？</p>
 <p class="faq-a">A：首选：场内货币 ETF 511880（华宝添益）或 511990（华宝添益 H 类），日内可买卖；次选：余额宝、微信零钱通；再次：短债 ETF 511360（短融 ETF），收益略高但有波动。不要放活期，年化差 1.5%。</p>
 <p class="faq-q">Q：我有定投习惯，能不能用定投方式建组合？</p>
-<p class="faq-a">A：可以，但要按比例定投：每月固定金额，按目标权重分到 9 个 ETF。不要「今天买这个、明天买那个」——会破坏 RP 结构。定投本身不会替代再平衡，半年节点该平衡还是要平衡。</p>
+<p class="faq-a">A：可以，但要按比例定投：每月固定金额，按目标权重分到 9 个 ETF。不要「今天买这个、明天买那个」——会破坏 RP 结构。定投本身不会替代再平衡，月度调仓日该调还是要调。</p>
 <p class="faq-q">Q：方案选错了能不能换？</p>
 <p class="faq-a">A：可以，但建议至少持有 1 年再换。频繁切换 = 择时，破坏 RP 的全部哲学。如果确实要换（比如从 V3c 换成 V3-B），按目标权重差额一次性调整即可。</p>
 <p class="faq-q">Q：如果我未来有大额资金注入怎么办？</p>
@@ -980,8 +912,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 <tr>
 <td class="td-first">再平衡</td>
-<td class="td-num">每半年 + 阈值 3%</td>
-<td class="td-num">机械执行，先卖后买，30 分钟</td>
+<td class="td-num">月度 + trend 过滤</td>
+<td class="td-num">机械执行，检查 nonferr 趋势信号，30 分钟</td>
 </tr>
 <tr>
 <td class="td-first">复盘</td>
@@ -989,7 +921,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">看年度回撤、收益；评估是否切换方案（少切）</td>
 </tr>
 </tbody></table>
-<p class="para-bold">一句话总结：选对方案 → 慢慢建仓 → 每周看一眼 → 半年/3% 触发就调仓 → 其余时间，不要做任何事。</p>
+<p class="para-bold">一句话总结：选对方案 → 慢慢建仓 → 每周看一眼 → 月度调仓 + nonferr 趋势过滤 → 其余时间，不要做任何事。</p>
 <h2 class="ch-h1" id="ch7">八、本方案 vs 网上常见中国版的差异</h2>
 <table class="data-tbl" style="--header-color: #595959;">
 <thead><tr>
@@ -1016,7 +948,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">调仓规则</td>
 <td class="td-num">季度或不调</td>
-<td class="td-num">半年 + 3% 阈值双触发</td>
+<td class="td-num">月度再平衡 + nonferr 趋势过滤</td>
 </tr>
 <tr>
 <td class="td-first">进取版用品</td>
