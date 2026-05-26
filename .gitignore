@@ -8,3 +8,4 @@ uv.lock
 # 输出（保留目录但不追踪内容）
 output/*
 !output/.gitkeep
+.claude/worktrees/
