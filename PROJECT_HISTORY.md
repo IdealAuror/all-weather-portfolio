@@ -209,6 +209,44 @@
 
 **相关文件**：`strategy_a.py`（删除）、`config.py`、`data.py`、`strategy_b.py`、`portfolios.py`、`pipeline.py`、`markdown_report.py`、`README.md`、`index.html`
 
+### 5.8 V3-B 参数网格搜索：发现保守风险平价变体（2026-05-26）
+
+**背景**：V3-B 有 3 个自由参数（窗口、max_w、bucket_method），跑 36 组合网格搜索找到 Pareto 最优。
+
+**关键发现**：`bucket_method` 是唯一主导参数。把组合分成两个互不重叠的区间：
+
+| 区间 | bucket_method | MDD 范围 | CAGR 范围 | Sharpe 范围 |
+|------|-------------|---------|----------|------------|
+| 安全优先 | risk_parity | -3.52% ~ -3.75% | 5.67% ~ 6.23% | 1.48 ~ 1.56 |
+| 收益优先 | equal | -6.13% ~ -6.65% | 7.24% ~ 7.47% | 1.11 ~ 1.15 |
+
+**最佳风险平价**：窗口 90d, max_w=0.30 — CAGR 5.74%, MDD -3.55%, Sharpe 1.56（回撤减半，波动减半，Sharpe 最高）
+
+**结论**：没有免费午餐——没有任何参数组合同时做到 MDD < -4% 且 CAGR > 7%。risk_parity 本质上是不同产品："保守风险平价"。窗口和 max_w 的影响远小于 bucket_method。
+
+**代码**：`allweather/grid_search_b.py`，`allweather/strategy_b.py`（新增 bucket_method/max_w/min_w 参数透传）
+
+### 5.9 方案 C 动态补仓：负结果（2026-05-26）
+
+**想法**：70% risk_parity 核心 + 30% 储备，资产回撤超阈值时补仓，盈利后退出。试图在保持低回撤的同时提升收益。
+
+**两轮实验**：
+| 版本 | 储备形式 | 最佳 CAGR | 最佳 MDD | vs 纯 RP 100% |
+|------|---------|----------|---------|-------------|
+| v1 | 现金（2.2%利息） | 5.89% | -5.67% | MDD 恶化 2.12% |
+| v2 | 信用债 ETF | 5.68% | -5.69% | MDD 恶化 2.14% |
+
+12 组合网格搜索（触发 -10/-15/-20% × 补仓 3/5% × 退出 +10/+15%），无一达到设计目标（MDD < -4.5% 且 CAGR > 6.5%）。
+
+**失败原因**：
+1. 补仓在下跌中放大回撤（接飞刀）
+2. risk_parity 回撤太浅（-3.55%），补仓机制没有足够多的大跌机会
+3. 退出机制捕获反弹但净贡献微弱
+
+**结论**：不要尝试任何形式的补仓/抄底机制。30% 最优用途就是留在 RP 核心里不动。保守选 risk_parity 100%，进取选 V3c。
+
+**代码**：`allweather/strategy_c.py`，`allweather/grid_search_c.py`（保留作为实验记录）
+
 ---
 
 ## 6. 项目结构
@@ -232,6 +270,9 @@
 │   ├── backtest.py             双触发再平衡 + 现金降杠杆
 │   ├── risk.py                 风控原语：趋势过滤/回撤止损/波动率目标/HRP
 │   ├── strategy_b.py           方案 B：分层风险平价（60d/120d）+ 月度调仓
+│   ├── strategy_c.py           方案 C：动态补仓实验（负结果，保留备查）
+│   ├── grid_search_b.py        V3-B 参数网格搜索（36 组合）
+│   ├── grid_search_c.py        方案 C 参数网格搜索（12 组合）
 │   ├── stats.py                perf / yearly / 风险贡献 / regime / Bootstrap
 │   ├── reports.py              控制台 + JSON/CSV 持久化
 │   ├── excel_export.py         多 sheet Excel 导出（openpyxl）
@@ -345,3 +386,5 @@
 | 上线 | GitHub 仓库 + Pages + Actions sanity check |
 | 输出强化 | 加 Excel 多 sheet 报告 + Markdown 综合报告 |
 | 2026-05-25 | Sharpe 修正为 `(CAGR - 2.2%)/vol`，保留 sharpe_raw；新增 V3-A（固定权重+三层风控）和 V3-B（分层风险平价+动态配置）两种动态策略 |
+| 2026-05-26 | V3-B 网格搜索：bucket_method 是主导参数，risk_parity 将 MDD 从 -6.29% 压到 -3.52% 但 CAGR 从 7.27% 降到 5.74% |
+| 2026-05-26 | 方案 C（70/30 动态补仓）两轮实验均失败：无论现金还是信用债储备，都不敌纯 risk_parity 100%。补仓放大回撤的代价远超收益提升。 |
