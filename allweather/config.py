@@ -8,7 +8,7 @@ RESULTS_DIR = ROOT / "results"
 OUTPUT_DIR = ROOT / "output"
 
 # === 回测期间 ===
-BACKTEST_START = "2015-01-01"
+BACKTEST_START = "2008-01-01"
 BACKTEST_END   = "2025-12-31"
 
 # === 30 年国债合成参数 ===
@@ -107,11 +107,11 @@ COST_PER_SIDE = 0.0015
 
 # === 方案 B 常量（分层风险平价）===
 RISK_PARITY_WINDOW = 20           # V3-B 波动率窗口（交易日）
-RISK_PARITY_MAX_WEIGHT = 0.25    # 单资产权重上限
+RISK_PARITY_MAX_WEIGHT = 0.18    # 单资产权重上限（0.18 网格搜索最优，压制10Y国债过度集中）
 RISK_PARITY_MIN_WEIGHT = 0.02    # 单资产权重下限
 
 # === Gold 抄底参数 ===
 GOLD_DIP_THRESHOLD = 0.15        # 黄金从高点回撤超过此阈值触发抄底
 GOLD_DIP_BOOST = 2.0             # 触发后黄金权重翻倍倍数（2.0 = 翻倍）
 HS300_DIP_THRESHOLD = 0.35       # 沪深300从高点回撤超过此阈值触发抄底（仅史诗级股灾）
-HS300_DIP_BOOST = 3.0            # 触发后沪深300权重翻倍倍数（3x，仅史诗级股灾触发）
+HS300_DIP_BOOST = 2.5            # 触发后沪深300权重翻倍倍数（2.5x，35%阈值下最优）
