@@ -480,7 +480,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h3 class="sec-h3">⚙️ 权重计算机制（每月自动执行）</h3>
 <p class="para"><strong>第一层 — 桶间等权：</strong>增长↑ / 收益垫 / 增长↓10Y / 增长↓30Y / 通胀↑ 五个桶各分配 20% 风险预算。</p>
 <p class="para"><strong>第二层 — 桶内逆波动率：</strong>每个桶内部，波动率越低的资产权重越大。单资产上限 25%、下限 2%。</p>
-<p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。最关键的风控增强。</p>
+<p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。</p>
+<p class="para"><strong>Gold 抄底：</strong>黄金从高点回撤超过 15% → 翻倍增持黄金（从信用债提取）。与趋势过滤互补。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>桶（各 20%）</th>
@@ -493,6 +494,29 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr><td class="td-first">增长↓10Y</td><td class="td-num">10年国债</td><td class="td-num">独占 20%（久期~8年）</td></tr>
 <tr><td class="td-first">增长↓30Y</td><td class="td-num">30年国债</td><td class="td-num">独占 20%（久期~18年）</td></tr>
 <tr><td class="td-first">通胀↑</td><td class="td-num">黄金 / 有色 / 豆粕</td><td class="td-num">桶内逆波动率加权</td></tr>
+</tbody></table>
+<h3 class="sec-h3">📊 典型持仓清单（按 100 万本金，2025年末快照）</h3>
+<p class="para" style="font-size:13px; color:#888;">⚠ 权重每月根据波动率自动调整，以下为 2025年12月末的典型权重快照，仅供参考。</p>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>桶</th>
+<th>资产</th>
+<th>代码</th>
+<th>100% RP</th>
+<th>85% RP</th>
+<th>70% RP</th>
+</tr></thead>
+<tbody>
+<tr><td class="td-first">增长↑</td><td class="td-num">沪深 300 ETF</td><td class="td-num">510300</td><td class="td-num">5.1万</td><td class="td-num">4.3万</td><td class="td-num">3.6万</td></tr>
+<tr><td class="td-first">增长↑</td><td class="td-num">红利 ETF（中证红利）</td><td class="td-num">510880</td><td class="td-num">9.4万</td><td class="td-num">8.0万</td><td class="td-num">6.6万</td></tr>
+<tr><td class="td-first">增长↑</td><td class="td-num">标普 500 ETF（QDII）</td><td class="td-num">513500</td><td class="td-num">5.5万</td><td class="td-num">4.7万</td><td class="td-num">3.9万</td></tr>
+<tr><td class="td-first">收益垫</td><td class="td-num">城投债 ETF</td><td class="td-num">511220</td><td class="td-num">20.0万</td><td class="td-num">17.0万</td><td class="td-num">14.0万</td></tr>
+<tr><td class="td-first">增长↓10Y</td><td class="td-num">10 年国债 ETF</td><td class="td-num">511260</td><td class="td-num">20.0万</td><td class="td-num">17.0万</td><td class="td-num">14.0万</td></tr>
+<tr><td class="td-first">增长↓30Y</td><td class="td-num">30 年国债 ETF</td><td class="td-num">511130</td><td class="td-num">20.0万</td><td class="td-num">17.0万</td><td class="td-num">14.0万</td></tr>
+<tr><td class="td-first">通胀↑</td><td class="td-num">黄金 ETF</td><td class="td-num">518880</td><td class="td-num">5.7万</td><td class="td-num">4.8万</td><td class="td-num">4.0万</td></tr>
+<tr><td class="td-first">通胀↑</td><td class="td-num">有色金属 ETF</td><td class="td-num">159980</td><td class="td-num">5.1万</td><td class="td-num">4.3万</td><td class="td-num">3.6万</td></tr>
+<tr><td class="td-first">通胀↑</td><td class="td-num">豆粕 ETF</td><td class="td-num">159985</td><td class="td-num">9.2万</td><td class="td-num">7.8万</td><td class="td-num">6.4万</td></tr>
+<tr><td class="td-first">合计</td><td class="td-num"></td><td class="td-num"></td><td class="td-num">100 万</td><td class="td-num">100 万</td><td class="td-num">100 万</td></tr>
 </tbody></table>
 <h3 class="sec-h3">📈 回测核心指标 (2015-01 ~ 2025-12)</h3>
 <table class="data-tbl" style="--header-color: #1F4E79;">
@@ -547,6 +571,31 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para"><strong>逆波动率直接加权：</strong>不经过桶层级，对 9 个资产直接按 1/波动率 计算权重。20 个交易日短窗口，快速响应。</p>
 <p class="para"><strong>单资产上限 25%：</strong>防止极端行情下个别资产权重过高。下限 2%。</p>
 <p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。最关键的风控增强。</p>
+<p class="para"><strong>Gold 抄底：</strong>黄金从高点回撤超过 15% → 翻倍增持黄金（从信用债提取）。周期性回调加仓，与趋势过滤互补。</p>
+<h3 class="sec-h3">📊 典型持仓清单（按 100 万本金，2025年末快照）</h3>
+<p class="para" style="font-size:13px; color:#888;">⚠ 权重每月根据波动率自动调整，以下为 2025年12月末的典型权重快照，仅供参考。逆波动率策略下债券因低波动自然获得高权重。</p>
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr>
+<th>桶</th>
+<th>资产</th>
+<th>代码</th>
+<th>100% RP</th>
+<th>85% RP</th>
+<th>70% RP</th>
+</tr></thead>
+<tbody>
+<tr><td class="td-first">增长↑</td><td class="td-num">沪深 300 ETF</td><td class="td-num">510300</td><td class="td-num">3.9万</td><td class="td-num">3.3万</td><td class="td-num">2.7万</td></tr>
+<tr><td class="td-first">增长↑</td><td class="td-num">红利 ETF（中证红利）</td><td class="td-num">510880</td><td class="td-num">6.3万</td><td class="td-num">5.4万</td><td class="td-num">4.4万</td></tr>
+<tr><td class="td-first">增长↑</td><td class="td-num">标普 500 ETF（QDII）</td><td class="td-num">513500</td><td class="td-num">3.9万</td><td class="td-num">3.3万</td><td class="td-num">2.7万</td></tr>
+<tr><td class="td-first">收益垫</td><td class="td-num">城投债 ETF</td><td class="td-num">511220</td><td class="td-num">48.3万</td><td class="td-num">41.1万</td><td class="td-num">33.8万</td></tr>
+<tr><td class="td-first">增长↓10Y</td><td class="td-num">10 年国债 ETF</td><td class="td-num">511260</td><td class="td-num">21.4万</td><td class="td-num">18.2万</td><td class="td-num">15.0万</td></tr>
+<tr><td class="td-first">增长↓30Y</td><td class="td-num">30 年国债 ETF</td><td class="td-num">511130</td><td class="td-num">4.7万</td><td class="td-num">4.0万</td><td class="td-num">3.3万</td></tr>
+<tr><td class="td-first">通胀↑</td><td class="td-num">黄金 ETF</td><td class="td-num">518880</td><td class="td-num">3.9万</td><td class="td-num">3.3万</td><td class="td-num">2.7万</td></tr>
+<tr><td class="td-first">通胀↑</td><td class="td-num">有色金属 ETF</td><td class="td-num">159980</td><td class="td-num">3.9万</td><td class="td-num">3.3万</td><td class="td-num">2.7万</td></tr>
+<tr><td class="td-first">通胀↑</td><td class="td-num">豆粕 ETF</td><td class="td-num">159985</td><td class="td-num">3.9万</td><td class="td-num">3.3万</td><td class="td-num">2.7万</td></tr>
+<tr><td class="td-first">合计</td><td class="td-num"></td><td class="td-num"></td><td class="td-num">100 万</td><td class="td-num">100 万</td><td class="td-num">100 万</td></tr>
+</tbody></table>
+<h3 class="sec-h3">📈 回测核心指标 (2015-01 ~ 2025-12)</h3>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>档位</th>
