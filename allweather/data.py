@@ -1,16 +1,27 @@
 """数据加载层 - 从 data/ 读取 CSV，处理 30Y 国债合成，返回回测期价格表。"""
 import pandas as pd
+import numpy as np
 from .config import DATA_DIR, BACKTEST_START, BACKTEST_END, BOND_30Y_AMP, SAFETY_DEDUCT
 
 
 def load_series(name: str) -> pd.Series:
-    """从 CSV 加载单资产收盘价时间序列（按日期升序）。"""
+    """从 CSV 加载单资产收盘价时间序列（按日期升序）。
+
+    若文件不存在（旧的 ETF 文件可能尚未替换），返回空 Series 而非抛错，
+    让调用方有机会降级到 proxy-only 方案。
+    """
     path = DATA_DIR / f"{name}.csv"
     if not path.exists():
-        raise FileNotFoundError(
-            f"找不到数据文件 {path}。请先运行 fetch.py 拉取数据，"
-            f"或确认 data/ 目录下有 {name}.csv。"
-        )
+        return pd.Series(dtype=float)
+    df = pd.read_csv(path, parse_dates=["date"])
+    return df.set_index("date")["close"].sort_index()
+
+
+def _load_optional(name: str) -> pd.Series | None:
+    """加载可选数据文件；不存在返回 None。"""
+    path = DATA_DIR / f"{name}.csv"
+    if not path.exists():
+        return None
     df = pd.read_csv(path, parse_dates=["date"])
     return df.set_index("date")["close"].sort_index()
 
@@ -159,66 +170,159 @@ def synthesize_bond_30y(s_10y: pd.Series, s_30y_etf: pd.Series) -> pd.Series:
 
 
 def _load_bond_10y() -> pd.Series:
-    """加载 10Y 国债序列：bond_10y_etf (2017-08+) + bond_credit proxy(2015-2017-08)。
+    """加载 10Y 国债序列：ETF (2017-08+) + 国债总指数 (2008-2017)。
 
-    cb_10y_idx (sh000139) 在 2015-2019 数据受股灾污染，改用信用债 ETF
-    作为 pre-ETF 替代（2015-2017，约 2.5 年），信用债与国债久期相近。
+    国债总指数 (bond_treasury_index_cbond) 覆盖 2008+，比用 credit proxy
+    更适合代表国债收益。
     """
     etf = load_series("bond_10y_etf")  # 511260, 2017-08-04 起
-    proxy = load_series("bond_credit")  # 511220, 2015+，作为国债替代
+    treasury_idx = load_series("treasury_idx")
+
+    if etf.empty and treasury_idx.empty:
+        raise FileNotFoundError("bond_10y_etf 和 treasury_idx 都不可用")
+
+    if etf.empty:
+        return treasury_idx
+
+    # treasury_idx 作为 pre-ETF 替代
+    if treasury_idx.empty:
+        proxy = load_series("bond_credit")
+    else:
+        proxy = treasury_idx
 
     return stitch_series(etf, proxy, annual_deduct=0.0)
+
+
+def _load_gold_cny() -> pd.Series:
+    """黄金 CNY：ETF (2015+) + 伦敦金×USDCNY (2008-2015)。
+
+    伦敦金 XAU 报价为 USD/oz，乘以 USDCNY 得到 CNY/oz。
+    绝对价格级别会通过 stitch_series 归一化对齐，故不需要除以 31.1035。
+    """
+    etf = load_series("gold")
+    london = _load_optional("london_gold")
+    usdcny = _load_optional("usdcny")
+
+    if etf.empty and london is None:
+        raise FileNotFoundError("gold ETF 和 london_gold 都不可用")
+
+    if london is None or usdcny is None:
+        return etf
+
+    # 合并日历，用 ffill 填充汇率
+    combined = london.index.union(usdcny.index).union(etf.index).sort_values()
+    london = london.reindex(combined).ffill()
+    usdcny = usdcny.reindex(combined).ffill()
+    gold_cny = london * usdcny
+    gold_cny.name = "close"
+
+    if etf.empty:
+        return gold_cny
+
+    return stitch_series(etf, gold_cny, annual_deduct=0.0)
+
+
+def _load_sp500_cny() -> pd.Series:
+    """标普500 CNY：ETF (2015+) + .INX×USDCNY。
+
+    us_sp500.csv 当前存的是 ETF NAV（已含 CNY），
+    若存在 sp500_idx.csv 则用于 pre-ETF 拼接。
+    """
+    etf = load_series("us_sp500")
+    # 尝试加载 S&P500 指数原始数据 + USDCNY
+    sp500_usd = _load_optional("sp500_idx")
+    usdcny = _load_optional("usdcny")
+
+    if sp500_usd is None or usdcny is None:
+        return etf if not etf.empty else load_series("us_sp500")
+
+    combined = sp500_usd.index.union(usdcny.index).union(etf.index if not etf.empty else []).sort_values()
+    sp500_usd = sp500_usd.reindex(combined).ffill()
+    usdcny = usdcny.reindex(combined).ffill()
+    sp500_cny = sp500_usd * usdcny
+    sp500_cny.name = "close"
+
+    if etf.empty:
+        return sp500_cny
+
+    return stitch_series(etf, sp500_cny, annual_deduct=0.0)
+
+
+def _load_with_index(etf_name: str, idx_name: str, annual_deduct: float = 0.0) -> pd.Series:
+    """通用：ETF + 指数 proxy 拼接。两文件都不存在则抛错。"""
+    etf = load_series(etf_name)
+    proxy = _load_optional(idx_name)
+
+    if etf.empty and proxy is None:
+        raise FileNotFoundError(f"{etf_name} 和 {idx_name} 都不可用")
+
+    if proxy is None:
+        return etf
+    if etf.empty:
+        return proxy
+
+    return stitch_series(etf, proxy, annual_deduct=annual_deduct)
 
 
 def load_panel() -> pd.DataFrame:
     """加载 9 资产收盘价面板（含缝合，对齐到回测期间，前向填充）。
 
-    7 个资产直接从 2015 拉 ETF NAV，
-    3 个资产通过 stitch_series() 缝合早期替代数据。
+    2008+ 延长回测：ETF 上市前的期间用指数/期货/国际价格拼接。
     """
-    # 直接加载的资产（ETF NAV 从 2015 起）
-    direct = {k: load_series(k) for k in [
-        "hs300", "div_lowvol",
-        "bond_credit", "gold", "us_sp500",
-    ]}
+    # 权益：ETF + 指数 proxy
+    hs300 = _load_with_index("hs300", "hs300_idx", annual_deduct=0.0)
+    div_idx = _load_with_index("div_lowvol", "div_idx_src", annual_deduct=0.0)
+    credit = _load_with_index("bond_credit", "credit_idx", annual_deduct=0.0)
 
-    # bond_10y: bond_10y_etf(2017-08+) + cb_10y_idx清洗版(2015-2017)
+    # 海外权益 & 黄金：需要用汇率换算
+    us_sp500 = _load_sp500_cny()
+    gold = _load_gold_cny()
+
+    # 债券
     bond_10y = _load_bond_10y()
-
-    # bond_30y: 三阶段合成（依赖 bond_10y）
     s_30y_etf = load_series("bond_30y_etf")
     bond_30y = synthesize_bond_30y(bond_10y, s_30y_etf)
 
-    # nonferr: 申万有色指数(2015-2019) + ETF(2019+)
+    # nonferr: 沪铜 (2008-2013) → 申万有色指数 (2013-2019) → ETF (2019+)
     nonferr_etf = load_series("nonferr")
-    proxy_path = DATA_DIR / "nonferr_idx.csv"
-    if proxy_path.exists():
-        nonferr_proxy = pd.read_csv(proxy_path, parse_dates=["date"])\
-                          .set_index("date")["close"].sort_index()
+    nonferr_idx = load_series("nonferr_idx")
+    shfe_copper = load_series("shfe_copper")
+
+    # 构建 pre-ETF 的完整 proxy 链（铜 → 指数）
+    if not shfe_copper.empty and not nonferr_idx.empty:
+        nonferr_proxy = stitch_series(nonferr_idx, shfe_copper, annual_deduct=0.0)
+    elif not nonferr_idx.empty:
+        nonferr_proxy = nonferr_idx
+    else:
+        nonferr_proxy = shfe_copper
+
+    if not nonferr_etf.empty and not nonferr_proxy.empty:
         nonferr = stitch_series(nonferr_etf, nonferr_proxy,
                                 annual_deduct=SAFETY_DEDUCT["nonferr"])
-    else:
+    elif not nonferr_etf.empty:
         nonferr = nonferr_etf
+    else:
+        nonferr = nonferr_proxy
 
-    # soymeal: 豆粕期货主力(2015-2019) + ETF(2019+)
+    # soymeal: 豆粕期货 M0 (2008-2019) → ETF (2019+)
     soymeal_etf = load_series("soymeal")
-    proxy_path = DATA_DIR / "soymeal_fut.csv"
-    if proxy_path.exists():
-        soymeal_proxy = pd.read_csv(proxy_path, parse_dates=["date"])\
-                          .set_index("date")["close"].sort_index()
+    soymeal_proxy = load_series("soymeal_fut")
+    if not soymeal_etf.empty and not soymeal_proxy.empty:
         soymeal = stitch_series(soymeal_etf, soymeal_proxy,
                                 annual_deduct=SAFETY_DEDUCT["soymeal"])
-    else:
+    elif not soymeal_etf.empty:
         soymeal = soymeal_etf
+    else:
+        soymeal = soymeal_proxy
 
     panel = pd.DataFrame({
-        "hs300":    direct["hs300"],
-        "div_idx":  direct["div_lowvol"],
-        "us_sp500": direct["us_sp500"],
-        "credit":   direct["bond_credit"],
+        "hs300":    hs300,
+        "div_idx":  div_idx,
+        "us_sp500": us_sp500,
+        "credit":   credit,
         "bond_10y": bond_10y,
         "bond_30y": bond_30y,
-        "gold":     direct["gold"],
+        "gold":     gold,
         "nonferr":  nonferr,
         "soymeal":  soymeal,
     })

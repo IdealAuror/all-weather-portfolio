@@ -67,7 +67,7 @@ def print_yearly_table(yearly_results: dict, years=None):
     """分年化收益表。yearly_results: {port: pd.Series}"""
     print_header("【2】分年化收益（100% RP 档）")
     if years is None:
-        years = list(range(2015, 2026))
+        years = list(range(2008, 2026))
     print(f"  {'方案':<14}" + "".join(f"{y:>9}" for y in years))
     for port, s in yearly_results.items():
         line = f"  {port:<14}"
@@ -169,7 +169,7 @@ def print_summary_recommendation():
     for port, tag in PORTFOLIO_TAGS.items():
         print(f"  {tag['stars']:<5}  {port:<18}  {tag['label']}")
     print()
-    print("  注：V3c 固定权重+月度调仓+趋势过滤；V3-B 5桶+Gold/HS300抄底 CAGR 最高（9.62%）；保守增强+Gold/HS300抄底 Sharpe 最高（2.04）")
+    print("  注：V3c 固定权重+月度调仓+趋势过滤；V3-B 5桶+Gold/HS300抄底 CAGR 最高（8.48%）；保守增强+Gold/HS300抄底 Sharpe 最高（1.52）")
     print()
 
 

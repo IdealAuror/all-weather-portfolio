@@ -55,9 +55,9 @@ def _section_header():
 def _section_recommendation():
     items = sorted(PORTFOLIO_TAGS.items(), key=lambda kv: -len(kv[1]["stars"]))
     notes = {
-        "V3c 多元": "实战派 — 固定权重月度再平衡 + nonferr 趋势过滤（7.76%）",
-        "V3-B 风险平价(20d)": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold/HS300抄底，CAGR 9.62%",
-        "V3-B 保守增强(20d)": "保守增强 — 逆波动率+nonferr趋势过滤+Gold/HS300抄底，Sharpe 最高（2.04）",
+        "V3c 多元": "实战派 — 固定权重月度再平衡 + nonferr 趋势过滤（6.64%）",
+        "V3-B 风险平价(20d)": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold/HS300抄底，CAGR 8.48%",
+        "V3-B 保守增强(20d)": "保守增强 — 逆波动率+nonferr趋势过滤+Gold/HS300抄底，Sharpe 最高（1.52）",
     }
     rows = [(tag["stars"], port, tag["label"], notes.get(port, ""))
             for port, tag in items]
@@ -66,7 +66,7 @@ def _section_recommendation():
         "",
         _md_table(["推荐度", "方案", "标签", "说明"], rows),
         "",
-        "> **V3c** 和 **V3-B** 是两条不同路线的 ★★★ 推荐：V3-B 5桶(10Y/30Y分拆) CAGR 最高（8.13%），V3c 落地最简单，保守增强 Sharpe 最高（1.98）适合低波动偏好。",
+        "> **V3c** 和 **V3-B** 是两条不同路线的 ★★★ 推荐：V3-B 5桶(10Y/30Y分拆) CAGR 最高（8.19%），V3c 落地最简单，保守增强 Sharpe 最高（1.52）适合低波动偏好。",
         "",
     ]
 
@@ -97,7 +97,7 @@ def _section_perf(perf_results):
 
 def _section_yearly(yearly_results, years=None):
     if years is None:
-        years = [2020, 2021, 2022, 2023, 2024, 2025]
+        years = list(range(2008, 2026))
     rows = []
     for port, s in yearly_results.items():
         row = [port] + [_pct(s.get(y, None), sign=True) for y in years]
