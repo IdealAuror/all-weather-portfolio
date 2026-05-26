@@ -1,0 +1,45 @@
+<h2>奥卡姆剃刀：当前状态 vs. 三种精简方案</h2>
+<p class="subtitle">11年回测结论：最简单的V3c固定权重（CAGR 7.45%, Sharpe 1.26）跑赢所有更复杂的动态方案。桥水也不做择时。</p>
+
+<div class="section">
+  <h3>当前状态：6 策略 × 3 现金档 = 18 回测</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.8;">
+      <b>固定权重</b><br>
+      &nbsp;&nbsp;V3c 多元 ★★★ &nbsp;CAGR 7.45% Sharpe 1.26 ← <span style="color:#22c55e">最优</span><br>
+      &nbsp;&nbsp;V3b 平衡 ★★ &nbsp;&nbsp;CAGR 7.12% Sharpe 1.22<br>
+      &nbsp;&nbsp;V3d 商品 ★★ &nbsp;&nbsp;CAGR 7.24% Sharpe 1.09<br>
+      <b>含短债</b><br>
+      &nbsp;&nbsp;V3-A 保守 ★★ &nbsp;CAGR 6.83% Sharpe 1.14<br>
+      <b>风险平价</b><br>
+      &nbsp;&nbsp;V3-B 60d ★★★ &nbsp;CAGR 7.01% Sharpe 1.14<br>
+      &nbsp;&nbsp;V3-B 120d ★★★ &nbsp;CAGR 6.84% Sharpe 1.09<br>
+      <br>
+      <span style="color:#f59e0b">问题：6个策略，但只有V3c最优。其余5个存在的理由是什么？</span>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>仅调整推荐层级</h3>
+      <p>保留6策略代码不变，但推荐表中只突出V3c一个"主推"，其余降为"参考/特殊场景"。改动最小。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>砍掉无效策略，只留固定权重</h3>
+      <p>删除V3-A（短债拖累收益）和V3-B（月度调仓只是噪音）。只保留V3b/V3c/V3d三套固定权重。代码和文档大幅简化。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>只留一个策略</h3>
+      <p>极简主义：V3c就是答案。一个策略×三档现金=3个回测。文档一句话："买这9个ETF，半年看一次，偏了3%就调。" 最大化奥卡姆剃刀。</p>
+    </div>
+  </div>
+</div>

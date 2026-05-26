@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 from .config import (
-    RISK_FREE_RATE, RISK_PARITY_WINDOW, RISK_PARITY_WINDOW_LONG,
+    RISK_FREE_RATE, RISK_PARITY_WINDOW,
     RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT, BUCKET_GROUPS,
 )
 from .risk import hierarchical_rp_weights

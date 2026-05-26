@@ -56,8 +56,8 @@ def _section_recommendation():
     items = sorted(PORTFOLIO_TAGS.items(), key=lambda kv: -len(kv[1]["stars"]))
     notes = {
         "V3c 多元": "实战派 — 固定权重+阈值再平衡，11年回测最优（Sharpe 1.26）",
-        "V3-B 风险平价(60d)": "学院派（战术）— 分层风险平价，月度调仓，回撤最浅",
-        "V3-B 风险平价(120d)": "学院派（战略）— 长窗口风险平价，接近桥水战略定位",
+        "V3-B 风险平价(60d)": "学院派 — 分层风险平价，月度调仓",
+        "V3-B 保守增强(60d)": "保守增强 — risk_parity桶+nonferr趋势过滤，回撤最浅（-3.52%）",
     }
     rows = [(tag["stars"], port, tag["label"], notes.get(port, ""))
             for port, tag in items]
