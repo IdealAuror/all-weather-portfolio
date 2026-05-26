@@ -169,7 +169,7 @@ def print_summary_recommendation():
     for port, tag in PORTFOLIO_TAGS.items():
         print(f"  {tag['stars']:<5}  {port:<18}  {tag['label']}")
     print()
-    print("  注：V3c 固定权重+月度调仓+趋势过滤；V3-B 5桶+Gold抄底 CAGR 最高（8.47%）；保守增强+Gold抄底 Sharpe 最高（1.99）")
+    print("  注：V3c 固定权重+月度调仓+趋势过滤；V3-B 5桶+Gold/HS300抄底 CAGR 最高（9.24%）；保守增强+Gold/HS300抄底 Sharpe 最高（2.05）")
     print()
 
 

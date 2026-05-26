@@ -12,8 +12,8 @@ WEIGHTS = {
 
 PORTFOLIO_TAGS = {
     "V3c 多元":            {"stars": "★★★", "label": "实战派 — 固定权重月度再平衡 + nonferr 趋势过滤"},
-    "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold抄底"},
-    "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 + nonferr 趋势过滤 + Gold抄底，Sharpe 最高"},
+    "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold/HS300抄底"},
+    "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 + nonferr 趋势过滤 + Gold/HS300抄底，Sharpe 最高"},
 }
 
 
