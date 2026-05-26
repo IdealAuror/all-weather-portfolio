@@ -143,6 +143,27 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 .toc li { margin: 6px 0; }
 .toc a { color: #2e75b6; text-decoration: none; }
 .toc a:hover { text-decoration: underline; }
+.gh-ribbon {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 999;
+}
+.gh-ribbon a {
+    display: inline-block;
+    background: #1f4e79;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 0 0 0 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: background 0.2s;
+}
+.gh-ribbon a:hover {
+    background: #2e75b6;
+}
 @media print {
     body { background: white; padding: 0; }
     .ch-h1 { page-break-before: auto; }
@@ -151,6 +172,10 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </style>
 </head>
 <body>
+
+<div class="gh-ribbon">
+  <a href="https://github.com/IdealAuror/all-weather-portfolio" target="_blank">View on GitHub</a>
+</div>
 
 <div class="toc"><h3>📑 目录</h3><ol><li><a href="#ch0">一、桥水全天候策略核心逻辑</a></li><li><a href="#ch1">二、美版蓝本：RPAR / ALLW / All Seasons</a></li><li><a href="#ch2">三、中国版风险平价策略 — V3c / V3-B 风险平价 / V3-B 保守增强</a></li><li><a href="#ch3">四、三方案对比一表看清</a></li><li><a href="#ch4">五、调仓规则：月度再平衡 + nonferr 趋势过滤</a></li><li><a href="#ch5">六、风险提示</a></li><li><a href="#ch6">七、落地执行手册：从今天开始做什么</a></li><li><a href="#ch7">八、本方案 vs 网上常见中国版的差异</a></li><li><a href="#ch8">九、附录：ETF 速查表</a></li><li><a href="#ch9">十、参考资料</a></li></ol></div>
 <h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
