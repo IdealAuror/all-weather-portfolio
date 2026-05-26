@@ -24,7 +24,7 @@ SAFETY_DEDUCT = {
 }
 
 # === 调仓规则 ===
-REBAL_FREQ = "2QE"           # 半年节点
+REBAL_FREQ = "ME"            # 月度再平衡（V3c）
 REBAL_THRESHOLD = 0.03       # 3% 偏离阈值
 RISK_FREE_RATE = 0.022 / 252 # 货币基金年化 2.2%（日度）
 RISK_FREE_ANNUAL = 0.022         # 无风险利率年化，用于 Sharpe 修正

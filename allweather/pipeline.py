@@ -43,10 +43,11 @@ def step_2_run_backtests(rets):
     nv_results = {}
     n_rebal_total = 0
 
-    # --- 固定权重回测（V3c）---
+    # --- 固定权重回测（V3c 月度 + nonferr 趋势过滤）---
     for port, w in weights.items():
         for tier_label, c in CASH_TIERS:
-            nv, n = backtest(w, rets, cash_ratio=c)
+            nv, n = backtest(w, rets, cash_ratio=c, rebal_freq="ME",
+                              nonferr_trend_window=60)
             nv_results[(port, tier_label)] = nv
             n_rebal_total += n
 

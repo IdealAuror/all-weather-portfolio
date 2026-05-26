@@ -169,7 +169,7 @@ def print_summary_recommendation():
     for port, tag in PORTFOLIO_TAGS.items():
         print(f"  {tag['stars']:<5}  {port:<18}  {tag['label']}")
     print()
-    print("  注：V3c 落地最简单；V3-B 5桶(10Y/30Y分拆) CAGR 最高（8.13%）；保守增强 Sharpe 最高（1.98）适合低波动偏好")
+    print("  注：V3c 固定权重+月度调仓+趋势过滤；V3-B 5桶 CAGR 最高（8.13%）；保守增强 Sharpe 最高（1.98）")
     print()
 
 
