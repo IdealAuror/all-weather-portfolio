@@ -126,6 +126,32 @@ table.data-tbl tbody tr:nth-child(even) { background: #fbfbfb; }
 table.data-tbl tbody tr:hover { background: #f5f9fc; }
 .td-first { font-weight: 600; color: #333; }
 .td-num { text-align: center; color: #555; font-variant-numeric: tabular-nums; }
+.td-pos { color: #27ae60; }
+.td-neg { color: #c0392b; }
+.tbl-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 14px 0 22px 0;
+    scrollbar-width: thin;
+    scrollbar-color: #c0c0c0 #f0f0f0;
+}
+.tbl-scroll table { margin: 0; box-shadow: none; }
+.tbl-scroll .td-first {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 1;
+    border-right: 2px solid #e0e0e0;
+}
+.tbl-scroll thead .th-first {
+    position: sticky;
+    left: 0;
+    background: var(--header-color, #1f4e79);
+    z-index: 2;
+    border-right: 2px solid rgba(255,255,255,0.3);
+}
+.tbl-scroll tbody tr:nth-child(even) .td-first { background: #fbfbfb; }
+.tbl-scroll tbody tr:hover .td-first { background: #f5f9fc; }
 .toc {
     background: white;
     padding: 18px 24px;
@@ -425,10 +451,48 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">1.28</td>
 </tr>
 </tbody></table>
-<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
-<table class="data-tbl" style="--header-color: #C0392B;">
+<h3 class="step-h">📊 累计收益对比（100% RP 档）</h3>
+<p class="para">2008-2025 共 18 个完整年度。V3-B 累计收益领跑（+342%），保守增强回撤最浅（-3.63%）。</p>
+<table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>方案</th>
+<th>累计收益</th>
+<th>CAGR</th>
+<th>最大回撤</th>
+<th>Sharpe</th>
+<th>期末净值（100 万→）</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">V3c 多元</td>
+<td class="td-num td-pos">+222.88%</td>
+<td class="td-num">6.64%</td>
+<td class="td-num td-neg">-6.90%</td>
+<td class="td-num">1.00</td>
+<td class="td-num">322.9 万</td>
+</tr>
+<tr>
+<td class="td-first">V3-B 风险平价(20d)</td>
+<td class="td-num td-pos">+341.59%</td>
+<td class="td-num">8.48%</td>
+<td class="td-num td-neg">-8.19%</td>
+<td class="td-num">1.24</td>
+<td class="td-num">441.6 万</td>
+</tr>
+<tr>
+<td class="td-first">V3-B 保守增强(20d)</td>
+<td class="td-num td-pos">+263.04%</td>
+<td class="td-num">7.32%</td>
+<td class="td-num td-neg">-3.63%</td>
+<td class="td-num">1.52</td>
+<td class="td-num">363.0 万</td>
+</tr>
+</tbody></table>
+<h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
+<div class="tbl-scroll">
+<table class="data-tbl" style="--header-color: #C0392B;">
+<thead><tr>
+<th class="th-first">方案</th>
 <th>2008</th>
 <th>2009</th>
 <th>2010</th>
@@ -513,6 +577,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">+5.18%</td>
 </tr>
 </tbody></table>
+</div>
 <h3 class="sec-h3">（2008-2025 共 18 个年度）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
 <p class="para">• CAGR 6.64%，Sharpe 1.00，回撤 -6.90%</p>
