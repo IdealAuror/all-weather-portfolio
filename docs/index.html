@@ -386,6 +386,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <table class="data-tbl" style="--header-color: #C0392B;">
 <thead><tr>
 <th>方案</th>
+<th>2015</th>
 <th>2016</th>
 <th>2017</th>
 <th>2018</th>
@@ -400,6 +401,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">V3c 多元</td>
+<td class="td-num">+11.19%</td>
 <td class="td-num">+4.97%</td>
 <td class="td-num">+4.24%</td>
 <td class="td-num">+3.97%</td>
@@ -413,6 +415,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 <tr>
 <td class="td-first">V3-B 风险平价(20d)</td>
+<td class="td-num">+12.75%</td>
 <td class="td-num">+5.65%</td>
 <td class="td-num">+4.67%</td>
 <td class="td-num">+5.65%</td>
@@ -426,6 +429,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 <tr>
 <td class="td-first">V3-B 保守增强(20d)</td>
+<td class="td-num">+12.24%</td>
 <td class="td-num">+3.82%</td>
 <td class="td-num">+4.73%</td>
 <td class="td-num">+5.63%</td>
@@ -438,7 +442,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">+5.18%</td>
 </tr>
 </tbody></table>
-<h3 class="sec-h3">（2015 为建仓年，分年收益从 2016 起计，共 10 个完整年度）</h3>
+<h3 class="sec-h3">（2015-2025 共 11 个年度）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
 <p class="para">• CAGR 7.76%，Sharpe 1.44，回撤 -4.68%</p>
 <p class="para">• 蒙特卡洛 5%-分位下沿 +22.05%（5 年），下沿最厚实</p>
@@ -658,6 +662,21 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para"><strong>回测验证：</strong>V3c 半年调仓时加趋势过滤无效（CAGR 7.45%→7.36%），改为月度后 CAGR 升至 7.76%、MDD 从 -6.71% 降至 -4.68%。趋势过滤需要月度或更高频调仓才能发挥。</p>
 <h3 class="sec-h3">交易成本</h3>
 <p class="para">月度调仓约 132 次/策略/11年，每次平均换手 8%、单边费率 0.15%，年化成本约 0.018% — 几乎可忽略。</p>
+<h3 class="sec-h3">探索过但未采用的风控机制</h3>
+<p class="para">以下四种机制均经过回测验证，结论为无效或冗余。记录于此以避免重复探索。</p>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>机制</th>
+<th>测试范围</th>
+<th>结论</th>
+<th>原因</th>
+</tr></thead>
+<tbody>
+<tr><td class="td-first">波动率目标降仓</td><td class="td-num">V3-B / 保守增强<br>目标 4%~8%</td><td class="td-num">无效</td><td class="td-num">组合波动（2.4%~3.5%）远低于目标，缩放系数始终=1.0，11年从未触发</td></tr>
+<tr><td class="td-first">DD 刹车</td><td class="td-num">V3-B / 保守增强<br>阈值 -3%/-5%/-8%</td><td class="td-num">冗余</td><td class="td-num">nonferr 趋势过滤已将 MDD 控制在低位，叠加 DD 刹车 CAGR 和 MDD 几乎不变</td></tr>
+<tr><td class="td-first">Gold / Soymeal 趋势过滤</td><td class="td-num">V3-B / 保守增强<br>窗口 60~250d</td><td class="td-num">无效</td><td class="td-num">黄金是避险资产（危机期跳涨，趋势过滤会错误剔除）；豆粕受供给冲击驱动，非趋势性下跌。仅 nonferr 值得过滤</td></tr>
+<tr><td class="td-first">方案 C 动态补仓<br>(70/30 现金储备)</td><td class="td-num">V3-B 5桶<br>DD 阈值 -2%/-5%<br>储备 15%~40%</td><td class="td-num">失败</td><td class="td-num">低阈值（-2%）过早耗尽弹药；高阈值（-5%+）永不触发。动态补仓 = 静态现金档位的等价物，现金机会成本 &gt; 择时收益。5桶结构下 V3-B MDD 仅 -4.14%，问题更严重</td></tr>
+</tbody></table>
 <h2 class="ch-h1" id="ch5">六、风险提示</h2>
 <p class="warning">⚠ 回测窗口偏差：2015-01 ~ 2025-12 覆盖了 2015 股灾、2016 熔断、2018 大熊市等多轮极端行情，未来债券预期收益大概率低于历史。建议把 CAGR 预期下调 1-2 个百分点。</p>
 <p class="warning">⚠ QDII 限购与溢价：标普 500 ETF (513500) 经常出现 1-3% 溢价、不定期限购，实际买入成本可能高于回测假设。可考虑分批建仓或在贴水时增配。</p>
