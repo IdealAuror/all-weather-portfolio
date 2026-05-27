@@ -87,7 +87,12 @@
       "Bash(gh repo *)",
       "Bash(git tag *)",
       "Bash(git rm *)",
-      "Bash(git worktree *)"
+      "Bash(git worktree *)",
+      "Bash(diff docs/index.html 桥水全季节.html)",
+      "Read(//tmp/**)",
+      "Bash(pip install *)",
+      "Bash(uv pip *)",
+      "Bash(git merge *)"
     ]
   }
 }
