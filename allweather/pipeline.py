@@ -6,7 +6,7 @@ import time
 import pandas as pd
 from .data import load_panel
 from .portfolios import get_weights
-from .backtest import backtest
+from .backtest import backtest, backtest_iv
 from .stats import (
     perf_metrics, yearly_returns, event_returns,
     bucket_risk_contribution, regime_returns, rolling_stats,
@@ -15,7 +15,10 @@ from .stats import (
 from .config import (
     CASH_TIERS, STRESS_EVENTS,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
+    V3C_ASSETS, BUCKET_GROUPS,
 )
+
+V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
 from . import reports
 
 
@@ -43,19 +46,18 @@ def step_2_run_backtests(rets):
     nv_results = {}
     n_rebal_total = 0
 
-    # --- 固定权重回测（V3c 月度 + nonferr 趋势过滤）---
-    for port, w in weights.items():
-        for tier_label, c in CASH_TIERS:
-            nv, n = backtest(w, rets, cash_ratio=c, rebal_freq="ME",
-                              nonferr_trend_window=60)
-            nv_results[(port, tier_label)] = nv
-            n_rebal_total += n
+    # --- V3c: 逆波动率加权（60d，6 资产精简）+ nonferr 趋势过滤 + 抄底 ---
+    for tier_label, c in CASH_TIERS:
+        nv, n = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
+                            nonferr_trend_window=60, assets=V3C_ASSETS)
+        nv_results[("V3c 多元", tier_label)] = nv
+        n_rebal_total += n
 
 
     # --- 方案 B: 分层风险平价（20d）+ nonferr 趋势过滤 ---
     from .strategy_b import backtest_b
     for tier_label, c in CASH_TIERS:
-        nv, n = backtest_b(rets, cash_ratio=c, rp_window=20,
+        nv, n = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75)
         nv_results[("V3-B 风险平价(20d)", tier_label)] = nv
@@ -63,7 +65,7 @@ def step_2_run_backtests(rets):
 
     # --- 方案 B 增强: 逆波动率 + nonferr 趋势过滤 ---
     for tier_label, c in CASH_TIERS:
-        nv, n = backtest_b(rets, cash_ratio=c, rp_window=20,
+        nv, n = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
                             max_w=0.25,
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
@@ -103,9 +105,9 @@ def step_3_compute_metrics(nv_results, weights, rets):
         events[p] = event_returns(nv_results[key], STRESS_EVENTS)
         rolling[p] = rolling_stats(nv_results[key])
 
-    # V3-B 无固定权重，跳过风险贡献分解
+    # V3c / V3-B 无固定权重，跳过风险贡献分解
     for (p, tier), nv_s in nv_results.items():
-        if "V3-B" in p and tier == "100% RP":
+        if ("V3-B" in p or "V3c" in p) and tier == "100% RP":
             yearly[p] = yearly_returns(nv_s)
             regime[p] = regime_returns(nv_s, rets)
             events[p] = event_returns(nv_s, STRESS_EVENTS)
@@ -133,19 +135,22 @@ def step_4_bootstrap(weights, rets, nv_results=None):
         rets_for_p = rets[list(w.index)]
         boot[p] = block_bootstrap(w, rets_for_p)
 
-    # V3-B: 用最近窗口权重作 Bootstrap 代理（分层RP或逆波动率）
+    # V3c / V3-B: 用最近窗口权重作 Bootstrap 代理
     from .risk import hierarchical_rp_weights, inverse_vol_weights
     from .config import BUCKET_GROUPS as BOOT_BG
     rp_buckets_boot = {k: list(v) for k, v in BOOT_BG.items()}
     for (portfolio, tier), _nv in (nv_results or {}).items():
-        if "V3-B" in portfolio and tier == "100% RP":
+        if ("V3-B" in portfolio or "V3c" in portfolio) and tier == "100% RP":
             boot_rets = rets
             if "保守增强" in portfolio:
                 proxy_w = inverse_vol_weights(
-                    boot_rets.tail(20), window=20, max_w=0.25, min_w=RISK_PARITY_MIN_WEIGHT)
+                    boot_rets[V3B_ASSETS].tail(20), window=20, max_w=0.25, min_w=RISK_PARITY_MIN_WEIGHT)
+            elif "V3c" in portfolio:
+                proxy_w = inverse_vol_weights(
+                    boot_rets[V3C_ASSETS].tail(60), window=60, max_w=0.30, min_w=0.03)
             else:
                 proxy_w = hierarchical_rp_weights(
-                    boot_rets.tail(20), rp_buckets_boot, 20,
+                    boot_rets[V3B_ASSETS].tail(20), rp_buckets_boot, 20,
                     RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
                     bucket_method="equal",
                 )
