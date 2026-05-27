@@ -15,18 +15,18 @@ body {
     padding: 0;
     background: #fafafa;
     display: flex;
+    justify-content: center;
 }
 .sidebar {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    width: 270px;
+    width: 260px;
     height: 100vh;
+    flex-shrink: 0;
     overflow-y: auto;
     background: white;
     border-right: 1px solid #e0e0e0;
-    padding: 28px 20px 28px 28px;
-    z-index: 100;
+    padding: 28px 20px 28px 24px;
     scrollbar-width: thin;
     scrollbar-color: #c0c0c0 transparent;
 }
@@ -56,9 +56,8 @@ body {
     text-decoration: underline;
 }
 .main-content {
-    margin-left: 270px;
-    flex: 1;
-    max-width: 900px;
+    max-width: 860px;
+    flex: 0 1 860px;
     padding: 40px 32px;
     min-width: 0;
 }
@@ -74,7 +73,8 @@ body {
         padding: 16px 20px;
     }
     .main-content {
-        margin-left: 0;
+        flex: auto;
+        max-width: none;
         padding: 24px 16px;
     }
 }
