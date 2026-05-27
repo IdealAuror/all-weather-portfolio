@@ -849,10 +849,41 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para"><strong>为什么沪深300 抄底要设 35% 这么高？</strong>A股真正熊市跌幅中位数 ~32%（2015 -44%，2018 -29%，2021-22 -34%，2023 -20%）。阈值过低（10-25%）会在半山腰接刀，回撤和 Sharpe 同时恶化。35% 恰好卡在"普通熊市"和"史诗级崩盘"之间——仅 2015 股灾和 2021-22 地产危机触发，平均五年一遇，本质上是一张"股灾保险"而非"逢低买入"。</p>
 <p class="para"><strong>为什么所有抄底资金都从信用债提取？</strong>单资金源原则——避免多资金源导致的复杂度爆炸。信用债（城投债 ETF）波动低、流动性好，是天然的"弹药库"。且趋势过滤触发时 nonferr 权重也是转入信用债，进出都在同一个池子。</p>
 <h3 class="sec-h3">各策略调仓规则</h3>
-<ul class="bullet-list"><li class="bullet"><strong>V3c 多元：</strong>逆波动率动态权重（60d 窗口），月度重算 + nonferr 趋势过滤(60d SMA) + Gold 抄底（回撤>15% 翻倍加仓）+ HS300 抄底（回撤>35% 2.5倍加仓）；</li>
-<li class="bullet"><strong>V3-B 风险平价(20d)：</strong>每月重算 5 桶逆波动率权重 + nonferr 趋势过滤(75d SMA) + Gold 抄底（回撤>15%翻倍加仓）+ HS300 抄底（回撤>35%2.5倍加仓）；</li>
-<li class="bullet"><strong>V3-B 保守增强(20d)：</strong>每月重算直接逆波动率权重（无桶层级）+ nonferr 趋势过滤(75d SMA) + Gold 抄底（回撤>15%翻倍加仓）+ HS300 抄底（回撤>35%2.5倍加仓）。</li>
-</ul>
+<table class="data-tbl" style="--header-color: #2E75B6;">
+<thead><tr>
+<th>策略</th>
+<th>权重方法</th>
+<th>窗口</th>
+<th>趋势过滤</th>
+<th>Gold 抄底</th>
+<th>HS300 抄底</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="td-first">V3c 多元</td>
+<td class="td-num">逆波动率动态</td>
+<td class="td-num">60d</td>
+<td class="td-num">60d SMA</td>
+<td class="td-num">回撤 &gt;15%，2.5x</td>
+<td class="td-num">回撤 &gt;35%，2.5x</td>
+</tr>
+<tr>
+<td class="td-first">V3-B 风险平价(20d)</td>
+<td class="td-num">5 桶 HRP</td>
+<td class="td-num">20d</td>
+<td class="td-num">75d SMA</td>
+<td class="td-num">回撤 &gt;15%，2.5x</td>
+<td class="td-num">回撤 &gt;35%，2.5x</td>
+</tr>
+<tr>
+<td class="td-first">V3-B 保守增强(20d)</td>
+<td class="td-num">逆波动率直接</td>
+<td class="td-num">20d</td>
+<td class="td-num">75d SMA</td>
+<td class="td-num">回撤 &gt;15%，2.5x</td>
+<td class="td-num">回撤 &gt;35%，2.5x</td>
+</tr>
+</tbody></table>
 <h3 class="sec-h3">为什么月度 + 趋势过滤是最优组合</h3>
 <table class="data-tbl" style="--header-color: #2E75B6;">
 <thead><tr>
