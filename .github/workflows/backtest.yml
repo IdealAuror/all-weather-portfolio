@@ -51,12 +51,26 @@ jobs:
           import json
           with open('output/summary.json', encoding='utf-8') as f:
               data = json.load(f)
-          # V3c 多元 100% RP（11 年期 2015-2025）：CAGR ≈ 7.45%, Sharpe ≈ 1.26, MDD ≈ -6.71%
+
           v3c = data['V3c 多元_100% RP']
-          assert 0.065 < v3c['cagr']   < 0.085,   f'CAGR 偏离: {v3c[\"cagr\"]:.4f}'
-          assert 0.95  < v3c['sharpe'] < 1.55,    f'Sharpe 偏离: {v3c[\"sharpe\"]:.2f}'
-          assert -0.09 < v3c['mdd']    < -0.04,   f'MDD 偏离: {v3c[\"mdd\"]:.4f}'
-          print(f'✅ V3c 多元 验证通过: CAGR={v3c[\"cagr\"]*100:.2f}% Sharpe={v3c[\"sharpe\"]:.2f} MDD={v3c[\"mdd\"]*100:.2f}%')
+          assert 0.075 < v3c['cagr']   < 0.095,   f'V3c CAGR: {v3c[\"cagr\"]:.4f}'
+          assert 1.20  < v3c['sharpe'] < 1.55,    f'V3c Sharpe: {v3c[\"sharpe\"]:.2f}'
+          assert -0.08 < v3c['mdd']    < -0.04,   f'V3c MDD: {v3c[\"mdd\"]:.4f}'
+          print(f'V3c OK: CAGR={v3c[\"cagr\"]*100:.2f}% Sharpe={v3c[\"sharpe\"]:.2f} MDD={v3c[\"mdd\"]*100:.2f}%')
+
+          v3b = data['V3-B 风险平价(20d)_100% RP']
+          assert 0.080 < v3b['cagr']   < 0.105,   f'V3-B RP CAGR: {v3b[\"cagr\"]:.4f}'
+          assert 1.20  < v3b['sharpe'] < 1.55,    f'V3-B RP Sharpe: {v3b[\"sharpe\"]:.2f}'
+          assert -0.09 < v3b['mdd']    < -0.05,   f'V3-B RP MDD: {v3b[\"mdd\"]:.4f}'
+          print(f'V3-B RP OK: CAGR={v3b[\"cagr\"]*100:.2f}% Sharpe={v3b[\"sharpe\"]:.2f} MDD={v3b[\"mdd\"]*100:.2f}%')
+
+          v3bc = data['V3-B 保守增强(20d)_100% RP']
+          assert 0.065 < v3bc['cagr']   < 0.085,   f'V3-B Cons CAGR: {v3bc[\"cagr\"]:.4f}'
+          assert 1.40  < v3bc['sharpe'] < 1.75,    f'V3-B Cons Sharpe: {v3bc[\"sharpe\"]:.2f}'
+          assert -0.06 < v3bc['mdd']    < -0.02,   f'V3-B Cons MDD: {v3bc[\"mdd\"]:.4f}'
+          print(f'V3-B Cons OK: CAGR={v3bc[\"cagr\"]*100:.2f}% Sharpe={v3bc[\"sharpe\"]:.2f} MDD={v3bc[\"mdd\"]*100:.2f}%')
+
+          print('All sanity checks passed')
           "
 
       - name: Upload artifacts

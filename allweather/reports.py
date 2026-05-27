@@ -77,6 +77,8 @@ def print_yearly_table(yearly_results: dict, years=None):
 
 
 def print_risk_contribution(rc_results: dict):
+    if not rc_results:
+        return
     print_header("【3】桶级风险贡献分解（协方差视角）")
     ports = list(rc_results.keys())
     buckets = list(rc_results[ports[0]].keys())
@@ -164,12 +166,45 @@ def print_holdings(weights_dict: dict, principal: float = 1_000_000):
 
 
 def print_summary_recommendation():
-    print_header("【9】方案推荐", char="*", width=100)
+    print_header("【9】策略评估与推荐", char="*", width=100)
     print()
-    for port, tag in PORTFOLIO_TAGS.items():
-        print(f"  {tag['stars']:<5}  {port:<18}  {tag['label']}")
-    print()
-    print("  注：V3c 固定权重+月度调仓+趋势过滤；V3-B 5桶+Gold/HS300抄底 CAGR 最高（8.48%）；保守增强+Gold/HS300抄底 Sharpe 最高（1.52）")
+
+    cards = [
+        ("V3c 多元", "★★★", "简约派", "6资产逆波动率 60d + nonferr趋势 + Gold/HS300抄底",
+         ["+ 资产最少(6个)，执行最简单",
+          "+ 中等回撤(-5.84%)，回报稳健(8.56%)",
+          "+ 每月调仓一次，交易频率低",
+          "- 无桶级风控，单资产上限 30% 较宽松",
+          "- 长期回报低于 V3-B RP"],
+         "适合：初入全天候、不想研究桶逻辑、追求简单透明"),
+
+        ("V3-B 风险平价(20d)", "★★★", "学院派", "5桶等权 x 桶内逆波动率 + trend + 抄底",
+         ["+ 长期回报最高 CAGR 9.16%，累计 395%",
+          "+ 五桶真正等权(20%x5)，全天候理念最纯正",
+          "+ 桶级分散 + 资产级分散双层风控",
+          "- 回撤最大(-7.00%)，最差年份 -3.97%",
+          "- 5桶逻辑比另外两个策略复杂"],
+         "适合：长期持有者(5年+)、认同正统全天候理念、能承受短期波动"),
+
+        ("V3-B 保守增强(20d)", "★★★", "保守增强", "逆波动率 20d + trend + 抄底，max_w=0.25",
+         ["+ 回撤最低(-3.83%)，最差年份仅 -0.61%",
+          "+ Sharpe 最高(1.62)，风险调整后效率最优",
+          "+ 熊市表现最好(2022 +2.8%，2018 +2.7%)",
+          "- 牛市可能跑输(2019仅+0.44%，2017仅+2.89%)",
+          "- 长期累计回报最低(273%)"],
+         "适合：保守型资金、退休/教育金、无法承受大幅回撤"),
+    ]
+
+    for name, stars, tagline, desc, items, audience in cards:
+        print(f"  {stars} {name} ({tagline})")
+        print(f"     {desc}")
+        for item in items:
+            print(f"     {item}")
+        print(f"     {audience}")
+        print()
+
+    print("  ── 一句话选策略 ──")
+    print("  要简单 → V3c   要高回报 → V3-B RP   要不亏钱 → V3-B 保守增强")
     print()
 
 

@@ -96,16 +96,18 @@ allweather/
 5. `step_5_print_reports` — console output
 6. `step_6_save_outputs` — CSV/JSON/Excel/Markdown
 
-### 3 strategies (2026-05-26)
+### 3 strategies (2026-05-27)
 
-- **V3c 多元** ★★★: Fixed weights (defined in `portfolios.py::WEIGHTS`). Monthly rebalancing + nonferr trend filter 60d. "实战派" — simple to execute, CAGR 6.64%, MDD -6.90%.
-- **V3-B 风险平价(20d)** ★★★: 5-bucket hierarchical RP (10Y/30Y split) monthly rebalance, 20d lookback + nonferr trend filter 75d + gold dip-buying (15% DD threshold, 2.0x boost) + hs300 dip-buying (35% DD threshold, 2.5x boost). "学院派" — best CAGR (8.48%), best cumulative return, MDD -8.19%, Sharpe 1.24.
-- **V3-B 保守增强(20d)** ★★★: Inverse vol weighting (no bucket hierarchy) + nonferr trend filter 75d SMA + gold/hs300 dip-buying, 20d window, max_w=0.25. "保守派" — lowest MDD (-3.63%), highest Sharpe (1.52).
+- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + gold/hs300 dip-buying. "简约派" — highest Sharpe (1.40), CAGR 8.56%, MDD -5.84%.
+- **V3-B 风险平价(20d)** ★★★: 5-bucket hierarchical RP (10Y/30Y split) + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window. "学院派" — best CAGR (9.16%), best cumulative return (394.67%), MDD -7.00%, Sharpe 1.41.
+- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window, max_w=0.25. "保守增强" — lowest MDD (-3.83%), highest Sharpe (1.62).
 
-### Fixed-weight vs dynamic rebalancing
+All three strategies use 7 assets after dropping div_idx (0.90 corr with hs300) and soymeal (negative Sharpe).
 
-- **V3c**: `REBAL_FREQ="ME"` (monthly) + nonferr trend filter 60d. Code: `backtest.py::backtest`.
-- **V3-B**: No fixed weights. Every month: 5 macro buckets equal-weighted (20% each), within-bucket inverse-vol weights. 10Y/30Y bonds split into separate buckets. Code: `strategy_b.py::backtest_b`.
+### Dynamic rebalancing
+
+- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Code: `backtest.py::backtest_iv`.
+- **V3-B**: No fixed weights. Every month: 5 macro buckets equal-weighted (20% each), within-bucket inverse-vol weights (HRP) or flat inverse vol (保守增强). 7 assets filtered via V3B_ASSETS. Code: `strategy_b.py::backtest_b`.
 
 ### Cash tiers
 
@@ -128,17 +130,17 @@ ETF 511130 launched 2024-03. Three-stage synthesis:
 
 Since V3-B has dynamic weights, bootstrap uses the last window's hierarchical RP weights as a fixed proxy (known limitation: all V3-B variants share bootstrap results).
 
-### 9 assets / 5 macro buckets
+### 7 assets / 5 macro buckets
 
 | Bucket | Assets |
 |--------|--------|
-| 增长↑ | hs300, div_idx, us_sp500 |
+| 增长↑ | hs300, us_sp500 |
 | 收益垫 | credit |
 | 增长↓10Y | bond_10y |
 | 增长↓30Y | bond_30y |
-| 通胀↑ | gold, nonferr, soymeal |
+| 通胀↑ | gold, nonferr |
 
-Defined in `config.py::BUCKET_GROUPS`. 10Y/30Y split is the key improvement over classic 4-bucket structure — the two bonds have vastly different duration (~8 vs ~18 years) and deserve independent risk allocation.
+Defined in `config.py::BUCKET_GROUPS`. div_idx (0.90 corr with hs300) and soymeal (negative Sharpe) removed 2026-05-27. 10Y/30Y split is the key improvement over classic 4-bucket structure — the two bonds have vastly different duration (~8 vs ~18 years) and deserve independent risk allocation.
 
 ## Important constants (all in `config.py`)
 
@@ -149,11 +151,11 @@ Defined in `config.py::BUCKET_GROUPS`. 10Y/30Y split is the key improvement over
 | `REBAL_THRESHOLD` | 0.03 | 3% deviation trigger |
 | `RISK_FREE_ANNUAL` | 0.022 | Sharpe correction |
 | `RISK_PARITY_WINDOW` | 20 | V3-B 20d lookback (trading days) |
-| `RISK_PARITY_MAX_WEIGHT` | 0.18 | Single asset cap in V3-B (grid-search optimal, prevents 10Y bond over-concentration) |
+| `RISK_PARITY_MAX_WEIGHT` | 0.20 | Single asset cap in V3-B (0.20 enables true equal-bucket parity, 0.18 artificially capped single-asset buckets) |
 | `RISK_PARITY_MIN_WEIGHT` | 0.02 | Single asset floor in V3-B |
 | `BOND_30Y_AMP` | 3.0 | Fallback duration multiplier |
 | `GOLD_DIP_THRESHOLD` | 0.15 | Gold dip-buy trigger (15% DD from peak) |
-| `GOLD_DIP_BOOST` | 2.0 | Gold weight boost multiplier when triggered |
+| `GOLD_DIP_BOOST` | 2.5 | Gold weight boost multiplier when triggered (2.5x, grid-search optimal) |
 | `HS300_DIP_THRESHOLD` | 0.35 | hs300 dip-buy trigger (35% DD, catastrophic only) |
 | `HS300_DIP_BOOST` | 2.5 | hs300 weight boost multiplier when triggered (2.5x, grid-search optimal) |
 | `BOOTSTRAP_N_SIM` | 1000 | Monte Carlo iterations |
