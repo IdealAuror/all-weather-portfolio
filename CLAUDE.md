@@ -47,7 +47,7 @@ allweather/
   backtest.py               V3c engine: monthly rebalancing + nonferr trend filter + cash tiers
   risk.py                   Risk primitives: inverse vol weights, hierarchical RP (trend filter/drawdown
                             stop/vol target/corr breaker retained as library functions but unused in pipeline)
-  strategy_b.py             V3-B: 5-bucket hierarchical RP / inverse vol monthly rebalance + nonferr trend filter
+  strategy_b.py             V3-B: hierarchical RP (4/5-bucket) / inverse vol monthly rebalance + nonferr trend filter
   stats.py                  perf_metrics, yearly_returns, event_returns, regime_returns, block_bootstrap, etc.
   reports.py                Console output (9 tables) + JSON/CSV persistence
   excel_export.py           11-sheet formatted Excel report
@@ -58,7 +58,7 @@ allweather/
 ### The 6-step pipeline (`pipeline.py`)
 
 1. `step_1_load_data` — load 9-asset panel, compute daily returns
-2. `step_2_run_backtests` — V3c (fixed) + V3-B 20d (5-bucket HRP) + V3-B 保守增强(20d) (IV), each × 3 cash tiers = 9 backtests
+2. `step_2_run_backtests` — V3c (6 assets) + V3-B RP (4-bucket HRP, 6 assets) + V3-B 保守增强(20d) (IV, 7 assets), each × 3 cash tiers = 9 backtests
 3. `step_3_compute_metrics` — perf / yearly / risk contribution / regime / event / rolling stats
 4. `step_4_bootstrap` — 1000×5yr block bootstrap (21-day blocks). V3-B uses last-window proxy weights.
 5. `step_5_print_reports` — console output
@@ -66,16 +66,17 @@ allweather/
 
 ### 3 strategies (2026-05-27)
 
-- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + gold/hs300 dip-buying. "简约派" — highest Sharpe (1.40), CAGR 8.56%, MDD -5.84%.
-- **V3-B 风险平价(20d)** ★★★: 5-bucket hierarchical RP (10Y/30Y split) + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window. "学院派" — best CAGR (9.16%), best cumulative return (394.67%), MDD -7.00%, Sharpe 1.41.
-- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window, max_w=0.25. "保守增强" — lowest MDD (-3.83%), highest Sharpe (1.62).
+- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + gold/hs300 dip-buying. "简约派" — highest Sharpe (1.40), CAGR 8.59%, MDD -5.84%.
+- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window. "学院派" — best CAGR (10.68%), best cumulative return (536.57%), MDD -10.34%, Sharpe 1.33.
+- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window, max_w=0.25. "保守增强" — lowest MDD (-3.83%), highest Sharpe (1.64).
 
-All three strategies use 7 assets after dropping div_idx (0.90 corr with hs300) and soymeal (negative Sharpe).
+V3c: 6 assets. V3-B RP: 6 assets (no bond_10y). V3-B 保守增强: 7 assets. div_idx (0.90 corr with hs300) and soymeal (negative Sharpe) removed 2026-05-27.
 
 ### Dynamic rebalancing
 
 - **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Code: `backtest.py::backtest_iv`.
-- **V3-B**: No fixed weights. Every month: 5 macro buckets equal-weighted (20% each), within-bucket inverse-vol weights (HRP) or flat inverse vol (保守增强). 7 assets filtered via V3B_ASSETS. Code: `strategy_b.py::backtest_b`.
+- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
+- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
 
 ### Cash tiers
 
@@ -98,7 +99,9 @@ ETF 511130 launched 2024-03. Three-stage synthesis:
 
 Since V3-B has dynamic weights, bootstrap uses the last window's hierarchical RP weights as a fixed proxy (known limitation: all V3-B variants share bootstrap results).
 
-### 7 assets / 5 macro buckets
+### Asset universe & macro buckets
+
+**V3-B 保守增强 (7 assets / 5 buckets)** — `config.py::BUCKET_GROUPS`:
 
 | Bucket | Assets |
 |--------|--------|
@@ -108,7 +111,16 @@ Since V3-B has dynamic weights, bootstrap uses the last window's hierarchical RP
 | 增长↓30Y | bond_30y |
 | 通胀↑ | gold, nonferr |
 
-Defined in `config.py::BUCKET_GROUPS`. div_idx (0.90 corr with hs300) and soymeal (negative Sharpe) removed 2026-05-27. 10Y/30Y split is the key improvement over classic 4-bucket structure — the two bonds have vastly different duration (~8 vs ~18 years) and deserve independent risk allocation.
+**V3-B 风险平价 (6 assets / 4 buckets)** — `pipeline.py::V3B_RP_BUCKETS`:
+
+| Bucket | Assets |
+|--------|--------|
+| 增长↑ | hs300, us_sp500 |
+| 收益垫 | credit |
+| 增长↓ | bond_30y |
+| 通胀↑ | gold, nonferr |
+
+B-RP drops bond_10y: asset test showed CAGR +1.43% with negligible Sharpe loss (-0.02). The 10Y bond (~8yr duration) is redundant with 30Y (~18yr) when buckets get equal weight — keeping both dilutes the growth/equity allocation.
 
 ## Important constants (all in `config.py`)
 

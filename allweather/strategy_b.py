@@ -33,6 +33,7 @@ def backtest_b(
     bucket_method: str = "equal",
     max_w: float = RISK_PARITY_MAX_WEIGHT,
     min_w: float = RISK_PARITY_MIN_WEIGHT,
+    rp_buckets: dict | None = None,
     nonferr_control: str | None = None,
     nonferr_dd_threshold: float = -0.10,
     nonferr_trend_window: int = 90,
@@ -46,6 +47,7 @@ def backtest_b(
 
     Args:
         weighting_method: "hierarchical_rp" (default) or "inverse_vol"
+        rp_buckets: 自定义桶结构（None=默认 BUCKET_GROUPS）
         nonferr_control: None, "dd_stop" (回撤刹车), or "trend_filter" (趋势过滤)
         nonferr_dd_threshold: dd_stop 模式的回撤触发阈值
         nonferr_trend_window: trend_filter 模式的 SMA 窗口（交易日）
@@ -59,7 +61,7 @@ def backtest_b(
     """
     cols = list(rets.columns)
     rets_rp = rets[cols]
-    rp_buckets = {k: list(v) for k, v in BUCKET_GROUPS.items()}
+    rp_buckets = {k: list(v) for k, v in (rp_buckets or BUCKET_GROUPS).items()}
 
     nv = pd.Series(index=rets.index, dtype=float)
     n_rebal = 0
@@ -108,20 +110,20 @@ def backtest_b(
             h = h / s * (1 - cash_ratio)
 
         # --- Update nonferr peak ---
-        if prices is not None:
+        if prices is not None and "nonferr" in prices.columns:
             curr_nf = prices.iloc[i]["nonferr"]
             if curr_nf > nferr_peak:
                 nferr_peak = curr_nf
                 nferr_stopped = False
 
         # --- Update gold peak ---
-        if gold_dip_threshold is not None and prices is not None:
+        if gold_dip_threshold is not None and prices is not None and "gold" in prices.columns:
             curr_au = prices.iloc[i]["gold"]
             if curr_au > gold_peak:
                 gold_peak = curr_au
 
         # --- Update hs300 peak ---
-        if hs300_dip_threshold is not None and prices is not None:
+        if hs300_dip_threshold is not None and prices is not None and "hs300" in prices.columns:
             curr_hs = prices.iloc[i]["hs300"]
             if curr_hs > hs300_peak:
                 hs300_peak = curr_hs
@@ -160,14 +162,14 @@ def backtest_b(
                         w["gold"] += boost
                         w["credit"] = w["credit"] - boost
 
-            # --- hs300 dip-buying: 史诗级股灾(35%)才触发，从 credit 提取 ---
+            # --- hs300 dip-buying ---
             if hs300_dip_threshold is not None and prices is not None and w.get("hs300", 0) > 0:
                 hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
                 if hs300_dd <= -hs300_dip_threshold:
                     boost = w["hs300"] * hs300_dip_boost
                     if w.get("credit", 0) >= boost:
                         w["hs300"] += boost
-                        w["credit"] = w["credit"] - boost
+                        w["credit"] -= boost
 
             h = w
             n_rebal += 1
