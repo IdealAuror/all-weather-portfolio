@@ -47,7 +47,7 @@ def _section_header():
         "# 桥水全天候策略 · 中国版 · 回测综合报告",
         "",
         f"> 自动生成于 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-        "> 完整文档见 [桥水全季节.html](../桥水全季节.html) / [GitHub Pages](https://idealauror.github.io/all-weather-portfolio/)",
+        "> 完整文档见 [GitHub Pages](https://idealauror.github.io/all-weather-portfolio/)",
         "",
     ]
 
