@@ -142,6 +142,47 @@ B-RP drops bond_10y: asset test showed CAGR +1.43% with negligible Sharpe loss (
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5-year horizon |
 | `BOOTSTRAP_BLOCK_DAYS` | 21 | ~1 month blocks |
 
+## 策略变更检查清单（每次改参数/资产/逻辑必跑）
+
+改任何策略参数（权重方法、窗口、阈值、boost、资产列表、桶结构），按以下顺序执行，不要跳步：
+
+### 1. 代码改动
+- `allweather/config.py` — 常量参数
+- `allweather/pipeline.py` — 策略调用、资产列表、桶结构
+- `allweather/strategy_b.py` — B 策略引擎
+- `allweather/backtest.py` — V3c 引擎
+
+### 2. 跑全量回测
+```bash
+py main.py
+```
+验证 pipeline 无报错，记录新指标。这一步自动生成 `output/` 下所有文件。
+
+### 3. 更新文档（4 个文件，缺一不可）
+| 文件 | 更新内容 |
+|------|---------|
+| `BACKTEST_RESULTS.md` | 三策略指标表（CAGR/累计/波动/MDD/Sharpe/Calmar/期末净值）+ 年度统计 |
+| `CLAUDE.md` | 策略描述、桶/资产表、constants 表（如有参数变更） |
+| `docs/index.html` | **所有硬编码数字** — 策略卡片、对比表、回测表、年度收益、事件收益、Bootstrap、调仓规则表 |
+| `output/` | `py main.py` 自动生成（report.xlsx + report.md + summary.json + nv_curves.csv） |
+
+### 4. 更新 Memory
+- 有结论性发现 → 更新 `C:/Users/bc-2/.claude/projects/C--Users-bc-2-Desktop/memory/` 下对应文件
+- 不是每次都要改，只有新结论或推翻旧结论时才写
+
+### 5. 提交
+```bash
+git add -A && git commit -m "..." && git push
+```
+
+### 容易遗漏的点
+- `docs/index.html` 里数字散落在 ~50 处，**年度收益表、事件收益表、Bootstrap 表、调仓规则表**最容易忘
+- `CLAUDE.md` 的策略描述段落里写死了 CAGR/Sharpe/MDD 数字
+- `BACKTEST_RESULTS.md` 的"最差年份"和"负收益年数"
+- 如果改了资产列表，`CLAUDE.md` 的桶/资产表要同步
+- 如果改了 B-RP 和 B-Con 共用逻辑，两个策略都要跑一遍确认
+- `output/report.md` 和 `output/report.xlsx` 靠 `py main.py` 自动生成，不要手改
+
 ## Documentation
 
 - `PROJECT_HISTORY.md` — complete project memory for AI: decisions, rationale, metrics, timeline
