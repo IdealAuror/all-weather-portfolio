@@ -60,21 +60,21 @@ CASH_ETF = {"code": "511880", "name": "货币基金 ETF"}
 
 # === 桶定义（用于风险贡献分析）===
 BUCKETS = {
-    "增长↑权益(A股)":  ["hs300", "div_idx"],
+    "增长↑权益(A股)":  ["hs300"],
     "增长↑权益(海外)": ["us_sp500"],
     "信用债":          ["credit"],
     "增长↓10Y":       ["bond_10y"],
     "增长↓30Y":       ["bond_30y"],
     "通胀↑黄金":      ["gold"],
-    "通胀↑商品":      ["nonferr", "soymeal"],
+    "通胀↑商品":      ["nonferr"],
 }
 
 BUCKET_GROUPS = {
-    "增长↑":   ["hs300", "div_idx", "us_sp500"],
+    "增长↑":   ["hs300", "us_sp500"],
     "收益垫":  ["credit"],
     "增长↓10Y": ["bond_10y"],
     "增长↓30Y": ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr", "soymeal"],
+    "通胀↑":   ["gold", "nonferr"],
 }
 
 # === 关键事件压力测试 ===
@@ -105,13 +105,16 @@ BOOTSTRAP_SEED = 42
 TURNOVER_PER_REBAL = 0.08
 COST_PER_SIDE = 0.0015
 
+# === V3c 精简资产 ===
+V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr"]
+
 # === 方案 B 常量（分层风险平价）===
 RISK_PARITY_WINDOW = 20           # V3-B 波动率窗口（交易日）
-RISK_PARITY_MAX_WEIGHT = 0.18    # 单资产权重上限（0.18 网格搜索最优，压制10Y国债过度集中）
+RISK_PARITY_MAX_WEIGHT = 0.20    # 单资产权重上限（0.20 实现真正等桶风险平价，原 0.18 截断单资产桶）
 RISK_PARITY_MIN_WEIGHT = 0.02    # 单资产权重下限
 
 # === Gold 抄底参数 ===
 GOLD_DIP_THRESHOLD = 0.15        # 黄金从高点回撤超过此阈值触发抄底
-GOLD_DIP_BOOST = 2.0             # 触发后黄金权重翻倍倍数（2.0 = 翻倍）
+GOLD_DIP_BOOST = 2.5             # 触发后黄金权重翻倍倍数（2.5x，网格搜索最优）
 HS300_DIP_THRESHOLD = 0.35       # 沪深300从高点回撤超过此阈值触发抄底（仅史诗级股灾）
 HS300_DIP_BOOST = 2.5            # 触发后沪深300权重翻倍倍数（2.5x，35%阈值下最优）

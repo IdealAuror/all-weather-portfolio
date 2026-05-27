@@ -155,20 +155,18 @@ def backtest_b(
             if gold_dip_threshold is not None and prices is not None and w.get("gold", 0) > 0:
                 gold_dd = prices.iloc[i]["gold"] / gold_peak - 1
                 if gold_dd <= -gold_dip_threshold:
-                    orig_gold = w["gold"]
-                    boost = orig_gold * gold_dip_boost
+                    boost = w["gold"] * gold_dip_boost
                     if w.get("credit", 0) >= boost:
-                        w["gold"] = orig_gold + boost
+                        w["gold"] += boost
                         w["credit"] = w["credit"] - boost
 
             # --- hs300 dip-buying: 史诗级股灾(35%)才触发，从 credit 提取 ---
             if hs300_dip_threshold is not None and prices is not None and w.get("hs300", 0) > 0:
                 hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
                 if hs300_dd <= -hs300_dip_threshold:
-                    orig_hs = w["hs300"]
-                    boost = orig_hs * hs300_dip_boost
+                    boost = w["hs300"] * hs300_dip_boost
                     if w.get("credit", 0) >= boost:
-                        w["hs300"] = orig_hs + boost
+                        w["hs300"] += boost
                         w["credit"] = w["credit"] - boost
 
             h = w
