@@ -50,6 +50,19 @@ body {
     padding-bottom: 24px;
     border-bottom: 2px solid #e0e0e0;
 }
+.dl-btn {
+    display: inline-block;
+    margin-left: 16px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: #1f4e79;
+    border: 1px solid #1f4e79;
+    border-radius: 4px;
+    cursor: pointer;
+    background: white;
+    vertical-align: middle;
+}
+.dl-btn:hover { background: #1f4e79; color: white; }
 .ch-h1 {
     color: #1f4e79;
     font-size: 24px;
@@ -225,7 +238,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <main class="container">
 <h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
 <p class="doc-subtitle">基于风险平价（Risk Parity）的 A 股投资者落地方案</p>
-<p class="doc-meta">回测期: 2008-01 ~ 2025-12（~18 年）  |  调仓规则: 月度调仓 + nonferr 趋势过滤 + Gold/HS300 抄底  |  本金示例: 100 万</p>
+<p class="doc-meta">回测期: 2008-01 ~ 2025-12（~18 年）  |  调仓规则: 月度调仓 + nonferr 趋势过滤 + Gold/HS300 抄底  |  本金示例: 100 万<button class="dl-btn" onclick="downloadHTML()">下载 HTML</button></p>
 <h2 class="ch-h1" id="ch0">一、桥水全天候策略核心逻辑</h2>
 <p class="para">桥水基金（Bridgewater）的全天候策略（All Weather Strategy）是投资界最著名的风险平价（Risk Parity）实践。它的核心逻辑非常纯粹：既然我们无法准确预测未来，那就构建一个在任何宏观环境下都不会重伤的组合，让时间和复利做朋友。</p>
 <h3 class="sec-h3">（一）四象限框架：把宏观风险拆开看</h3>
@@ -1458,5 +1471,16 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </footer>
 
 </main>
+<script>
+function downloadHTML() {
+  var html = document.documentElement.outerHTML;
+  var blob = new Blob(['<!DOCTYPE html>\n' + html], {type: 'text/html'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '桥水全天候策略_中国版实践.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
 </body>
 </html>
