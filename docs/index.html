@@ -737,7 +737,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 蒙特卡洛 5%-分位 +20.01%，亏损概率 0.00%</p>
 <p class="para">• 权重完全由数据驱动，无人工判断偏差</p>
 <h2 class="plan-title plan-b">方案 3: V3-B 保守增强(20d)  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：直接逆波动率加权（无桶层级），nonferr 趋势过滤(75d) + Gold 抄底(15%回撤翻倍) + HS300 抄底(35%回撤2.5倍增持)。不设宏观桶——9 个资产自由竞争权重。Sharpe 1.62 全策略最高，回撤 -3.63% 最浅。</p>
+<p class="para-bold">特征：直接逆波动率加权（无桶层级），nonferr 趋势过滤(75d) + Gold 抄底(15%回撤翻倍) + HS300 抄底(35%回撤2.5倍增持)。不设宏观桶——7 个资产自由竞争权重。Sharpe 1.62 全策略最高，回撤 -3.63% 最浅。</p>
 <p class="para">适合：最重视低波动和睡得着觉的投资者。逆波动率让低波资产（债券）自然获得高权重，高波资产（商品）被自动压制。Gold/HS300 双抄底提供额外增强（HS300 35%/2.5x 仅2015股灾触发）。</p>
 <h3 class="sec-h3">⚙️ 权重计算机制（每月自动执行）</h3>
 <p class="para"><strong>逆波动率直接加权：</strong>不经过桶层级，对 9 个资产直接按 1/波动率 计算权重。20 个交易日短窗口，快速响应。</p>
@@ -891,7 +891,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para"><strong>为什么沪深300 抄底要设 35% 这么高？</strong>A股真正熊市跌幅中位数 ~32%（2015 -44%，2018 -29%，2021-22 -34%，2023 -20%）。阈值过低（10-25%）会在半山腰接刀，回撤和 Sharpe 同时恶化。35% 恰好卡在"普通熊市"和"史诗级崩盘"之间——仅 2015 股灾和 2021-22 地产危机触发，平均五年一遇，本质上是一张"股灾保险"而非"逢低买入"。</p>
 <p class="para"><strong>为什么所有抄底资金都从信用债提取？</strong>单资金源原则——避免多资金源导致的复杂度爆炸。信用债（城投债 ETF）波动低、流动性好，是天然的"弹药库"。且趋势过滤触发时 nonferr 权重也是转入信用债，进出都在同一个池子。</p>
 <h3 class="sec-h3">各策略调仓规则</h3>
-<ul class="bullet-list"><li class="bullet"><strong>V3c 多元：</strong>固定目标权重，月度检查 + nonferr 趋势过滤(60d SMA)。触发时清仓有色→信用债；</li>
+<ul class="bullet-list"><li class="bullet"><strong>V3c 多元：</strong>逆波动率动态权重（60d 窗口），月度重算 + nonferr 趋势过滤(60d SMA) + Gold 抄底（回撤>15% 翻倍加仓）+ HS300 抄底（回撤>35% 2.5倍加仓）；</li>
 <li class="bullet"><strong>V3-B 风险平价(20d)：</strong>每月重算 5 桶逆波动率权重 + nonferr 趋势过滤(75d SMA) + Gold 抄底（回撤>15%翻倍加仓）+ HS300 抄底（回撤>35%2.5倍加仓）；</li>
 <li class="bullet"><strong>V3-B 保守增强(20d)：</strong>每月重算直接逆波动率权重（无桶层级）+ nonferr 趋势过滤(75d SMA) + Gold 抄底（回撤>15%翻倍加仓）+ HS300 抄底（回撤>35%2.5倍加仓）。</li>
 </ul>
@@ -905,6 +905,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr></thead>
 <tbody>
 <tr><td class="td-first">V3c 多元</td><td class="td-num">60d SMA</td><td class="td-num">有色 &lt; 60日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
+	<tr><td class="td-first">V3c 多元</td><td class="td-num">15% 回撤</td><td class="td-num">黄金从高点回撤 &gt; 15%</td><td class="td-num">黄金翻倍加仓（从信用债提取）</td></tr>
+	<tr><td class="td-first">V3c 多元</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深300 2.5倍加仓（从信用债提取）</td></tr>
 <tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
 <tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
 <tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">15% 回撤</td><td class="td-num">黄金从高点回撤 &gt; 15%</td><td class="td-num">黄金翻倍加仓（从信用债提取）</td></tr>
@@ -912,7 +914,6 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深3002.5倍加仓（从信用债提取）</td></tr>
 <tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深3002.5倍加仓（从信用债提取）</td></tr>
 </tbody></table>
-<p class="para"><strong>回测验证：</strong>V3c 半年调仓时加趋势过滤无效（CAGR 7.45%→7.36%），改为月度后 CAGR 升至 6.64%、MDD 从 -6.71% 降至 -6.90%。趋势过滤需要月度或更高频调仓才能发挥。</p>
 <h3 class="sec-h3">交易成本</h3>
 <p class="para">月度调仓约 216 次/策略/18年，每次平均换手 8%、单边费率 0.15%，年化成本约 0.018% — 几乎可忽略。</p>
 <h3 class="sec-h3">探索过但未采用的风控机制</h3>
