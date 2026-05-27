@@ -1167,7 +1167,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para" style="font-size:13px; color:#888;">看——信用债波动最低，自动拿到 53.1% 的最大权重；hs300 波动最高，只拿到 5.3%。没有任何人为判断，完全由数据驱动。</p>
 
 <p class="para-bold">第四步：截断 + 重归一化</p>
-<p class="para">给每只 ETF 设上下限——V3c 策略中，单只 ETF 权重不低于 3%（min_w = 0.03）且不高于 30%（max_w = 0.30）。在这个例子中所有 $w^{\text{raw}}$ 都在 [3%, 30%] 区间内，无需截断，原始权重即为最终权重。</p>
+<p class="para">给每只 ETF 设上下限——V3c 策略中，单只 ETF 权重不低于 3%（min_w = 0.03）且不高于 30%（max_w = 0.30）。在这个例子中所有 $w^{\text{raw}}$ 都在 3%~30% 区间内，无需截断，原始权重即为最终权重。</p>
 <p class="para">如果某只 ETF 的 $w^{\text{raw}}$ 超出了范围（比如飙到 35%），就把它砍到 30%。砍掉的部分会按比例分给其他没超限的资产——确保所有权重加起来始终 = 100%。</p>
 
 <p class="para-bold">公式总结</p>
@@ -1192,7 +1192,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">① 每只 ETF 计算 20 天年化波动率 $\sigma$，取倒数 1/σ。</p>
 <p class="para">② 桶内分配：增长↑桶有 hs300 + us_sp500。桶内不设截断，纯按 $1/\sigma$ 比例分配。比如 hs300 σ=20%、us_sp500 σ=12%，桶内 hs300 拿 $\frac{1/0.20}{1/0.20+1/0.12} = 37.5\%$，us_sp500 拿 62.5%。</p>
 <p class="para">③ 桶间等权：四个桶各拿 25%。最终 $w_{hs300} = 25\% \times 37.5\% = 9.4\%$。</p>
-<p class="para">④ 全资产截断 [2%, 20%]，重归一化至 100%。参数：W = 20d，max_w = 0.20，min_w = 0.02，nonferr 75d SMA，Gold 15%/2.5x，HS300 35%/1.5x。</p>
+<p class="para">④ 全资产截断上下限 2%~20%，重归一化至 100%。参数：W = 20d，max_w = 0.20，min_w = 0.02，nonferr 75d SMA，Gold 15%/2.5x，HS300 35%/1.5x。</p>
 
 <p class="para-bold">V3-B 保守增强（7 资产，逆波动率 20d）</p>
 <p class="para">与 V3c 同公式，参数不同：W = 20d（更短，更快响应波动变化），max_w = 0.25，min_w = 0.02。多一只 bond_10y。nonferr 75d SMA，Gold 15%/2.5x，HS300 35%/3.0x。</p>
