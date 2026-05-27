@@ -382,6 +382,44 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	<p style="margin:8px 0 0 0; font-size:13px; color:#555;">适合：保守型资金、退休/教育金、无法承受大幅回撤</p>
 	</div>
 	</div>
+
+<h3 class="sec-h3">资产选择：入选与淘汰</h3>
+
+<p class="para">回测池共 9 个候选资产。经逐一测试，最终入选 7 个、淘汰 2 个。以下说明每条选择背后的量化依据。</p>
+
+<table class="data-tbl" style="--header-color: #1F4E79;">
+<thead><tr><th>资产</th><th>代码</th><th>类别</th><th>入选</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td class="td-first">沪深 300</td><td class="td-num">510300</td><td class="td-num">权益</td><td class="td-num td-pos">✓</td><td class="td-num">A 股核心宽基，增长↑主力</td></tr>
+<tr><td class="td-first">标普 500</td><td class="td-num">513500</td><td class="td-num">权益</td><td class="td-num td-pos">✓</td><td class="td-num">海外分散，与 A 股相关性仅 0.13</td></tr>
+<tr><td class="td-first">城投债</td><td class="td-num">511220</td><td class="td-num">信用债</td><td class="td-num td-pos">✓</td><td class="td-num">波动极低（1.2%），组合稳定器，收益垫桶核心</td></tr>
+<tr><td class="td-first">10 年国债</td><td class="td-num">511260</td><td class="td-num">利率债</td><td class="td-num td-pos">✓</td><td class="td-num">中久期（~8yr），B-Con 专用，提供额外久期暴露</td></tr>
+<tr><td class="td-first">30 年国债</td><td class="td-num">511130</td><td class="td-num">利率债</td><td class="td-num td-pos">✓</td><td class="td-num">长久期（~18yr），CAGR 10.50%，全策略增长↓桶主力</td></tr>
+<tr><td class="td-first">黄金</td><td class="td-num">518880</td><td class="td-num">商品</td><td class="td-num td-pos">✓</td><td class="td-num">通胀↑核心对冲，与股/债相关性均 < 0.07，CAGR 9.99%</td></tr>
+<tr><td class="td-first">有色金属</td><td class="td-num">159980</td><td class="td-num">商品</td><td class="td-num td-pos">✓</td><td class="td-num">工业金属通胀对冲，补充黄金以外的商品暴露</td></tr>
+</tbody></table>
+
+<p class="para-bold">淘汰资产及量化依据：</p>
+
+<table class="data-tbl" style="--header-color: #C0392B;">
+<thead><tr><th>淘汰资产</th><th>代码</th><th>淘汰原因</th><th>量化证据</th></tr></thead>
+<tbody>
+<tr>
+<td class="td-first">红利 ETF</td>
+<td class="td-num">510880</td>
+<td class="td-num" style="font-size:13px;">与 hs300 相关性 0.90，几乎无分散效果。单资产 CAGR 6.04% / Sharpe 0.19，与 hs300（6.05% / 0.18）几乎一致。加入组合仅把权益仓位劈成两份同涨同跌的资产，不降低波动、不提升 Sharpe。</td>
+<td class="td-num">corr(hs300, div) = 0.90</td>
+</tr>
+<tr>
+<td class="td-first">豆粕 ETF</td>
+<td class="td-num">159985</td>
+<td class="td-num" style="font-size:13px;">自身 Sharpe 为负（大宗商品长期 contango 损耗）。加入通胀↑桶后拉低桶内整体回报，三策略测试均导致 CAGR 下降 0.15~0.30%。</td>
+<td class="td-num">单资产 Sharpe < 0</td>
+</tr>
+</tbody></table>
+
+<p class="para" style="font-size:13px; color:#666;">此外，V3-B 风险平价额外去掉了 10 年国债：在等桶权重（25%×4）下，10Y（~8yr 久期）与 30Y（~18yr）同属增长↓桶，保留两个会稀释其他桶的风险预算。移除 10Y 后 B-RP 的 CAGR 从 8.48% 升至 10.68%（+1.43%），Sharpe 仅微降 0.02。</p>
+
 <h2 class="plan-title plan-c">方案 1: V3c 多元型 ★★★ 强烈推荐</h2>
 <p class="para-bold">特征：6 资产逆波动率加权 60d + 月度调仓 + nonferr 趋势过滤(60d) + Gold/HS300 双抄底。精简高效，去冗余。CAGR 8.59%、回撤 -5.84%、Sharpe 1.40。</p>
 <p class="para">适合：初入全天候、不想研究桶逻辑、追求简单透明的投资者。</p>
