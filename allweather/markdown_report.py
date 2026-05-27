@@ -111,6 +111,8 @@ def _section_yearly(yearly_results, years=None):
 
 
 def _section_risk_contrib(rc_results):
+    if not rc_results:
+        return []
     ports = list(rc_results.keys())
     buckets = list(rc_results[ports[0]].keys())
     rows = []
@@ -222,6 +224,8 @@ def _section_holdings(weights_dict, principal=1_000_000):
 
 
 def _section_weights(weights_dict):
+    if not weights_dict:
+        return []
     ports = list(weights_dict.keys())
     assets = list(weights_dict[ports[0]].index)
     rows = []
