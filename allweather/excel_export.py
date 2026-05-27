@@ -179,6 +179,8 @@ def _sheet_yearly(wb, yearly_results, years=None):
 
 
 def _sheet_risk_contrib(wb, rc_results):
+    if not rc_results:
+        return
     ws = wb.create_sheet("风险贡献")
     ports = list(rc_results.keys())
     _write_title(ws, 1, "桶级风险贡献分解（协方差视角）", len(ports) + 1)
@@ -321,6 +323,8 @@ def _sheet_nv_curves(wb, nv_results):
 
 
 def _sheet_weights(wb, weights_dict):
+    if not weights_dict:
+        return
     ws = wb.create_sheet("权重明细")
     ports = list(weights_dict.keys())
     _write_title(ws, 1, "三策略权重明细", 1 + len(ports))

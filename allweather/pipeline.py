@@ -19,6 +19,13 @@ from .config import (
 )
 
 V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
+V3B_RP_BUCKETS = {
+    "增长↑":   ["hs300", "us_sp500"],
+    "收益垫":  ["credit"],
+    "增长↓":   ["bond_30y"],
+    "通胀↑":   ["gold", "nonferr"],
+}
+V3B_RP_ASSETS = [a for assets in V3B_RP_BUCKETS.values() for a in assets]
 from . import reports
 
 
@@ -49,17 +56,20 @@ def step_2_run_backtests(rets):
     # --- V3c: 逆波动率加权（60d，6 资产精简）+ nonferr 趋势过滤 + 抄底 ---
     for tier_label, c in CASH_TIERS:
         nv, n = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
-                            nonferr_trend_window=60, assets=V3C_ASSETS)
+                            nonferr_trend_window=60, assets=V3C_ASSETS,
+                            hs300_dip_boost=3.0)
         nv_results[("V3c 多元", tier_label)] = nv
         n_rebal_total += n
 
 
-    # --- 方案 B: 分层风险平价（20d）+ nonferr 趋势过滤 ---
+    # --- 方案 B: 分层风险平价（20d, 4 桶）+ nonferr 趋势过滤 ---
     from .strategy_b import backtest_b
     for tier_label, c in CASH_TIERS:
-        nv, n = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
+        nv, n = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
+                            rp_buckets=V3B_RP_BUCKETS,
                             nonferr_control="trend_filter",
-                            nonferr_trend_window=75)
+                            nonferr_trend_window=75,
+                            hs300_dip_boost=1.5)
         nv_results[("V3-B 风险平价(20d)", tier_label)] = nv
         n_rebal_total += n
 
@@ -69,7 +79,8 @@ def step_2_run_backtests(rets):
                             max_w=0.25,
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
-                            weighting_method="inverse_vol")
+                            weighting_method="inverse_vol",
+                            hs300_dip_boost=3.0)
         nv_results[("V3-B 保守增强(20d)", tier_label)] = nv
         n_rebal_total += n
 
@@ -137,8 +148,7 @@ def step_4_bootstrap(weights, rets, nv_results=None):
 
     # V3c / V3-B: 用最近窗口权重作 Bootstrap 代理
     from .risk import hierarchical_rp_weights, inverse_vol_weights
-    from .config import BUCKET_GROUPS as BOOT_BG
-    rp_buckets_boot = {k: list(v) for k, v in BOOT_BG.items()}
+    rp_buckets_boot_rp = {k: list(v) for k, v in V3B_RP_BUCKETS.items()}
     for (portfolio, tier), _nv in (nv_results or {}).items():
         if ("V3-B" in portfolio or "V3c" in portfolio) and tier == "100% RP":
             boot_rets = rets
@@ -150,7 +160,7 @@ def step_4_bootstrap(weights, rets, nv_results=None):
                     boot_rets[V3C_ASSETS].tail(60), window=60, max_w=0.30, min_w=0.03)
             else:
                 proxy_w = hierarchical_rp_weights(
-                    boot_rets[V3B_ASSETS].tail(20), rp_buckets_boot, 20,
+                    boot_rets[V3B_RP_ASSETS].tail(20), rp_buckets_boot_rp, 20,
                     RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
                     bucket_method="equal",
                 )
