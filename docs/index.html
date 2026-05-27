@@ -18,6 +18,14 @@ body {
 .container {
     max-width: 960px;
     margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    padding: 36px 40px;
+}
+@media (max-width: 640px) {
+    body { padding: 8px; }
+    .container { border-radius: 8px; padding: 20px 16px; }
 }
 .doc-title {
     font-size: 32px;
@@ -186,6 +194,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 }
 @media print {
     body { background: white; padding: 0; }
+    .container { box-shadow: none; border: 1px solid #ddd; }
     .ch-h1 { page-break-before: auto; }
     .plan-title { page-break-before: auto; }
 }
