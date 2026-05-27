@@ -173,4 +173,4 @@ weights, nv = step_2_run_backtests(rets)
 
 详细策略论证、回测过程、风险提示、落地手册见：
 - `桥水全季节.docx`
-- `桥水全季节.html`（浏览器直接打开）
+- 在线文档：https://idealauror.github.io/all-weather-portfolio/
