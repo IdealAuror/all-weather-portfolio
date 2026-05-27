@@ -25,12 +25,17 @@ Output: console reports + `output/report.xlsx` + `output/report.md`. Online docs
 ## Commands
 
 ```bash
+# 回测研究
 python main.py                 # Full pipeline: load → backtest → metrics → bootstrap → reports → save
 python main.py --no-excel      # Skip Excel output (faster iteration)
 python main.py --no-markdown   # Skip Markdown output
 python main.py --fetch         # Pull missing data first, then backtest
 python main.py --fetch-only    # Only pull data, don't backtest
 python main.py --force-fetch   # Re-pull all CSVs (overwrites data/)
+
+# 实盘再平衡
+python -m allweather.rebalance              # 交互式 — 选策略 + 输入持仓 → 输出调仓清单
+python -m allweather.rebalance --strat V3c  # 只看 V3c 目标权重（不输入持仓）
 ```
 
 No test suite. CI (`.github/workflows/backtest.yml`) runs `python main.py` and checks `output/summary.json` Sharpe/MDD bounds.
