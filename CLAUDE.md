@@ -163,12 +163,13 @@ py main.py
 ```
 验证 pipeline 无报错，记录新指标。这一步自动生成 `output/` 下所有文件。
 
-### 3. 更新文档（4 个文件，缺一不可）
+### 3. 更新文档（5 个文件，缺一不可）
 | 文件 | 更新内容 |
 |------|---------|
 | `BACKTEST_RESULTS.md` | 三策略指标表（CAGR/累计/波动/MDD/Sharpe/Calmar/期末净值）+ 年度统计 |
 | `CLAUDE.md` | 策略描述、桶/资产表、constants 表（如有参数变更） |
 | `docs/index.html` | **所有硬编码数字** — 策略卡片、对比表、回测表、年度收益、事件收益、Bootstrap、调仓规则表 |
+| `README.md` | 策略速查表指标、策略评估、资产/桶描述、关键参数表 |
 | `output/` | `py main.py` 自动生成（report.xlsx + report.md + summary.json + nv_curves.csv） |
 
 ### 4. 更新 Memory
@@ -181,6 +182,7 @@ git add -A && git commit -m "..." && git push
 ```
 
 ### 容易遗漏的点
+- `README.md` 的策略速查表、策略评估、资产/桶表、参数表里都写了具体数字，**最容易漏**
 - `docs/index.html` 里数字散落在 ~50 处，**年度收益表、事件收益表、Bootstrap 表、调仓规则表**最容易忘
 - `CLAUDE.md` 的策略描述段落里写死了 CAGR/Sharpe/MDD 数字
 - `BACKTEST_RESULTS.md` 的"最差年份"和"负收益年数"
