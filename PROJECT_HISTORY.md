@@ -281,7 +281,6 @@
 ├── PROJECT_HISTORY.md          本文件（面向 AI 的过程纪要）
 ├── LICENSE                     MIT
 ├── 桥水全季节.docx              方案文档（10 章 / 21 表）
-├── 桥水全季节.html              方案文档 HTML 版
 │
 ├── allweather/                 核心包
 │   ├── __init__.py
@@ -362,7 +361,7 @@
 
 | 项 | 配置 |
 |---|---|
-| GitHub Pages | 仓库 `/docs` 目录，`docs/index.html` 是 `桥水全季节.html` 的副本 |
+| GitHub Pages | 仓库 `/docs` 目录，`docs/index.html` |
 | Pages URL | https://idealauror.github.io/all-weather-portfolio/ |
 | GitHub Actions | `.github/workflows/backtest.yml` |
 | 触发 | push / PR 到 main，paths 过滤 `main.py / allweather/** / data/** / pyproject.toml` |
