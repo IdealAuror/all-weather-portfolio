@@ -2,18 +2,12 @@
 import pandas as pd
 from .config import ASSETS
 
-WEIGHTS = {
-    "V3c 多元": {
-        "hs300":   0.04, "div_idx":  0.06, "us_sp500": 0.08, "credit":   0.05,
-        "bond_10y":0.40, "bond_30y": 0.15,
-        "gold":    0.10, "nonferr":  0.06, "soymeal":  0.06,
-    },
-}
+WEIGHTS = {}
 
 PORTFOLIO_TAGS = {
-    "V3c 多元":            {"stars": "★★★", "label": "实战派 — 固定权重月度再平衡 + nonferr 趋势过滤"},
+    "V3c 多元":            {"stars": "★★★", "label": "简约派 — 6资产逆波动率 60d + nonferr 趋势过滤 + Gold/HS300抄底，去冗余提效"},
     "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold/HS300抄底"},
-    "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 + nonferr 趋势过滤 + Gold/HS300抄底，Sharpe 最高"},
+    "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d 窗口 + nonferr 趋势过滤 + Gold/HS300抄底，Sharpe 最高"},
 }
 
 
