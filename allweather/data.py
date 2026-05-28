@@ -317,17 +317,6 @@ def load_panel() -> pd.DataFrame:
     else:
         nonferr = nonferr_proxy
 
-    # soymeal: 豆粕期货 M0 (2008-2019) → ETF (2019+)
-    soymeal_etf = load_series("soymeal")
-    soymeal_proxy = load_series("soymeal_fut")
-    if not soymeal_etf.empty and not soymeal_proxy.empty:
-        soymeal = stitch_series(soymeal_etf, soymeal_proxy,
-                                annual_deduct=SAFETY_DEDUCT["soymeal"])
-    elif not soymeal_etf.empty:
-        soymeal = soymeal_etf
-    else:
-        soymeal = soymeal_proxy
-
     panel = pd.DataFrame({
         "hs300":    hs300,
         "us_sp500": us_sp500,
@@ -336,7 +325,6 @@ def load_panel() -> pd.DataFrame:
         "bond_30y": bond_30y,
         "gold":     gold,
         "nonferr":  nonferr,
-        "soymeal":  soymeal,
     })
     panel.index = pd.to_datetime(panel.index)
     panel = panel.sort_index()

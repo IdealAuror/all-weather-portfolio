@@ -55,9 +55,9 @@ def _section_header():
 def _section_recommendation():
     items = sorted(PORTFOLIO_TAGS.items(), key=lambda kv: -len(kv[1]["stars"]))
     notes = {
-        "V3c 多元": "实战派 — 固定权重月度再平衡 + nonferr 趋势过滤（6.64%）",
-        "V3-B 风险平价(20d)": "学院派 — 5桶分层风险平价(10Y/30Y分拆) + nonferr 趋势过滤 + Gold/HS300抄底，CAGR 8.48%",
-        "V3-B 保守增强(20d)": "保守增强 — 逆波动率+nonferr趋势过滤+Gold/HS300抄底，Sharpe 最高（1.52）",
+        "V3c 多元": "实战派 — 6资产逆波动率 60d + nonferr 趋势过滤 + HS300抄底，CAGR 9.37%",
+        "V3-B 风险平价(20d)": "学院派 — 4桶分层风险平价(30Y) + nonferr/gold/sp500 趋势过滤 + Gold/HS300抄底，CAGR 11.40%",
+        "V3-B 保守增强(20d)": "保守增强 — 逆波动率+nonferr趋势过滤+HS300抄底，Sharpe 最高（1.68）",
     }
     rows = [(tag["stars"], port, tag["label"], notes.get(port, ""))
             for port, tag in items]
@@ -66,7 +66,7 @@ def _section_recommendation():
         "",
         _md_table(["推荐度", "方案", "标签", "说明"], rows),
         "",
-        "> **V3c** 和 **V3-B** 是两条不同路线的 ★★★ 推荐：V3-B 5桶(10Y/30Y分拆) CAGR 最高（8.19%），V3c 落地最简单，保守增强 Sharpe 最高（1.52）适合低波动偏好。",
+        "> **V3c** 和 **V3-B** 是两条不同路线的 ★★★ 推荐：V3-B 4桶(30Y) CAGR 最高（11.40%），V3c 落地最简单，保守增强 Sharpe 最高（1.68）适合低波动偏好。",
         "",
     ]
 

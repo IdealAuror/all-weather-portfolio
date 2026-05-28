@@ -19,7 +19,6 @@ BOND_30Y_AMP = 3.0
 # 仅对合成段（ETF 上市前的替代数据）应用，ETF 真实数据段不扣减
 SAFETY_DEDUCT = {
     "nonferr":  0.005,   # 申万有色指数不含管理费、跟踪误差
-    "soymeal":  0.020,   # 豆粕期货展期损耗+管理费+contango+无现货锚
     "bond_30y": 0.003,   # ×3.0 久期放大的期权费率差
 }
 
@@ -36,24 +35,24 @@ CASH_TIERS = [
     ("70% RP",  0.30),
 ]
 
-# === 9 资产 ETF 元信息 ===
+# === 7 资产 ETF 元信息 ===
 # 顺序就是各个表的标准列序
 ASSETS = [
-    "hs300", "div_idx", "us_sp500", "credit",
+    "hs300", "us_sp500", "credit",
     "bond_10y", "bond_30y",
-    "gold", "nonferr", "soymeal",
+    "gold", "nonferr",
 ]
 
 ETF_META = {
     "hs300":     {"code": "510300", "name": "沪深 300 ETF",        "bucket": "增长↑", "role": "A股大盘"},
-    "div_idx":   {"code": "510880", "name": "红利 ETF（中证红利）",   "bucket": "增长↑", "role": "A股价值/股息"},
+
     "us_sp500":  {"code": "513500", "name": "标普 500 ETF（QDII）", "bucket": "增长↑", "role": "海外权益"},
     "credit":    {"code": "511220", "name": "城投债 ETF",          "bucket": "收益垫", "role": "信用债"},
     "bond_10y":  {"code": "511260", "name": "10 年国债 ETF",       "bucket": "增长↓10Y", "role": "中久期利率债"},
     "bond_30y":  {"code": "511130", "name": "30 年国债 ETF",       "bucket": "增长↓30Y", "role": "长久期利率债"},
     "gold":      {"code": "518880", "name": "黄金 ETF",            "bucket": "通胀↑", "role": "实物黄金"},
     "nonferr":   {"code": "159980", "name": "有色金属 ETF",        "bucket": "通胀↑", "role": "工业金属"},
-    "soymeal":   {"code": "159985", "name": "豆粕 ETF",           "bucket": "通胀↑", "role": "农产品"},
+
 }
 
 CASH_ETF = {"code": "511880", "name": "货币基金 ETF"}
