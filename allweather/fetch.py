@@ -9,8 +9,8 @@ from .config import DATA_DIR
 RETRY_TIMES = 3
 RETRY_DELAY = 5  # 秒
 
-DEFAULT_START = "20080101"
-DEFAULT_END   = "20251231"
+DEFAULT_START = "20050101"
+DEFAULT_END   = "20260430"
 
 # 资产清单：name -> (kind, symbol)
 TARGETS = {

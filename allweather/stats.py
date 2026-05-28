@@ -96,6 +96,8 @@ def rolling_stats(nv: pd.Series, window: int = 252) -> dict:
         "ann_max": rolling_ann.max(),
         "dd_min": rolling_dd.min(),
         "neg_year_pct": (rolling_ann < 0).mean(),
+        "rolling_ann": rolling_ann,
+        "rolling_dd": rolling_dd,
     }
 
 

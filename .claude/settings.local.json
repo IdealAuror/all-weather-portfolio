@@ -92,7 +92,28 @@
       "Read(//tmp/**)",
       "Bash(pip install *)",
       "Bash(uv pip *)",
-      "Bash(git merge *)"
+      "Bash(git merge *)",
+      "Bash(where npm *)",
+      "Read(//c/Program Files/nodejs/**)",
+      "Read(//c/Users/bc-2/AppData/Roaming/npm/**)",
+      "Read(//c/Users/bc-2/AppData/Local/fnm/**)",
+      "Bash(cmd *)",
+      "Read(//c/Users/bc-2/AppData/Local/**)",
+      "Read(//c/Users/bc-2/AppData/Roaming/**)",
+      "Read(//c/Users/bc-2/**)",
+      "Bash(cmd.exe //c \"dir /s /b C:\\\\npm.cmd 2>nul & dir /s /b C:\\\\npx.cmd 2>nul & dir /s /b C:\\\\node.exe 2>nul\")",
+      "Bash(cmd.exe //c \"dir /s /b C:\\\\Users\\\\bc-2\\\\.trae-cn\\\\npm.cmd 2>nul & dir /s /b C:\\\\Users\\\\bc-2\\\\.trae-cn\\\\npx.cmd 2>nul\")",
+      "Bash(/c/Users/bc-2/.trae-cn/binaries/node/versions/24.15.0/npm.cmd install *)",
+      "Bash(\"/c/Users/bc-2/.trae-cn/binaries/node/versions/24.15.0/npx.cmd\" claude-hud *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(where python3 *)",
+      "Bash(py --version)",
+      "Bash(mkdir -p \"C:/Users/bc-2/.claude/projects/c--Users-bc-2-Desktop-all-weather-portfolio/memory\")",
+      "Bash(py main.py)",
+      "Bash(py -c ' *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio"
     ]
   }
 }

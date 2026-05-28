@@ -12,12 +12,12 @@
 | 名称 | 桥水全天候策略 · 中国版 |
 | 仓库 | https://github.com/IdealAuror/all-weather-portfolio |
 | 在线文档 | https://idealauror.github.io/all-weather-portfolio/ |
-| 工作目录 | `C:\Users\MOSS\Desktop\全季节策略\` |
-| 入口 | `python main.py` |
+| 工作目录 | `C:\Users\bc-2\Desktop\all-weather-portfolio\` |
+| 入口 | `py main.py` |
 | 语言 | Python ≥ 3.10 |
 | 必需依赖 | `numpy`, `pandas`, `openpyxl` |
-| 可选依赖 | `akshare`（拉数据）, `python-docx`（生成方案文档）|
-| 回测期间 | 2008-01-01 ~ 2025-12-31（~18 年）|
+| 可选依赖 | `akshare`（拉数据）|
+| 回测期间 | 2005-04-08 ~ 2026-04-30（~21 年，5431 个交易日）|
 | License | MIT |
 
 ---
@@ -419,7 +419,15 @@
 | 2026-05-26 | HS300 抄底倍数优化：35%阈值下网格搜索 2.0-4.0x。3.5x以上收益消失/MDD恶化。2.5x最优（V3-B CAGR 8.11→8.19%, Sharpe 1.20→1.22），3.0x过度加杠杆。保守增强2.5x MDD改善（-3.81→-3.63%）。统一改为35%/2.5x。A股11次熊市回撤中位数=45%，35%阈值处于32-43%无差别区低位，阈值不变。 |
 | 2026-05-26 | **回测延长至2008**：通过 akshare 多数据源拼接，回测期从 2015-2025（11年）扩展到 2008-2025（~18年）。新增数据源：CSI 300/红利/企债指数（Sina）、国债总指数（CBond）、伦敦金 XAU（foreign_fut）、沪铜 CU0（sina_fut）、S&P500 .INX（index_us_stock_sina）、USDCNY（currency_boc_sina）。数据拼接：权益=指数+ETF、黄金=伦敦金×CNY+ETF、S&P500=.INX×CNY+ETF、10Y国债=国债总指数+ETF、nonferr=沪铜+申万有色指数+ETF、soymeal=DCE M0+ETF。2008 GFC 对各策略冲击明显：V3-B CAGR 9.62→8.11%（-1.51%），MDD -4.14→-8.92%（翻倍），Sharpe 1.80→1.20。保守增强在2008年表现最佳（+13.27% vs V3-B +7.49%）。2009年反弹中 V3-B 领跑（+23.50%）。 |
 | 2026-05-26 | **Git Flow 分支规范落地**：采用标准 4 分支模型（main/develop/feature/hotfix），main 和 develop 设置 GitHub 分支保护（PR 门禁 + CI 回测门禁），禁止直接 push。历史里程碑打 Tag（v1.0-gold-dip ~ v4.0-hs300-3x）。规范文档写入 CLAUDE.md + README.md。 |
-| 2026-05-26 | **代码清理**：删除 `results/`（19个旧CSV，V3之前探索产出）、`strategy_c.py` + `grid_search_c.py`（方案C失败实验，结论已保留）、`diagnose_drag.py`（一次性诊断脚本）。risk.py 4 个闲置函数保留作为参考库。删除 3 个陈旧分支（worktree/sako-branch/feature/hs300-dip-3x）。 |
+| 2026-05-26 | **代码清理**：删除 `results/`（19个旧CSV）、`strategy_c.py` + `grid_search_c.py`、`diagnose_drag.py`。risk.py 4 个闲置函数保留。删除 3 个陈旧分支。 |
+| 2026-05-27 | **资产精简**：移除 div_idx（与 hs300 相关性 0.90，无独立分散价值）和 soymeal（自身 Sharpe 为负）。V3c/V3-B RP 从 9 资产减至 6 资产，V3-B Con 减至 7 资产。 |
+| 2026-05-27 | **HS300 dip-buying 过拟合发现**：训练集（2008-2025）上 hs300 dip 显著提升 CAGR，但验证集（2026 Q1）MDD 翻倍。确认过拟合后从三策略全部移除。这是本项目首次使用 train/val 切分方法论捕获过拟合。 |
+| 2026-05-28 | **Gold dip-buying 移除**：V3c 和 V3-B Con 关闭 gold dip-buying（原 15%/2.5x）。2013 年黄金接飞刀放大了亏损，关闭后零负收益年份（18/18），V3-B Con Sharpe 1.64→1.84。B-RP 保留 gold trend filter 不保留 dip-buying。 |
+| 2026-05-28 | **Gold trend filter 正式采用**：V3-B RP 加 gold trend filter 75d full clear，MDD -10.34%→-7.35%，2013 年 -3.52%→+3.72%，CAGR 仅降 0.28pp。 |
+| 2026-05-28 | **80/20 train/val 切分方法论**：替代之前的 walk-forward。TRAIN_RATIO=0.80，训练集 ~4344 天用于调参消融，验证集 ~1086 天（最近 ~4.5 年）用于锁定参数后验证。三策略均通过验证：train→full delta 均<0.15%。 |
+| 2026-05-28 | **回测扩展至 2005 年**：通过三阶段债券缝合（ETF→国债总指数→企债指数）、黄金宏消费数据 proxy（2005-2006）、及移除 div_idx 解决 panel dropna 约束，回测从 2008 前推至 2005-04-08（CSI 300 上线日）。CAGR 因覆盖更多危机（2008 GFC）而显著下降。 |
+| 2026-05-28 | **V3-B RP 优化边界确认**：gold trend filter 后已无更多性价比优化。hs300 trend filter 和 bucket risk parity 均得不偿失。当前版本即最优配置。 |
+| 2026-05-28 | **SP500 trend filter 正式纳入 V3-B RP**：120d SMA，跌破清仓转 credit。vol target 方向对但"不分敌友"（危机时连债券一起砍），改为外科手术式权益单资产过滤。MDD -12.37%→-9.48%（跌破-10%心理关口），CAGR 9.91%→10.14%。2008 年从 +0.13%→+11.53%。通过 80/20 过拟合检验（ΔCAGR -0.22pp）。 |
 
 ---
 

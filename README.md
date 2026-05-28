@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
-基于真实 A 股 / 债 / 商品 ETF 数据的全天候风险平价（Risk Parity）回测工程。回测期 2008-2025，覆盖 ~18 年完整牛熊周期。
+基于真实 A 股 / 债 / 商品 ETF 数据的全天候风险平价（Risk Parity）回测工程。回测期 2005-2026，覆盖 ~21 年完整牛熊周期。
 
 📖 **在线阅读完整方案**：https://idealauror.github.io/all-weather-portfolio/
 
@@ -15,31 +15,30 @@
 
 | 方案 | 风格 | CAGR | 最大回撤 | Sharpe | 一句话 |
 |---|---|---|---|---|---|
-| **V3c 多元** | 简约派 | 8.34% | -4.40% | 1.59 | 6资产逆波动率 60d — 零负收益年份 |
-| **V3-B 风险平价(20d)** | 学院派 | **10.40%** | -7.35% | 1.37 | 4桶等权 RP + gold trend filter — 回报最高 |
-| **V3-B 保守增强(20d)** | 保守增强 | 7.54% | **-3.42%** | **1.84** | 逆波动率 — 零负收益年份 |
+| **V3c 多元** | 简约派 | 8.40% | -6.96% | 1.62 | 6资产逆波动率 60d — 零负收益年份 |
+| **V3-B 风险平价(20d)** | 学院派 | **10.14%** | -9.48% | 1.45 | 4桶等权 RP + 三趋势过滤 — 回报最高 |
+| **V3-B 保守增强(20d)** | 保守增强 | 7.09% | **-6.40%** | **1.74** | 逆波动率 — 零负收益年份 |
 
-> V3-B RP 含 nonferr trend filter (75d) + gold trend filter (75d) + HS300 抄底(35%/1.5x)，月度调仓。
-> V3c 和 B-Con 含 nonferr trend filter + HS300 抄底（gold dip-buying 已关闭）。
+> V3-B RP 含 nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d)，月度调仓。
+> V3c 和 B-Con 含 nonferr trend filter（60d / 75d）。所有策略无 dip-buying。
 > V3c：6 资产；B-RP：6 资产 4 桶（无 bond_10y）；B-Con：7 资产 5 桶。
-> HS300 抄底 boost：V3c 3.0x / B-RP 1.5x / B-Con 3.0x。
-> 去除了 div_idx（与 hs300 相关性 0.90）和 soymeal（自身 Sharpe 为负）。
+> 去除了 div_idx（与 hs300 相关性 0.90）和 soymeal（自身 Sharpe 为负）。HS300 抄底和 Gold 抄底已移除（过拟合验证）。
 
 ### 策略评估
 
 **V3c 多元 (简约派)**
-- 资产最少(6个)，执行最简单；回撤低(-4.40%)，18年全部正收益
-- 无桶级风控，单资产上限 30% 较宽松；gold dip-buying 已关闭
+- 资产最少(6个)，执行最简单；21年仅一个负收益年份（滚动1年负收益率 3.73%）
+- 无桶级风控，单资产上限 30% 较宽松；无 dip-buying
 - 适合：初入全天候、不想研究桶逻辑、追求简单透明
 
 **V3-B 风险平价(20d) (学院派)**
-- 长期回报最高 CAGR 10.40%，累计 508%；四桶真正等权(25%×4)，gold trend filter 75d
-- 回撤(-7.35%)，最差年份 2011 -1.54%；桶逻辑比另外两个策略复杂
+- 长期回报最高 CAGR 10.14%，累计 702%；四桶真正等权(25%×4)，三层趋势过滤(nonferr/gold/sp500)
+- 回撤(-9.48%)，最差年份 2011 -1.22%；桶逻辑比另外两个策略复杂
 - 适合：长期持有者(5年+)、认同正统全天候理念、能承受短期波动
 
 **V3-B 保守增强(20d) (保守增强)**
-- 回撤最低(-3.42%)，18年全部正收益；Sharpe 最高(1.84)，熊市表现最好
-- 牛市可能跑输(2019仅+7.53%，2017仅+2.92%)；长期累计回报最低(276%)
+- 回撤最低(-6.40%)，Sharpe 最高(1.74)，熊市表现最好（2008 +14.95%）
+- 牛市可能跑输(2019仅+6.66%，2017仅+2.67%)；长期累计回报最低(337%)
 - 适合：保守型资金、退休/教育金、无法承受大幅回撤
 
 **一句话选策略：要简单 → V3c / 要高回报 → V3-B RP / 要不亏钱 → V3-B 保守增强**
@@ -136,12 +135,11 @@ python main.py --help         查看完整帮助
 
 | 参数 | 值 | 说明 |
 |---|---|---|
-| 回测区间 | 2008-01 ~ 2025-12 | ~18 年 |
+| 回测区间 | 2005-04 ~ 2026-04 | ~21 年 |
 | 调仓频率 | 月度 | 每月初重算权重 |
 | nonferr 趋势过滤 | V3c 60d / B-RP+B-Con 75d SMA | 跌破 SMA 则权重转入 credit |
 | Gold trend filter | B-RP only, 75d SMA, full clear | 跌破 SMA 则清仓黄金转入 credit |
-| Gold 抄底 | 已关闭 (V3c + B-Con) | 原 15%/2.5x，2013 年接飞刀放大了亏损 |
-| HS300 抄底 | -35% / V3c 3.0x / B-RP 1.5x / B-Con 3.0x | 仅史诗级股灾触发 |
+| SP500 trend filter | B-RP only, 120d SMA, full clear | 跌破 SMA 则清仓标普500转入 credit |
 | 无风险利率 | 2.2% 年化 | 用于 Sharpe 修正 |
 
 ## 自定义
@@ -164,12 +162,7 @@ weights, nv = step_2_run_backtests(rets)
 
 ## 分支规范
 
-- `main` — 生产分支，打 Tag 发版，**禁止直接 push**
-- `develop` — 集成测试，feature/hotfix 合入后验证
-- `feature/xxx` — 新功能开发，从 develop 拉，**回测通过后**提 PR 回合
-- `hotfix/xxx` — 紧急修复，从 main 拉，修复合入 main+develop
-
-提交遵循 Conventional Commits（`feat:` / `fix:` / `docs:` / `refactor:`）。详见 [CLAUDE.md](CLAUDE.md)。
+- `main` — 生产分支，直接 push（单人项目）
 
 ## 文档
 

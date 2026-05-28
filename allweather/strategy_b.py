@@ -44,6 +44,11 @@ def backtest_b(
     hs300_dip_boost: float = HS300_DIP_BOOST,
     gold_trend_filter: bool = False,
     gold_trend_window: int = 75,
+    track_weights: bool = False,
+    vol_target: float | None = None,
+    vol_target_window: int = 60,
+    equity_trend_assets: list | None = None,
+    equity_trend_window: int = 120,
 ) -> tuple:
     """Plan B backtest — 分层风险平价 / 逆波动率 + 可选 nonferr 风控 + gold 抄底 + hs300 抄底。
 
@@ -58,9 +63,10 @@ def backtest_b(
         hs300_dip_threshold: 沪深300回撤阈值（None=禁用，默认35%仅史诗级股灾触发）
         gold_trend_filter: 黄金SMA趋势过滤，跌破SMA则清仓转入credit（默认False）
         gold_trend_window: 黄金SMA回看窗口（交易日，默认75）
+        track_weights: 为True时额外返回权重历史DataFrame（调仓日 × 资产）
 
     Returns:
-        nv (pd.Series), n_rebal (int)
+        nv (pd.Series), n_rebal (int), [weight_history (pd.DataFrame)]
     """
     cols = list(rets.columns)
     rets_rp = rets[cols]
@@ -76,6 +82,8 @@ def backtest_b(
     target = initial_w.values * (1 - cash_ratio)
     h = pd.Series(target, index=cols)
     v = 1.0
+    eff_cash = cash_ratio
+    weight_log = {} if track_weights else None
 
     # --- Nonferr risk control state ---
     prices = None
@@ -104,13 +112,13 @@ def backtest_b(
             nv.loc[d] = 1.0
             continue
 
-        v *= 1 + (h * rets.loc[d, cols]).sum() + cash_ratio * RISK_FREE_RATE
+        v *= 1 + (h * rets.loc[d, cols]).sum() + eff_cash * RISK_FREE_RATE
         nv.loc[d] = v
 
         h = h * (1 + rets.loc[d, cols])
         s = h.sum()
         if s > 0:
-            h = h / s * (1 - cash_ratio)
+            h = h / s * (1 - eff_cash)
 
         # --- Update nonferr peak ---
         if prices is not None and "nonferr" in prices.columns:
@@ -164,6 +172,16 @@ def backtest_b(
                     w["credit"] = w.get("credit", 0) + w["gold"]
                     w["gold"] = 0.0
 
+            # --- Equity trend filter: 权益跌破SMA → 清仓转入 credit ---
+            if equity_trend_assets and prices is not None and i > equity_trend_window:
+                for eq in equity_trend_assets:
+                    if eq in w.index and w.get(eq, 0) > 0:
+                        curr = prices.iloc[i][eq]
+                        sma = prices[eq].iloc[max(0, i - equity_trend_window):i].mean()
+                        if curr < sma:
+                            w["credit"] = w.get("credit", 0) + w[eq]
+                            w[eq] = 0.0
+
             # --- Gold dip-buying: 回撤超阈值 → 翻倍增持，从 credit 提取 ---
             if gold_dip_threshold is not None and prices is not None and w.get("gold", 0) > 0:
                 gold_dd = prices.iloc[i]["gold"] / gold_peak - 1
@@ -182,7 +200,19 @@ def backtest_b(
                         w["hs300"] += boost
                         w["credit"] -= boost
 
+            if vol_target is not None and i > max(rp_window, vol_target_window):
+                past = rets_rp.iloc[max(0, i - vol_target_window):i]
+                port_ret = past @ w.values
+                port_vol = port_ret.std() * np.sqrt(252)
+                if port_vol > 0.001 and port_vol > vol_target:
+                    w = w * (vol_target / port_vol)
+            eff_cash = 1.0 - w.sum()
+
             h = w
             n_rebal += 1
+            if track_weights:
+                weight_log[d] = w.copy()
 
+    if track_weights:
+        return nv, n_rebal, pd.DataFrame(weight_log).T
     return nv, n_rebal

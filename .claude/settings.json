@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i '882s/Gold\\\\/HS300抄底/Gold趋势过滤 + HS300抄底/' \"c:/Users/bc-2/Desktop/all-weather-portfolio/docs/index.html\")",
+      "Bash(sed -i '883s/ + Gold\\\\/HS300抄底//' \"c:/Users/bc-2/Desktop/all-weather-portfolio/docs/index.html\")",
+      "Bash(python -c \"import pandas as pd; from pathlib import Path; [print\\(f'{f.stem:12s} {pd.read_csv\\(f, index_col=0, parse_dates=True\\).index.min\\(\\).date\\(\\)} ~ {pd.read_csv\\(f, index_col=0, parse_dates=True\\).index.max\\(\\).date\\(\\)}'\\) for f in sorted\\(Path\\('data'\\).glob\\('*.csv'\\)\\)]\")",
+      "Bash(py -c \"import pandas as pd; from pathlib import Path; [print\\(f'{f.stem:12s} {pd.read_csv\\(f, index_col=0, parse_dates=True\\).index.min\\(\\).date\\(\\)} ~ {pd.read_csv\\(f, index_col=0, parse_dates=True\\).index.max\\(\\).date\\(\\)}'\\) for f in sorted\\(Path\\('data'\\).glob\\('*.csv'\\)\\)]\")",
+      "Bash(py overfit_analysis.py)",
+      "Bash(PYTHONIOENCODING=utf-8 py overfit_analysis.py)",
+      "Bash(PYTHONIOENCODING=utf-8 py -c ' *)",
+      "Bash(py main.py --force-fetch-only)",
+      "Bash(py main.py --force-fetch --fetch-only)",
+      "Bash(PYTHONIOENCODING=utf-8 py main.py --no-excel --no-markdown)",
+      "Bash(PYTHONIOENCODING=utf-8 py -c \"from allweather.data import load_panel; p = load_panel\\(\\); print\\(f'Start: {p.index.min\\(\\).date\\(\\)}, End: {p.index.max\\(\\).date\\(\\)}, Rows: {len\\(p\\)}'\\)\")",
+      "Bash(py -c ' *)",
+      "Bash(py vol_target_search.py)",
+      "Bash(py equity_filter_search.py)",
+      "Bash(py update_html.py)",
+      "Bash(py main.py --no-excel --no-markdown)"
+    ]
+  }
+}
