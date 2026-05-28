@@ -116,8 +116,20 @@ RISK_PARITY_MIN_WEIGHT = 0.02    # 单资产权重下限
 # === Gold 抄底参数 ===
 GOLD_DIP_THRESHOLD = 0.15        # 黄金从高点回撤超过此阈值触发抄底
 GOLD_DIP_BOOST = 2.5             # 触发后黄金权重翻倍倍数（2.5x，网格搜索最优）
-HS300_DIP_THRESHOLD = 0.35       # 沪深300从高点回撤超过此阈值触发抄底（仅史诗级股灾）
-HS300_DIP_BOOST = 2.5            # 触发后沪深300权重翻倍倍数（默认值，各策略分别覆盖）
+# === HS300 抄底参数 ===
+HS300_DIP_THRESHOLD = 0.25       # 价格回撤阈值（25%，中度熊市即触发）
+HS300_DIP_BOOST = 1.8            # 价格回撤 boost（1.8x，grid-search 最优）
+HS300_DIP_SMA = 120              # 价格回撤需价格 > SMA120 确认（交易日）
+HS300_DIP_EXIT_RECOVERY = 0.15   # 恢复到 peak-15% 退出（grid-search 最优）
+
+# PE 估值抄底（hs300_value_dip）
+HS300_VALUE_PE_COL = 7           # PE 列索引（7=滚动市盈率中位数）
+HS300_VALUE_ENTRY = 30           # PE%ile 入场阈值（30%）
+HS300_VALUE_EXIT = 70            # PE%ile 退出阈值（70%，grid-search 最优）
+HS300_VALUE_BOOST = 1.8          # PE 估值 boost（1.8x，grid-search 最优）
+HS300_VALUE_SMA = 90             # PE 估值需价格 > SMA90 确认（交易日）
+HS300_VALUE_PE_ABS = 15          # 绝对 PE < 15 触发额外加成
+HS300_VALUE_BOOST_ABS = 1.8      # 绝对 PE 低时的加成 boost
 
 # === 标普500 趋势过滤 ===
 SP500_TREND_WINDOW = 120     # 标普500 SMA 回看窗口（交易日），跌破则清仓转入 credit

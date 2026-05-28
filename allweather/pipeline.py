@@ -52,6 +52,7 @@ def step_2_run_backtests(rets):
     weights = get_weights()
     nv_results = {}
     weight_history = {}
+    signal_logs = {}
     n_rebal_total = 0
 
     # --- V3c: 逆波动率加权（60d，6 资产精简）+ nonferr 趋势过滤 ---
@@ -59,13 +60,15 @@ def step_2_run_backtests(rets):
         track = (tier_label == "100% RP")
         result = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
                             nonferr_trend_window=60, assets=V3C_ASSETS,
-                            hs300_dip_threshold=None,
                             gold_dip_threshold=None,
                             hs300_value_dip=True,
-                            track_weights=track)
+                            track_weights=track,
+                            track_signals=track,
+                            signal_label="V3c 多元")
         if track:
-            nv, n, wh = result
+            nv, n, wh, sl = result
             weight_history["V3c 多元"] = wh
+            signal_logs["V3c 多元"] = sl
         else:
             nv, n = result
         nv_results[("V3c 多元", tier_label)] = nv
@@ -80,16 +83,18 @@ def step_2_run_backtests(rets):
                             rp_buckets=V3B_RP_BUCKETS,
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
-                            hs300_dip_threshold=None,
                             gold_trend_filter=True,
                             gold_trend_window=75,
                             equity_trend_assets=["us_sp500"],
                             equity_trend_window=SP500_TREND_WINDOW,
                             hs300_value_dip=True,
-                            track_weights=track)
+                            track_weights=track,
+                            track_signals=track,
+                            signal_label="V3-B 风险平价")
         if track:
-            nv, n, wh = result
+            nv, n, wh, sl = result
             weight_history["V3-B 风险平价(20d)"] = wh
+            signal_logs["V3-B 风险平价"] = sl
         else:
             nv, n = result
         nv_results[("V3-B 风险平价(20d)", tier_label)] = nv
@@ -103,13 +108,15 @@ def step_2_run_backtests(rets):
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
                             weighting_method="inverse_vol",
-                            hs300_dip_threshold=None,
                             gold_dip_threshold=None,
                             hs300_value_dip=True,
-                            track_weights=track)
+                            track_weights=track,
+                            track_signals=track,
+                            signal_label="V3-B 保守增强")
         if track:
-            nv, n, wh = result
+            nv, n, wh, sl = result
             weight_history["V3-B 保守增强(20d)"] = wh
+            signal_logs["V3-B 保守增强"] = sl
         else:
             nv, n = result
         nv_results[("V3-B 保守增强(20d)", tier_label)] = nv
@@ -119,7 +126,7 @@ def step_2_run_backtests(rets):
     print(f"  ok 完成 {total} 个回测")
     print(f"  ok 总调仓次数: {n_rebal_total}")
     print(f"  ok 用时: {time.time()-t0:.2f}s")
-    return weights, nv_results, weight_history
+    return weights, nv_results, weight_history, signal_logs
 
 
 def step_3_compute_metrics(nv_results, weights, rets):
@@ -229,7 +236,8 @@ def step_5_print_reports(metrics, boot, weights):
 
 def step_6_save_outputs(nv_results, metrics, weights, boot=None,
                          excel: bool = True, markdown: bool = True,
-                         weight_history: dict = None):
+                         weight_history: dict = None,
+                         signal_logs: dict = None):
     """Step 6: 保存净值曲线 / 汇总 JSON / 权重 CSV / Excel / Markdown。
 
     excel 和 markdown 都需要 boot（蒙特卡洛结果）。如果只想跑基础三件套，
@@ -245,6 +253,17 @@ def step_6_save_outputs(nv_results, metrics, weights, boot=None,
     print(f"  ok {p1.name}")
     print(f"  ok {p2.name}")
     print(f"  ok {p3.name}")
+
+    if signal_logs:
+        all_logs = []
+        for label, sl in signal_logs.items():
+            sl_copy = sl.copy()
+            sl_copy['label'] = label
+            all_logs.append(sl_copy)
+        combined = pd.concat(all_logs, ignore_index=True)
+        sl_path = OUTPUT_DIR / "signal_log.csv"
+        combined.to_csv(sl_path, index=False, encoding="utf-8-sig")
+        print(f"  ok {sl_path.name}（信号触发日志，{len(combined)} 条）")
 
     if (excel or markdown) and boot is None:
         print("  [WARN] boot 结果缺失，跳过 Excel/Markdown 综合报告")
@@ -309,13 +328,14 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True):
     print("=" * 60)
 
     panel, rets = step_1_load_data()
-    weights, nv_results, weight_history = step_2_run_backtests(rets)
+    weights, nv_results, weight_history, signal_logs = step_2_run_backtests(rets)
     metrics = step_3_compute_metrics(nv_results, weights, rets)
     boot = step_4_bootstrap(weights, rets, nv_results=nv_results)
     step_5_print_reports(metrics, boot, weights)
     step_6_save_outputs(nv_results, metrics, weights, boot=boot,
                          excel=excel, markdown=markdown,
-                         weight_history=weight_history)
+                         weight_history=weight_history,
+                         signal_logs=signal_logs)
 
     print("\n" + "=" * 60)
     print(f"  完成！总耗时 {time.time()-overall:.1f}s")

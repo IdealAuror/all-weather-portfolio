@@ -79,12 +79,18 @@ def compare_strategies(rets):
     for tier_label, c in CASH_TIERS:
         nv_curr, _ = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
                                  nonferr_trend_window=60, assets=V3C_ASSETS,
-                                 hs300_dip_threshold=None, gold_dip_threshold=None)
+                                 gold_dip_threshold=None,
+                                 hs300_value_dip=True)
+        nv_nodip, _ = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
+                                 nonferr_trend_window=60, assets=V3C_ASSETS,
+                                 hs300_dip_threshold=None, gold_dip_threshold=None,
+                                 hs300_value_dip=True)
         nv_pure, _ = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
                                  nonferr_trend_window=0, assets=V3C_ASSETS,
                                  hs300_dip_threshold=None, gold_dip_threshold=None,
                                  gold_trend_filter=False)
         results[("V3c 当前", tier_label)] = perf_metrics(nv_curr)
+        results[("V3c w/o 价格回撤", tier_label)] = perf_metrics(nv_nodip)
         results[("V3c 纯IV", tier_label)] = perf_metrics(nv_pure)
 
     # V3-B RP
@@ -92,21 +98,23 @@ def compare_strategies(rets):
         nv_curr, _ = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
                                 rp_buckets=V3B_RP_BUCKETS,
                                 nonferr_control="trend_filter", nonferr_trend_window=75,
+                                gold_trend_filter=True, gold_trend_window=75,
+                                equity_trend_assets=["us_sp500"], equity_trend_window=120,
+                                hs300_value_dip=True)
+        nv_nodip, _ = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
+                                rp_buckets=V3B_RP_BUCKETS,
+                                nonferr_control="trend_filter", nonferr_trend_window=75,
                                 hs300_dip_threshold=None,
-                                gold_trend_filter=True, gold_trend_window=75)
-        nv_eq, _ = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
-                              rp_buckets=V3B_RP_BUCKETS,
-                              nonferr_control="trend_filter", nonferr_trend_window=75,
-                              hs300_dip_threshold=None,
-                              gold_trend_filter=True, gold_trend_window=75,
-                              equity_trend_assets=["us_sp500"], equity_trend_window=120)
+                                gold_trend_filter=True, gold_trend_window=75,
+                                equity_trend_assets=["us_sp500"], equity_trend_window=120,
+                                hs300_value_dip=True)
         nv_pure, _ = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
                                 rp_buckets=V3B_RP_BUCKETS,
                                 nonferr_control=None,
                                 hs300_dip_threshold=None, gold_dip_threshold=None,
                                 gold_trend_filter=False)
         results[("V3-B RP 当前", tier_label)] = perf_metrics(nv_curr)
-        results[("V3-B RP +sp500趋势", tier_label)] = perf_metrics(nv_eq)
+        results[("V3-B RP w/o 价格回撤", tier_label)] = perf_metrics(nv_nodip)
         results[("V3-B RP 纯HRP", tier_label)] = perf_metrics(nv_pure)
 
     # V3-B Con
@@ -115,7 +123,14 @@ def compare_strategies(rets):
                                 max_w=0.25,
                                 nonferr_control="trend_filter", nonferr_trend_window=75,
                                 weighting_method="inverse_vol",
-                                hs300_dip_threshold=None, gold_dip_threshold=None)
+                                gold_dip_threshold=None,
+                                hs300_value_dip=True)
+        nv_nodip, _ = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
+                                max_w=0.25,
+                                nonferr_control="trend_filter", nonferr_trend_window=75,
+                                weighting_method="inverse_vol",
+                                hs300_dip_threshold=None, gold_dip_threshold=None,
+                                hs300_value_dip=True)
         nv_pure, _ = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
                                 max_w=0.25,
                                 nonferr_control=None,
@@ -123,6 +138,7 @@ def compare_strategies(rets):
                                 hs300_dip_threshold=None, gold_dip_threshold=None,
                                 gold_trend_filter=False)
         results[("V3-B Con 当前", tier_label)] = perf_metrics(nv_curr)
+        results[("V3-B Con w/o 价格回撤", tier_label)] = perf_metrics(nv_nodip)
         results[("V3-B Con 纯IV", tier_label)] = perf_metrics(nv_pure)
 
     # Print 100% RP
@@ -138,9 +154,9 @@ def compare_strategies(rets):
 def print_overfit_table(train_results, full_results):
     """训练 → 全量 指标变化，检测过拟合。"""
     strategies = [
-        "V3c 当前", "V3c 纯IV",
-        "V3-B RP 当前", "V3-B RP +sp500趋势", "V3-B RP 纯HRP",
-        "V3-B Con 当前", "V3-B Con 纯IV",
+        "V3c 当前", "V3c w/o 价格回撤", "V3c 纯IV",
+        "V3-B RP 当前", "V3-B RP w/o 价格回撤", "V3-B RP 纯HRP",
+        "V3-B Con 当前", "V3-B Con w/o 价格回撤", "V3-B Con 纯IV",
     ]
 
     print(f"  {'策略':20s}  {'阶段':4s}  {'CAGR':>7s}  {'MDD':>8s}  {'Sharpe':>7s}  {'Calmar':>7s}")
@@ -165,17 +181,23 @@ def ablation_study(rets):
     nv, _ = backtest_iv(rets, iv_window=60, max_w=0.30, min_w=0.03,
                         nonferr_trend_window=0, assets=V3C_ASSETS,
                         hs300_dip_threshold=None, gold_dip_threshold=None)
-    v3c["纯IV (无任何增强)"] = perf_metrics(nv)
+    v3c["纯IV (baseline)"] = perf_metrics(nv)
 
     nv, _ = backtest_iv(rets, iv_window=60, max_w=0.30, min_w=0.03,
                         nonferr_trend_window=60, assets=V3C_ASSETS,
-                        hs300_dip_threshold=None, gold_dip_threshold=None)
-    v3c["+ nonferr trend filter 60d  ← 当前版"] = perf_metrics(nv)
+                        hs300_dip_threshold=None, gold_dip_threshold=None,
+                        hs300_value_dip=True)
+    v3c["+ PE估值 (col7 30%ile 1.5x SMA90)"] = perf_metrics(nv)
 
     nv, _ = backtest_iv(rets, iv_window=60, max_w=0.30, min_w=0.03,
                         nonferr_trend_window=60, assets=V3C_ASSETS,
-                        hs300_dip_boost=3.0, gold_dip_threshold=None)
-    v3c["+ nonferr + hs300 dip(3x)  [过拟合]"] = perf_metrics(nv)
+                        gold_dip_threshold=None, hs300_value_dip=False)
+    v3c["+ 价格回撤 (25% SMA120 1.5x)"] = perf_metrics(nv)
+
+    nv, _ = backtest_iv(rets, iv_window=60, max_w=0.30, min_w=0.03,
+                        nonferr_trend_window=60, assets=V3C_ASSETS,
+                        gold_dip_threshold=None, hs300_value_dip=True)
+    v3c["完整版 (PE + 价格回撤)"] = perf_metrics(nv)
 
     results["V3c 多元"] = v3c
 
@@ -187,36 +209,32 @@ def ablation_study(rets):
                        nonferr_control=None,
                        hs300_dip_threshold=None, gold_dip_threshold=None,
                        gold_trend_filter=False)
-    brp["纯HRP (无任何增强)"] = perf_metrics(nv)
-
-    nv, _ = backtest_b(rets[V3B_RP_ASSETS], rp_window=20,
-                       rp_buckets=V3B_RP_BUCKETS,
-                       nonferr_control="trend_filter", nonferr_trend_window=75,
-                       hs300_dip_threshold=None, gold_dip_threshold=None,
-                       gold_trend_filter=False)
-    brp["+ nonferr trend filter 75d"] = perf_metrics(nv)
-
-    nv, _ = backtest_b(rets[V3B_RP_ASSETS], rp_window=20,
-                       rp_buckets=V3B_RP_BUCKETS,
-                       nonferr_control="trend_filter", nonferr_trend_window=75,
-                       hs300_dip_threshold=None,
-                       gold_trend_filter=True, gold_trend_window=75)
-    brp["+ nonferr + gold trend 75d  ← 当前版"] = perf_metrics(nv)
+    brp["纯HRP (baseline)"] = perf_metrics(nv)
 
     nv, _ = backtest_b(rets[V3B_RP_ASSETS], rp_window=20,
                        rp_buckets=V3B_RP_BUCKETS,
                        nonferr_control="trend_filter", nonferr_trend_window=75,
                        hs300_dip_threshold=None,
                        gold_trend_filter=True, gold_trend_window=75,
-                       equity_trend_assets=["us_sp500"], equity_trend_window=120)
-    brp["+ nonferr + gold + sp500 trend 120d  ← 候选"] = perf_metrics(nv)
+                       equity_trend_assets=["us_sp500"], equity_trend_window=120,
+                       hs300_value_dip=True)
+    brp["+ PE估值 (col7 30%ile 1.5x SMA90)"] = perf_metrics(nv)
 
     nv, _ = backtest_b(rets[V3B_RP_ASSETS], rp_window=20,
                        rp_buckets=V3B_RP_BUCKETS,
                        nonferr_control="trend_filter", nonferr_trend_window=75,
-                       hs300_dip_boost=1.5,
-                       gold_trend_filter=True, gold_trend_window=75)
-    brp["+ nonferr + gold trend + hs300 dip(1.5x)  [过拟合]"] = perf_metrics(nv)
+                       gold_trend_filter=True, gold_trend_window=75,
+                       equity_trend_assets=["us_sp500"], equity_trend_window=120,
+                       hs300_value_dip=False)
+    brp["+ 价格回撤 (25% SMA120 1.5x)"] = perf_metrics(nv)
+
+    nv, _ = backtest_b(rets[V3B_RP_ASSETS], rp_window=20,
+                       rp_buckets=V3B_RP_BUCKETS,
+                       nonferr_control="trend_filter", nonferr_trend_window=75,
+                       gold_trend_filter=True, gold_trend_window=75,
+                       equity_trend_assets=["us_sp500"], equity_trend_window=120,
+                       hs300_value_dip=True)
+    brp["完整版 (PE + 价格回撤)"] = perf_metrics(nv)
 
     results["V3-B 风险平价"] = brp
 
@@ -227,19 +245,26 @@ def ablation_study(rets):
                        weighting_method="inverse_vol",
                        nonferr_control=None,
                        hs300_dip_threshold=None, gold_dip_threshold=None)
-    bcon["纯IV (无任何增强)"] = perf_metrics(nv)
+    bcon["纯IV (baseline)"] = perf_metrics(nv)
 
     nv, _ = backtest_b(rets[V3B_ASSETS], rp_window=20, max_w=0.25,
                        weighting_method="inverse_vol",
                        nonferr_control="trend_filter", nonferr_trend_window=75,
-                       hs300_dip_threshold=None, gold_dip_threshold=None)
-    bcon["+ nonferr trend filter 75d  ← 当前版"] = perf_metrics(nv)
+                       hs300_dip_threshold=None, gold_dip_threshold=None,
+                       hs300_value_dip=True)
+    bcon["+ PE估值 (col7 30%ile 1.5x SMA90)"] = perf_metrics(nv)
 
     nv, _ = backtest_b(rets[V3B_ASSETS], rp_window=20, max_w=0.25,
                        weighting_method="inverse_vol",
                        nonferr_control="trend_filter", nonferr_trend_window=75,
-                       hs300_dip_boost=3.0, gold_dip_threshold=None)
-    bcon["+ nonferr + hs300 dip(3x)  [过拟合]"] = perf_metrics(nv)
+                       gold_dip_threshold=None, hs300_value_dip=False)
+    bcon["+ 价格回撤 (25% SMA120 1.5x)"] = perf_metrics(nv)
+
+    nv, _ = backtest_b(rets[V3B_ASSETS], rp_window=20, max_w=0.25,
+                       weighting_method="inverse_vol",
+                       nonferr_control="trend_filter", nonferr_trend_window=75,
+                       gold_dip_threshold=None, hs300_value_dip=True)
+    bcon["完整版 (PE + 价格回撤)"] = perf_metrics(nv)
 
     results["V3-B 保守增强"] = bcon
 
