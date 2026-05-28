@@ -57,7 +57,8 @@ def step_2_run_backtests(rets):
     for tier_label, c in CASH_TIERS:
         nv, n = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
                             nonferr_trend_window=60, assets=V3C_ASSETS,
-                            hs300_dip_boost=3.0)
+                            hs300_dip_boost=3.0,
+                            gold_dip_threshold=None)
         nv_results[("V3c 多元", tier_label)] = nv
         n_rebal_total += n
 
@@ -69,7 +70,9 @@ def step_2_run_backtests(rets):
                             rp_buckets=V3B_RP_BUCKETS,
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
-                            hs300_dip_boost=1.5)
+                            hs300_dip_boost=1.5,
+                            gold_trend_filter=True,
+                            gold_trend_window=75)
         nv_results[("V3-B 风险平价(20d)", tier_label)] = nv
         n_rebal_total += n
 
@@ -80,7 +83,8 @@ def step_2_run_backtests(rets):
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
                             weighting_method="inverse_vol",
-                            hs300_dip_boost=3.0)
+                            hs300_dip_boost=3.0,
+                            gold_dip_threshold=None)
         nv_results[("V3-B 保守增强(20d)", tier_label)] = nv
         n_rebal_total += n
 

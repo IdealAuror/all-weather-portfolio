@@ -119,6 +119,8 @@ def backtest_iv(
     hs300_dip_threshold: float | None = HS300_DIP_THRESHOLD,
     hs300_dip_boost: float = HS300_DIP_BOOST,
     assets: list | None = None,
+    gold_trend_filter: bool = False,
+    gold_trend_window: int = 75,
 ):
     """逆波动率加权 + 月度再平衡 + nonferr 趋势过滤 + gold/hs300 抄底。
 
@@ -180,6 +182,13 @@ def backtest_iv(
                 if curr_nf < nf_sma:
                     w["credit"] = w.get("credit", 0) + w["nonferr"]
                     w["nonferr"] = 0.0
+
+            if gold_trend_filter and gold_idx >= 0 and w.get("gold", 0) > 0:
+                curr_au = prices.iloc[i]["gold"]
+                au_sma = prices["gold"].iloc[max(0, i - gold_trend_window):i].mean()
+                if curr_au < au_sma:
+                    w["credit"] = w.get("credit", 0) + w["gold"]
+                    w["gold"] = 0.0
 
             if gold_dip_threshold is not None and gold_idx >= 0 and w.get("gold", 0) > 0:
                 gold_dd = prices.iloc[i]["gold"] / gold_peak - 1

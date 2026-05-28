@@ -239,7 +239,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <main class="container">
 <h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
 <p class="doc-subtitle">基于风险平价（Risk Parity）的 A 股投资者落地方案</p>
-<p class="doc-meta">回测期: 2008-01 ~ 2025-12（~18 年）  |  调仓规则: 月度调仓 + nonferr 趋势过滤 + Gold/HS300 抄底  |  本金示例: 100 万<button class="dl-btn" onclick="downloadHTML()">下载 HTML</button></p>
+<p class="doc-meta">回测期: 2008-01 ~ 2025-12（~18 年）  |  调仓规则: 月度调仓 + nonferr 趋势过滤 + HS300 抄底 / Gold 趋势过滤  |  本金示例: 100 万<button class="dl-btn" onclick="downloadHTML()">下载 HTML</button></p>
 <h2 class="ch-h1" id="ch0">一、桥水全天候策略核心逻辑</h2>
 <p class="para">桥水基金（Bridgewater）的全天候策略（All Weather Strategy）是投资界最著名的风险平价（Risk Parity）实践。它的核心逻辑非常纯粹：既然我们无法准确预测未来，那就构建一个在任何宏观环境下都不会重伤的组合，让时间和复利做朋友。</p>
 <h3 class="sec-h3">（一）四象限框架：把宏观风险拆开看</h3>
@@ -321,7 +321,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tbody></table>
 <p class="para">All Seasons 是 Robbins 在《Money: Master the Game》里向 Dalio 求来的简化版，适合零售但忽略了风险贡献的动态变化。RPAR/ALLW 才是真正的风险平价 ETF。中国版借鉴 RPAR 的桶结构，但权重用样本协方差 + 长期波动率假设求解，避开窗口偏差。</p>
 <h2 class="ch-h1" id="ch2">三、中国版风险平价策略</h2>
-<p class="para">三套策略，三条路线，均为 ★★★ 推荐。<strong>V3c 多元</strong> 是 6 资产逆波动率 60d（简约高效）；<strong>V3-B 风险平价</strong> 是 4 桶真正等权风险平价（30Y 国债，去掉 10Y）+ Gold/HS300 双抄底（回报最高）；<strong>V3-B 保守增强</strong> 是 7 资产逆波动率 20d + Gold/HS300 双抄底（Sharpe 最高、回撤最低）。</p>
+<p class="para">三套策略，三条路线，均为 ★★★ 推荐。<strong>V3c 多元</strong> 是 6 资产逆波动率 60d（简约高效）；<strong>V3-B 风险平价</strong> 是 4 桶真正等权风险平价（30Y 国债，去掉 10Y）+ Gold 趋势过滤 + HS300 抄底（回报最高）；<strong>V3-B 保守增强</strong> 是 7 资产逆波动率 20d + HS300 抄底（Sharpe 最高、回撤最低）。</p>
 <h3 class="sec-h3">怎么选？三套策略一句话</h3>
 	<table class="data-tbl" style="--header-color: #1F4E79;">
 	<thead><tr>
@@ -338,12 +338,12 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	<tr>
 	<td class="td-first">认同正统全天候，追求最高长期回报</td>
 	<td class="td-num">V3-B 风险平价 ★★★</td>
-	<td class="td-num">4 桶真正等权（25%×4），CAGR 10.68% 全策略最高，累计 537%</td>
+	<td class="td-num">4 桶真正等权（25%×4），CAGR 10.40% 全策略最高，累计 508%</td>
 	</tr>
 	<tr>
 	<td class="td-first">养老金/教育金，不能承受大幅回撤</td>
 	<td class="td-num">V3-B 保守增强 ★★★</td>
-	<td class="td-num">回撤仅 -3.83%，Sharpe 1.62 最高，最差年份仅 -0.61%</td>
+	<td class="td-num">回撤仅 -3.42%，Sharpe 1.84 最高，零负收益年份</td>
 	</tr>
 	</tbody></table>
 
@@ -357,12 +357,12 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	</tr></thead>
 	<tbody>
 	<tr><td class="td-first">定位</td><td class="td-num">简约派</td><td class="td-num">学院派</td><td class="td-num">保守增强</td></tr>
-	<tr><td class="td-first">方法</td><td class="td-num">6 资产逆波动率 60d<br>+ nonferr 趋势过滤<br>+ Gold/HS300 抄底</td><td class="td-num">4 桶等权 × 桶内逆波动率<br>+ nonferr 趋势过滤<br>+ Gold/HS300 抄底</td><td class="td-num">逆波动率 20d<br>+ nonferr 趋势过滤<br>+ Gold/HS300 抄底<br>max_w=0.25</td></tr>
-	<tr><td class="td-first">CAGR</td><td class="td-num td-pos">8.59%</td><td class="td-num td-pos">10.68%</td><td class="td-num td-pos">7.52%</td></tr>
-	<tr><td class="td-first">累计收益</td><td class="td-num td-pos">349.89%</td><td class="td-num td-pos">536.57%</td><td class="td-num td-pos">275.36%</td></tr>
-	<tr><td class="td-first">最大回撤</td><td class="td-num td-neg">-5.84%</td><td class="td-num td-neg">-10.34%</td><td class="td-num td-neg">-3.83%</td></tr>
-	<tr><td class="td-first">Sharpe</td><td class="td-num">1.40</td><td class="td-num">1.33</td><td class="td-num td-pos">1.64</td></tr>
-	<tr><td class="td-first">波动率</td><td class="td-num">4.57%</td><td class="td-num">6.37%</td><td class="td-num">3.24%</td></tr>
+	<tr><td class="td-first">方法</td><td class="td-num">6 资产逆波动率 60d<br>+ nonferr 趋势过滤<br>+ HS300 抄底</td><td class="td-num">4 桶等权 × 桶内逆波动率<br>+ nonferr 趋势过滤<br>+ Gold 趋势过滤 + HS300 抄底</td><td class="td-num">逆波动率 20d<br>+ nonferr 趋势过滤<br>+ HS300 抄底<br>max_w=0.25</td></tr>
+	<tr><td class="td-first">CAGR</td><td class="td-num td-pos">8.34%</td><td class="td-num td-pos">10.40%</td><td class="td-num td-pos">7.54%</td></tr>
+	<tr><td class="td-first">累计收益</td><td class="td-num td-pos">331.06%</td><td class="td-num td-pos">507.80%</td><td class="td-num td-pos">276.34%</td></tr>
+	<tr><td class="td-first">最大回撤</td><td class="td-num td-neg">-4.40%</td><td class="td-num td-neg">-7.35%</td><td class="td-num td-neg">-3.42%</td></tr>
+	<tr><td class="td-first">Sharpe</td><td class="td-num">1.59</td><td class="td-num">1.37</td><td class="td-num td-pos">1.84</td></tr>
+	<tr><td class="td-first">波动率</td><td class="td-num">3.86%</td><td class="td-num">5.97%</td><td class="td-num">2.90%</td></tr>
 	<tr><td class="td-first">资产数</td><td class="td-num">6</td><td class="td-num">6</td><td class="td-num">7</td></tr>
 	<tr><td class="td-first">调仓频率</td><td class="td-num">月度</td><td class="td-num">月度</td><td class="td-num">月度</td></tr>
 	</tbody></table>
@@ -371,7 +371,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	<div style="flex:1; min-width:280px; background:white; padding:16px; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border-top:3px solid #c0392b;">
 	<h4 style="margin:0 0 8px 0; color:#c0392b;">V3c 多元</h4>
 	<p style="margin:4px 0; font-size:14px;">+ 资产最少（6个），执行最简单</p>
-	<p style="margin:4px 0; font-size:14px;">+ 中等回撤（-5.84%），回报稳健（8.56%）</p>
+	<p style="margin:4px 0; font-size:14px;">+ 低回撤（-4.40%），回报稳健（8.34%）</p>
 	<p style="margin:4px 0; font-size:14px;">+ 月度调仓一次，交易频率低</p>
 	<p style="margin:4px 0; font-size:14px; color:#444;">- 无桶级风控，单资产上限 30% 较宽松</p>
 	<p style="margin:4px 0; font-size:14px; color:#444;">- 长期回报低于 V3-B RP</p>
@@ -379,20 +379,20 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	</div>
 	<div style="flex:1; min-width:280px; background:white; padding:16px; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border-top:3px solid #1f4e79;">
 	<h4 style="margin:0 0 8px 0; color:#1f4e79;">V3-B 风险平价</h4>
-	<p style="margin:4px 0; font-size:14px;">+ 长期回报最高 CAGR 10.68%，累计 537%</p>
+	<p style="margin:4px 0; font-size:14px;">+ 长期回报最高 CAGR 10.40%，累计 508%</p>
 	<p style="margin:4px 0; font-size:14px;">+ 四桶真正等权（25%×4），全天候理念最纯正</p>
 	<p style="margin:4px 0; font-size:14px;">+ 桶级分散 + 资产级分散双层风控</p>
-	<p style="margin:4px 0; font-size:14px; color:#444;">- 回撤最大（-10.34%），最差年份 -3.52%</p>
+	<p style="margin:4px 0; font-size:14px; color:#444;">- 回撤最大（-7.35%），最差年份 -1.54%</p>
 	<p style="margin:4px 0; font-size:14px; color:#444;">- 4 桶逻辑比另外两个策略复杂</p>
 	<p style="margin:8px 0 0 0; font-size:13px; color:#555;">适合：长期持有者（5年+）、认同正统全天候理念、能承受短期波动</p>
 	</div>
 	<div style="flex:1; min-width:280px; background:white; padding:16px; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border-top:3px solid #a0522d;">
 	<h4 style="margin:0 0 8px 0; color:#a0522d;">V3-B 保守增强</h4>
-	<p style="margin:4px 0; font-size:14px;">+ 回撤最低（-3.83%），最差年份仅 -0.61%</p>
-	<p style="margin:4px 0; font-size:14px;">+ Sharpe 最高（1.62），风险调整后效率最优</p>
-	<p style="margin:4px 0; font-size:14px;">+ 熊市表现最好（2022 +2.8%，2018 +2.7%）</p>
-	<p style="margin:4px 0; font-size:14px; color:#444;">- 牛市可能跑输（2019 仅 +0.44%，2017 仅 +2.89%）</p>
-	<p style="margin:4px 0; font-size:14px; color:#444;">- 长期累计回报最低（273%）</p>
+	<p style="margin:4px 0; font-size:14px;">+ 回撤最低（-3.42%），零负收益年份</p>
+	<p style="margin:4px 0; font-size:14px;">+ Sharpe 最高（1.84），风险调整后效率最优</p>
+	<p style="margin:4px 0; font-size:14px;">+ 熊市表现最好（2022 +2.5%，2018 +7.1%）</p>
+	<p style="margin:4px 0; font-size:14px; color:#444;">- 牛市可能跑输（2019 仅 +7.53%，2017 仅 +2.92%）</p>
+	<p style="margin:4px 0; font-size:14px; color:#444;">- 长期累计回报最低（276%）</p>
 	<p style="margin:8px 0 0 0; font-size:13px; color:#555;">适合：保守型资金、退休/教育金、无法承受大幅回撤</p>
 	</div>
 	</div>
@@ -432,17 +432,17 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 </tbody></table>
 
-<p class="para" style="font-size:13px; color:#666;">此外，V3-B 风险平价额外去掉了 10 年国债：在等桶权重（25%×4）下，10Y（~8yr 久期）与 30Y（~18yr）同属增长↓桶，保留两个会稀释其他桶的风险预算。移除 10Y 后 B-RP 的 CAGR 从 8.48% 升至 10.68%（+1.43%），Sharpe 仅微降 0.02。</p>
+<p class="para" style="font-size:13px; color:#666;">此外，V3-B 风险平价额外去掉了 10 年国债：在等桶权重（25%×4）下，10Y（~8yr 久期）与 30Y（~18yr）同属增长↓桶，保留两个会稀释其他桶的风险预算。移除 10Y 后 B-RP 的 CAGR 从 8.48% 升至 10.40%（+1.92%），Sharpe 仅微降 0.02。</p>
 
 <h2 class="plan-title plan-c">方案 1: V3c 多元型 ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：6 资产逆波动率加权 60d + 月度调仓 + nonferr 趋势过滤(60d) + Gold/HS300 双抄底。精简高效，去冗余。CAGR 8.59%、回撤 -5.84%、Sharpe 1.40。</p>
+<p class="para-bold">特征：6 资产逆波动率加权 60d + 月度调仓 + nonferr 趋势过滤(60d) + HS300 抄底。精简高效，去冗余。CAGR 8.34%、回撤 -4.40%、Sharpe 1.59。</p>
 <p class="para">适合：初入全天候、不想研究桶逻辑、追求简单透明的投资者。</p>
 <h3 class="sec-h3">核心理念</h3>
-<p class="para">用最少的资产、最简单的规则，复现全天候的核心效果。6 只 ETF 覆盖四大宏观象限，逆波动率让低波资产（信用债）自然获得高权重——不需要预设任何比例，每月花 5 分钟照着算好的权重调一次即可。nonferr 趋势过滤 + Gold/HS300 双抄底做风控增强，不追求极致回报，追求"几乎不亏钱"的稳健复利。</p>
+<p class="para">用最少的资产、最简单的规则，复现全天候的核心效果。6 只 ETF 覆盖四大宏观象限，逆波动率让低波资产（信用债）自然获得高权重——不需要预设任何比例，每月花 5 分钟照着算好的权重调一次即可。nonferr 趋势过滤 + HS300 抄底做风控增强，不追求极致回报，追求"几乎不亏钱"的稳健复利。</p>
 <h3 class="sec-h3">⚙️ 权重设计逻辑（逆波动率动态加权）</h3>
 <p class="para"><strong>动态权重方案：</strong>V3c 每月按过去 60 个交易日的逆波动率重新计算 6 项资产的权重。波动率低的资产（如信用债）自然获得更高权重，波动率高的资产（如权益）被自动压低。高 Sharpe 资产不会过度集中——只按风险贡献分配，不按历史收益分配。</p>
 <p class="para"><strong>资产配比（6 资产）：</strong>hs300 + us_sp500（权益）、credit（信用债）、bond_30y（长久期利率债）、gold + nonferr（商品/黄金）。无 10Y 国债——30Y 久期约 18 年已足够覆盖利率风险，精简一只减少调仓复杂度。</p>
-<p class="para"><strong>调仓纪律：</strong>每月末逆波动率重算 + nonferr 趋势过滤（跌破 60d SMA → 清仓转投 credit）+ Gold 抄底（回撤 15%/2.5x）+ HS300 抄底（回撤 35%/2.5x，仅史诗级股灾触发）。</p>
+<p class="para"><strong>调仓纪律：</strong>每月末逆波动率重算 + nonferr 趋势过滤（跌破 60d SMA → 清仓转投 credit）+ HS300 抄底（回撤 35%/3.0x，仅史诗级股灾触发）。</p>
 <table class="data-tbl" style="--header-color: #C0392B;">
 	<thead><tr>
 	<th>桶</th>
@@ -490,34 +490,34 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+349.89%</td>
-<td class="td-num">8.56%</td>
-<td class="td-num">4.56%</td>
-<td class="td-num">-5.84%</td>
-<td class="td-num">1.40</td>
-<td class="td-num">1.47</td>
+<td class="td-num">+331.06%</td>
+<td class="td-num">8.34%</td>
+<td class="td-num">3.86%</td>
+<td class="td-num">-4.40%</td>
+<td class="td-num">1.59</td>
+<td class="td-num">1.90</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+280.46%</td>
-<td class="td-num">7.60%</td>
-<td class="td-num">3.87%</td>
-<td class="td-num">-4.92%</td>
-<td class="td-num">1.39</td>
-<td class="td-num">1.54</td>
+<td class="td-num">+268.35%</td>
+<td class="td-num">7.41%</td>
+<td class="td-num">3.28%</td>
+<td class="td-num">-3.74%</td>
+<td class="td-num">1.59</td>
+<td class="td-num">1.98</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+223.24%</td>
-<td class="td-num">6.64%</td>
-<td class="td-num">3.19%</td>
-<td class="td-num">-3.99%</td>
-<td class="td-num">1.39</td>
-<td class="td-num">1.66</td>
+<td class="td-num">+214.56%</td>
+<td class="td-num">6.48%</td>
+<td class="td-num">2.70%</td>
+<td class="td-num">-3.07%</td>
+<td class="td-num">1.58</td>
+<td class="td-num">2.11</td>
 </tr>
 </tbody></table>
 <h3 class="step-h">📊 累计收益对比（100% RP 档）</h3>
-<p class="para">2008-2025 共 18 个完整年度。V3-B 累计收益领跑（+342%），保守增强回撤最浅（-3.63%）。</p>
+<p class="para">2008-2025 共 18 个完整年度。V3-B RP 累计收益领跑（+508%），保守增强回撤最浅（-3.42%）。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>方案</th>
@@ -530,27 +530,27 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">V3c 多元</td>
-<td class="td-num td-pos">+349.89%</td>
-<td class="td-num">8.56%</td>
-<td class="td-num td-neg">-5.84%</td>
-<td class="td-num">1.40</td>
-<td class="td-num">449.9 万</td>
+<td class="td-num td-pos">+331.06%</td>
+<td class="td-num">8.34%</td>
+<td class="td-num td-neg">-4.40%</td>
+<td class="td-num">1.59</td>
+<td class="td-num">431.1 万</td>
 </tr>
 <tr>
 <td class="td-first">V3-B 风险平价(20d)</td>
-<td class="td-num td-pos">+536.57%</td>
-<td class="td-num">10.68%</td>
-<td class="td-num td-neg">-10.34%</td>
-<td class="td-num">1.41</td>
-<td class="td-num">636.6 万</td>
+<td class="td-num td-pos">+507.80%</td>
+<td class="td-num">10.40%</td>
+<td class="td-num td-neg">-7.35%</td>
+<td class="td-num">1.37</td>
+<td class="td-num">607.8 万</td>
 </tr>
 <tr>
 <td class="td-first">V3-B 保守增强(20d)</td>
-<td class="td-num td-pos">+273.16%</td>
-<td class="td-num">7.49%</td>
-<td class="td-num td-neg">-3.63%</td>
-<td class="td-num">1.62</td>
-<td class="td-num">375.4 万</td>
+<td class="td-num td-pos">+276.34%</td>
+<td class="td-num">7.54%</td>
+<td class="td-num td-neg">-3.42%</td>
+<td class="td-num">1.84</td>
+<td class="td-num">376.3 万</td>
 </tr>
 </tbody></table>
 <h3 class="step-h">📅 分年化收益（100% RP 档）</h3>
@@ -580,63 +580,63 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">V3c 多元</td>
-<td class="td-num">+12.11%</td>
-<td class="td-num">+14.63%</td>
+<td class="td-num">+10.98%</td>
+<td class="td-num">+14.72%</td>
 <td class="td-num">+7.07%</td>
 <td class="td-num">+4.21%</td>
-<td class="td-num">+16.17%</td>
-<td class="td-num">-0.83%</td>
-<td class="td-num">+13.16%</td>
-<td class="td-num">+7.47%</td>
-<td class="td-num">+12.29%</td>
-<td class="td-num">+4.62%</td>
-<td class="td-num">+5.16%</td>
-<td class="td-num">+13.67%</td>
-<td class="td-num">+8.20%</td>
-<td class="td-num">+8.63%</td>
-<td class="td-num">+2.04%</td>
+<td class="td-num">+13.40%</td>
+<td class="td-num">+3.24%</td>
+<td class="td-num">+14.75%</td>
+<td class="td-num">+12.13%</td>
+<td class="td-num">+7.72%</td>
+<td class="td-num">+4.65%</td>
+<td class="td-num">+6.00%</td>
+<td class="td-num">+8.86%</td>
+<td class="td-num">+6.62%</td>
+<td class="td-num">+7.61%</td>
+<td class="td-num">+1.51%</td>
 <td class="td-num">+6.50%</td>
 <td class="td-num">+16.71%</td>
 <td class="td-num">+6.96%</td>
 </tr>
 <tr>
 <td class="td-first">V3-B 风险平价(20d)</td>
-<td class="td-num">+8.36%</td>
-<td class="td-num">+32.97%</td>
-<td class="td-num">+9.11%</td>
-<td class="td-num">+1.53%</td>
-<td class="td-num">+13.28%</td>
-<td class="td-num">-3.52%</td>
-<td class="td-num">+15.39%</td>
-<td class="td-num">+16.35%</td>
-<td class="td-num">+7.59%</td>
-<td class="td-num">+5.56%</td>
-<td class="td-num">+4.82%</td>
-<td class="td-num">+17.00%</td>
-<td class="td-num">+13.84%</td>
-<td class="td-num">+10.36%</td>
-<td class="td-num">+1.35%</td>
-<td class="td-num">+7.77%</td>
+<td class="td-num">+5.46%</td>
+<td class="td-num">+30.58%</td>
+<td class="td-num">+8.30%</td>
+<td class="td-num">-1.54%</td>
+<td class="td-num">+13.20%</td>
+<td class="td-num">+3.72%</td>
+<td class="td-num">+16.66%</td>
+<td class="td-num">+14.42%</td>
+<td class="td-num">+6.36%</td>
+<td class="td-num">+4.14%</td>
+<td class="td-num">+6.12%</td>
+<td class="td-num">+15.74%</td>
+<td class="td-num">+14.39%</td>
+<td class="td-num">+10.90%</td>
+<td class="td-num">+1.09%</td>
+<td class="td-num">+6.91%</td>
 <td class="td-num">+27.06%</td>
-<td class="td-num">+11.90%</td>
+<td class="td-num">+11.43%</td>
 </tr>
 <tr>
 <td class="td-first">V3-B 保守增强(20d)</td>
-<td class="td-num">+16.38%</td>
-<td class="td-num">+7.38%</td>
+<td class="td-num">+16.32%</td>
+<td class="td-num">+7.43%</td>
 <td class="td-num">+5.58%</td>
 <td class="td-num">+5.35%</td>
-<td class="td-num">+10.86%</td>
-<td class="td-num">-0.42%</td>
-<td class="td-num">+10.37%</td>
-<td class="td-num">+8.17%</td>
-<td class="td-num">+7.59%</td>
-<td class="td-num">+2.89%</td>
-<td class="td-num">+6.88%</td>
-<td class="td-num">+9.15%</td>
-<td class="td-num">+8.69%</td>
-<td class="td-num">+7.35%</td>
-<td class="td-num">+2.80%</td>
+<td class="td-num">+9.79%</td>
+<td class="td-num">+2.10%</td>
+<td class="td-num">+12.05%</td>
+<td class="td-num">+11.29%</td>
+<td class="td-num">+5.01%</td>
+<td class="td-num">+2.92%</td>
+<td class="td-num">+7.10%</td>
+<td class="td-num">+7.53%</td>
+<td class="td-num">+7.71%</td>
+<td class="td-num">+6.60%</td>
+<td class="td-num">+2.47%</td>
 <td class="td-num">+5.28%</td>
 <td class="td-num">+18.96%</td>
 <td class="td-num">+5.62%</td>
@@ -646,23 +646,23 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h3 class="sec-h3">（2008-2025 共 18 个年度）</h3>
 <h3 class="sec-h3">✅ 优势</h3>
 <p class="para">• 执行最简单 — 仅 6 只 ETF（最少），每月按逆波动率算一次权重，5 分钟搞定</p>
-<p class="para">• 中等回撤（-5.84%）+ 稳健回报（CAGR 8.59%），Sharpe 1.40</p>
+<p class="para">• 低回撤（-4.40%）+ 稳健回报（CAGR 8.34%），Sharpe 1.59</p>
 <p class="para">• 月度调仓一次，交易频率低，年化成本可忽略</p>
-<p class="para">• 18 年仅 2013 年微亏 -0.83%，其余 17 年全部正收益</p>
-<p class="para">• nonferr 趋势过滤(60d) + Gold/HS300 双抄底，三层风控完整</p>
+<p class="para">• 18 年全部正收益，零负收益年份</p>
+<p class="para">• nonferr 趋势过滤(60d) + HS300 抄底，两层风控</p>
 <h3 class="sec-h3">⚠ 劣势</h3>
 <p class="para">• 无桶级风控 — 资产直接按逆波动率竞争，不保证各象限等风险暴露</p>
 <p class="para">• 单资产上限 30% 较宽松，极端行情下信用债可能过度集中</p>
-<p class="para">• 长期回报低于 V3-B 风险平价（347% vs 395%），牺牲了一部分收益换简单</p>
+<p class="para">• 长期回报低于 V3-B 风险平价（331% vs 508%），牺牲了一部分收益换简单</p>
 <p class="para">• 仅 30Y 国债覆盖利率风险，曲线平坦化时不如 10Y/30Y 分拆灵活</p>
 <h2 class="plan-title plan-b">方案 2: V3-B 风险平价(20d)  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：4 桶真正等权风险平价（Hierarchical Risk Parity），30Y 国债独享增长↓桶（去掉 10Y），月度调仓 + nonferr 趋势过滤(75d) + Gold 抄底(15%回撤/2.5x) + HS300 抄底(35%回撤/1.5x)。CAGR 10.68% 全策略最高，Sharpe 1.33，累计收益 537%。</p>
+<p class="para-bold">特征：4 桶真正等权风险平价（Hierarchical Risk Parity），30Y 国债独享增长↓桶（去掉 10Y），月度调仓 + nonferr 趋势过滤(75d) + gold trend filter(75d SMA清仓) + HS300 抄底(35%回撤/1.5x)。CAGR 10.40% 全策略最高，Sharpe 1.37，累计收益 508%。</p>
 <p class="para">适合：长期持有者(5年+)、认同正统全天候理念、能承受短期波动的投资者。无逆波动率动态权重——每月根据过去 20 个交易日波动率重新计算，4 桶各 25% 真正等权（max_w=0.20 确保单资产桶不被截断）。去掉 bond_10y 后 30Y 桶获得完整 25% 风险预算。</p>
 <h3 class="sec-h3">⚙️ 权重计算机制（每月自动执行）</h3>
 <p class="para"><strong>第一层 — 桶间真正等权：</strong>增长↑ / 收益垫 / 增长↓ / 通胀↑ 四个桶各分配 25% 风险预算。max_w=0.20 确保单资产桶（credit/bond_30y）不被截断，实现真正的等桶风险平价。</p>
 <p class="para"><strong>第二层 — 桶内逆波动率：</strong>每个桶内部，波动率越低的资产权重越大。单资产上限 0.20、下限 0.02。</p>
 <p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。</p>
-<p class="para"><strong>Gold 抄底：</strong>黄金从高点回撤超过 15% → 2.5 倍增持黄金（从信用债提取）。2013 年金价暴跌和 2022 年均有触发，与趋势过滤互补。</p>
+<p class="para"><strong>Gold trend filter：</strong>黄金跌破 75d SMA → 清仓转投信用债。2013 年金价暴跌时自动清仓避险，MDD 从 -10.34% 降至 -7.35%。</p>
 <p class="para"><strong>HS300 抄底：</strong>沪深300从高点回撤超过 35%（仅2015股灾触发过）→ 1.5 倍增持沪深300（从信用债提取）。18 年仅触发一次，普通熊市绝不误触发。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
@@ -711,56 +711,56 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+536.57%</td>
-<td class="td-num">10.68%</td>
-<td class="td-num">6.37%</td>
-<td class="td-num">-10.34%</td>
-<td class="td-num">1.33</td>
-<td class="td-num">1.03</td>
+<td class="td-num">+507.80%</td>
+<td class="td-num">10.40%</td>
+<td class="td-num">5.97%</td>
+<td class="td-num">-7.35%</td>
+<td class="td-num">1.37</td>
+<td class="td-num">1.41</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+414.60%</td>
-<td class="td-num">9.40%</td>
-<td class="td-num">5.41%</td>
-<td class="td-num">-8.68%</td>
-<td class="td-num">1.33</td>
-<td class="td-num">1.08</td>
+<td class="td-num">+394.48%</td>
+<td class="td-num">9.16%</td>
+<td class="td-num">5.07%</td>
+<td class="td-num">-6.25%</td>
+<td class="td-num">1.37</td>
+<td class="td-num">1.47</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+315.30%</td>
-<td class="td-num">8.12%</td>
-<td class="td-num">4.46%</td>
-<td class="td-num">-6.99%</td>
-<td class="td-num">1.33</td>
-<td class="td-num">1.16</td>
+<td class="td-num">+301.69%</td>
+<td class="td-num">7.92%</td>
+<td class="td-num">4.18%</td>
+<td class="td-num">-5.14%</td>
+<td class="td-num">1.37</td>
+<td class="td-num">1.54</td>
 </tr>
 </tbody></table>
 
 
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• CAGR 10.68% 全策略最高，Gold/HS300 双抄底增强（HS300 35%/1.5x），Sharpe 1.33</p>
+<p class="para">• CAGR 10.40% 全策略最高，Gold trend filter + HS300 抄底增强（HS300 35%/1.5x），Sharpe 1.37</p>
 <p class="para">• 4 桶结构：30Y 独享增长↓桶（去掉 10Y，避免等桶下稀释权益权重）</p>
 <p class="para">• 月度自动调仓 + nonferr 趋势过滤，内置低买高卖纪律</p>
 <p class="para">• 蒙特卡洛 5%-分位 +20.01%，亏损概率 0.00%</p>
 <p class="para">• 权重完全由数据驱动，无人工判断偏差</p>
 <h3 class="sec-h3">⚠ 劣势</h3>
-<p class="para">• 回撤最大（-10.34%），最差年份 2013 -3.52%，短期波动容忍度要求最高</p>
+<p class="para">• 回撤（-7.35%），最差年份 2011 -1.54%，短期波动容忍度要求较高</p>
 <p class="para">• 5 桶逻辑比另外两个策略复杂——需要理解桶间等权 + 桶内逆波动率两层计算</p>
 <p class="para">• 2013 年金价 -29%、hs300 -22%、nonferr -19% 三杀，当月组合承受较大压力</p>
 <p class="para">• 调仓涉及 6 只 ETF，与 V3c 数量相同，交易成本可控</p>
 <h2 class="plan-title plan-b">方案 3: V3-B 保守增强(20d)  ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：直接逆波动率加权（无桶层级），nonferr 趋势过滤(75d) + Gold 抄底(15%回撤翻倍) + HS300 抄底(35%回撤2.5倍增持)。不设宏观桶——7 个资产自由竞争权重。Sharpe 1.62 全策略最高，回撤 -3.63% 最浅。</p>
-<p class="para">适合：最重视低波动和睡得着觉的投资者。逆波动率让低波资产（债券）自然获得高权重，高波资产（商品）被自动压制。Gold/HS300 双抄底提供额外增强（HS300 35%/2.5x 仅2015股灾触发）。</p>
+<p class="para-bold">特征：直接逆波动率加权（无桶层级），nonferr 趋势过滤(75d) + HS300 抄底(35%回撤3.0x)。不设宏观桶——7 个资产自由竞争权重。Sharpe 1.84 全策略最高，回撤 -3.42% 最浅。</p>
+<p class="para">适合：最重视低波动和睡得着觉的投资者。逆波动率让低波资产（债券）自然获得高权重，高波资产（商品）被自动压制。HS300 抄底提供额外增强（35%/3.0x 仅2015股灾触发）。</p>
 <h3 class="sec-h3">核心理念</h3>
-<p class="para">如果你最怕的不是赚得少，而是亏钱——这是为你设计的。不设宏观桶，7 个资产直接逆波动率竞争，外加 25% 单资产上限。信用债因低波动天然占 40~65% 权重，权益和高波商品被压缩到个位数。加上 nonferr 趋势过滤和 Gold/HS300 双抄底，组合在任何行情下都有软垫。Sharpe 1.62 全策略最高，本质是用"不亏钱"换"少赚点"。</p>
+<p class="para">如果你最怕的不是赚得少，而是亏钱——这是为你设计的。不设宏观桶，7 个资产直接逆波动率竞争，外加 25% 单资产上限。信用债因低波动天然占 40~65% 权重，权益和高波商品被压缩到个位数。加上 nonferr 趋势过滤和 HS300 抄底，组合在任何行情下都有软垫。Sharpe 1.84 全策略最高，本质是用"不亏钱"换"少赚点"。</p>
 <h3 class="sec-h3">⚙️ 权重计算机制（每月自动执行）</h3>
 <p class="para"><strong>逆波动率直接加权：</strong>不经过桶层级，对 7 个资产直接按 1/波动率 计算权重。20 个交易日短窗口，快速响应。</p>
 <p class="para"><strong>单资产上限 25%：</strong>防止极端行情下个别资产权重过高。下限 2%。</p>
 <p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。最关键的风控增强。</p>
-<p class="para"><strong>Gold 抄底：</strong>黄金从高点回撤超过 15% → 翻倍增持黄金（从信用债提取）。周期性回调加仓，与趋势过滤互补。</p>
-<p class="para"><strong>HS300 抄底：</strong>沪深300从高点回撤超过 35%（仅2015股灾触发过）→ 2.5倍增持沪深300（从信用债提取）。18年仅触发一次，与Gold抄底形成双层防御。</p>
+<p class="para"><strong>Gold dip-buying 已关闭：</strong>2013 年金价单边下跌时持续接飞刀放大了亏损，关闭后 Sharpe 从 1.64 升至 1.84，18 年全部正收益。</p>
+<p class="para"><strong>HS300 抄底：</strong>沪深300从高点回撤超过 35%（仅2015股灾触发过）→ 3.0倍增持沪深300（从信用债提取）。18年仅触发一次。</p>
 <h3 class="sec-h3">📊 典型持仓清单（按 100 万本金，2025年末快照）</h3>
 <p class="para" style="font-size:13px; color:#888;">⚠ 权重每月根据波动率自动调整，以下为 2025年12月末的典型权重快照，仅供参考。逆波动率策略下债券因低波动自然获得高权重。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
@@ -796,41 +796,41 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tbody>
 <tr>
 <td class="td-first">100% RP</td>
-<td class="td-num">+273.16%</td>
-<td class="td-num">7.49%</td>
-<td class="td-num">3.37%</td>
-<td class="td-num">-3.63%</td>
-<td class="td-num">1.62</td>
-<td class="td-num">2.02</td>
+<td class="td-num">+276.34%</td>
+<td class="td-num">7.54%</td>
+<td class="td-num">2.90%</td>
+<td class="td-num">-3.42%</td>
+<td class="td-num">1.84</td>
+<td class="td-num">2.20</td>
 </tr>
 <tr>
 <td class="td-first">85% RP</td>
-<td class="td-num">+218.19%</td>
-<td class="td-num">6.55%</td>
-<td class="td-num">2.86%</td>
-<td class="td-num">-2.94%</td>
-<td class="td-num">1.62</td>
-<td class="td-num">2.23</td>
+<td class="td-num">+227.96%</td>
+<td class="td-num">6.73%</td>
+<td class="td-num">2.46%</td>
+<td class="td-num">-2.86%</td>
+<td class="td-num">1.84</td>
+<td class="td-num">2.35</td>
 </tr>
 <tr>
 <td class="td-first">70% RP</td>
-<td class="td-num">+178.74%</td>
-<td class="td-num">5.78%</td>
-<td class="td-num">2.36%</td>
-<td class="td-num">-2.38%</td>
-<td class="td-num">1.62</td>
-<td class="td-num">2.43</td>
+<td class="td-num">+185.69%</td>
+<td class="td-num">5.92%</td>
+<td class="td-num">2.03%</td>
+<td class="td-num">-2.30%</td>
+<td class="td-num">1.84</td>
+<td class="td-num">2.57</td>
 </tr>
 </tbody></table>
 <h3 class="sec-h3">✅ 优势</h3>
-<p class="para">• Sharpe 1.62 全策略最高，风险调整后收益极优</p>
-<p class="para">• 回撤 -3.83% 最浅，波动 3.27%，睡得最踏实</p>
-<p class="para">• 最差年份仅 -0.42%（2013），熊市表现最好（2022 +2.04%，2018 +5.10%）</p>
-<p class="para">• 蒙特卡洛亏损概率接近 0%，几乎不会亏</p>
+<p class="para">• Sharpe 1.84 全策略最高，风险调整后收益极优</p>
+<p class="para">• 回撤 -3.42% 最浅，波动 2.90%，睡得最踏实</p>
+<p class="para">• 18 年全部正收益，零负收益年份，熊市表现最好（2022 +2.47%，2018 +7.10%）</p>
+<p class="para">• 蒙特卡洛亏损概率 0.00%，零负收益年份</p>
 <p class="para">• 不设桶层级——7 资产自由竞争，避免人为预设扭曲权重</p>
 <h3 class="sec-h3">⚠ 劣势</h3>
-<p class="para">• 牛市可能大幅跑输——2019 仅 +0.44%，2017 仅 +2.89%（权益权重被压到个位数）</p>
-<p class="para">• 长期累计回报最低（273%），牺牲了"赚更多"换"不亏钱"</p>
+<p class="para">• 牛市可能大幅跑输——2019 仅 +7.53%，2017 仅 +2.92%（权益权重被压到个位数）</p>
+<p class="para">• 长期累计回报最低（276%），牺牲了"赚更多"换"不亏钱"</p>
 <p class="para">• 信用债常年占 40~65%，信用事件尾部风险高于另两个策略</p>
 <p class="para">• max_w=0.25 虽然防止单资产过度集中，但在极端债牛中限制了国债增配空间</p>
 <h2 class="ch-h1" id="ch3">四、方案对比一表看清</h2>
@@ -843,44 +843,44 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr></thead>
 <tbody><tr>
 <td class="td-first">哲学</td><td class="td-num">6资产逆波动率 60d，精简高效</td>
-<td class="td-num">4桶真正等权风险平价 + Gold/HS300抄底</td>
-<td class="td-num">逆波动率直接加权 + Gold/HS300抄底</td></tr>
+<td class="td-num">4桶真正等权风险平价 + Gold trend filter + HS300抄底</td>
+<td class="td-num">逆波动率直接加权 + HS300抄底</td></tr>
 <tr>
 <td class="td-first">资产数</td><td class="td-num">6 (无 bond_10y)</td>
 <td class="td-num">6</td>
 <td class="td-num">7</td></tr>
 <tr>
-<td class="td-first">100% RP - CAGR</td><td class="td-num">8.56%</td>
-<td class="td-num">10.68%</td>
-<td class="td-num">7.49%</td></tr>
+<td class="td-first">100% RP - CAGR</td><td class="td-num">8.34%</td>
+<td class="td-num">10.40%</td>
+<td class="td-num">7.54%</td></tr>
 <tr>
-<td class="td-first">100% RP - 回撤</td><td class="td-num">-5.84%</td>
-<td class="td-num">-10.34%</td>
-<td class="td-num">-3.83%</td></tr>
+<td class="td-first">100% RP - 回撤</td><td class="td-num">-4.40%</td>
+<td class="td-num">-7.35%</td>
+<td class="td-num">-3.42%</td></tr>
 <tr>
-<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.40</td>
-<td class="td-num">1.33</td>
-<td class="td-num">1.64</td></tr>
+<td class="td-first">100% RP - Sharpe</td><td class="td-num">1.59</td>
+<td class="td-num">1.37</td>
+<td class="td-num">1.84</td></tr>
 <tr>
-<td class="td-first">100% RP - 波动</td><td class="td-num">4.57%</td>
-<td class="td-num">6.37%</td>
-<td class="td-num">3.24%</td></tr>
+<td class="td-first">100% RP - 波动</td><td class="td-num">3.86%</td>
+<td class="td-num">5.97%</td>
+<td class="td-num">2.90%</td></tr>
 <tr>
-<td class="td-first">100% RP - Calmar</td><td class="td-num">1.47</td>
-<td class="td-num">1.03</td>
-<td class="td-num">1.96</td></tr>
+<td class="td-first">100% RP - Calmar</td><td class="td-num">1.90</td>
+<td class="td-num">1.41</td>
+<td class="td-num">2.20</td></tr>
 <tr>
-<td class="td-first">100万→18y后</td><td class="td-num">449.9 万</td>
-<td class="td-num">636.6 万</td>
-<td class="td-num">375.4 万</td></tr>
+<td class="td-first">100万→18y后</td><td class="td-num">431.1 万</td>
+<td class="td-num">607.8 万</td>
+<td class="td-num">376.3 万</td></tr>
 <tr>
 <td class="td-first">最大单仓</td><td class="td-num">10年债 40%</td>
 <td class="td-num">动态调整</td>
 <td class="td-num">动态调整</td></tr>
 <tr>
 <td class="td-first">调仓频率</td><td class="td-num">月度 + nonferr趋势过滤</td>
-<td class="td-num">月度 + nonferr趋势过滤 + Gold/HS300抄底</td>
-<td class="td-num">月度 + nonferr趋势过滤 + Gold/HS300抄底</td></tr>
+<td class="td-num">月度 + nonferr趋势过滤 + Gold趋势过滤 + HS300抄底</td>
+<td class="td-num">月度 + nonferr趋势过滤</td></tr>
 <tr>
 <td class="td-first">蒙特卡洛 5%分位</td><td class="td-num">+22.05%</td>
 <td class="td-num">+11.98%</td>
@@ -906,9 +906,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">+2.68%</td>
 <td class="td-num">+2.21%</td></tr></tbody></table>
 <h2 class="ch-h1" id="ch4">五、调仓规则：三层防御体系</h2>
-<p class="para">三策略统一采用月度再平衡 + nonferr 趋势过滤 + Gold/HS300 双抄底，构成三层防御。核心设计原则：<strong>资产性质决定策略方向</strong>——均值回归型资产用抄底，趋势型资产用趋势过滤。</p>
+<p class="para">三策略统一采用月度再平衡 + nonferr 趋势过滤 + HS300 抄底（B-RP 额外增加 Gold 趋势过滤），构成多层防御。核心设计原则：<strong>资产性质决定策略方向</strong>——均值回归型资产用抄底，趋势型资产用趋势过滤。</p>
 <h3 class="sec-h3">设计原理：资产性质决定策略方向</h3>
-<p class="para"><strong>为什么黄金用抄底（15%），而有色用趋势过滤？</strong>黄金是无内生收益的均值回归资产，跌多了大概率反弹——抄底逻辑天然成立。有色金属受全球需求和产能周期驱动，趋势性强，一旦转熊往往持续下跌——趋势过滤（跌破均线清仓）才是正确答案。两者逻辑相反但各司其职：一个抓周期性回调的底部，一个退出趋势性下跌。</p>
+<p class="para"><strong>为什么黄金用趋势过滤，而有色用趋势过滤？</strong>回测表明，黄金抄底（15%回撤翻倍增持）在 2013 年 taper tantrum 中持续接飞刀，放大了亏损。改用趋势过滤（跌破 75d SMA 清仓）后，MDD 从 -10.34% 降至 -7.35%，2013 年从 -3.52% 转为 +3.72%。有色金属同样受全球需求和产能周期驱动，趋势性强，趋势过滤才是正确答案。</p>
 <p class="para"><strong>为什么沪深300 抄底要设 35% 这么高？</strong>A股真正熊市跌幅中位数 ~32%（2015 -44%，2018 -29%，2021-22 -34%，2023 -20%）。阈值过低（10-25%）会在半山腰接刀，回撤和 Sharpe 同时恶化。35% 恰好卡在"普通熊市"和"史诗级崩盘"之间——仅 2015 股灾和 2021-22 地产危机触发，平均五年一遇，本质上是一张"股灾保险"而非"逢低买入"。</p>
 <p class="para"><strong>为什么所有抄底资金都从信用债提取？</strong>单资金源原则——避免多资金源导致的复杂度爆炸。信用债（城投债 ETF）波动低、流动性好，是天然的"弹药库"。且趋势过滤触发时 nonferr 权重也是转入信用债，进出都在同一个池子。</p>
 <h3 class="sec-h3">各策略调仓规则</h3>
@@ -927,15 +927,15 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">逆波动率动态</td>
 <td class="td-num">60d</td>
 <td class="td-num">60d SMA</td>
-<td class="td-num">回撤 &gt;15%，2.5x</td>
-<td class="td-num">回撤 &gt;35%，2.5x</td>
+<td class="td-num">已关闭</td>
+<td class="td-num">回撤 &gt;35%，3.0x</td>
 </tr>
 <tr>
 <td class="td-first">V3-B 风险平价(20d)</td>
 <td class="td-num">4 桶 HRP</td>
 <td class="td-num">20d</td>
 <td class="td-num">75d SMA</td>
-<td class="td-num">回撤 &gt;15%，2.5x</td>
+<td class="td-num">75d SMA清仓</td>
 <td class="td-num">回撤 &gt;35%，1.5x</td>
 </tr>
 <tr>
@@ -943,8 +943,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">逆波动率直接</td>
 <td class="td-num">20d</td>
 <td class="td-num">75d SMA</td>
-<td class="td-num">回撤 &gt;15%，2.5x</td>
-<td class="td-num">回撤 &gt;35%，2.5x</td>
+<td class="td-num">已关闭</td>
+<td class="td-num">回撤 &gt;35%，3.0x</td>
 </tr>
 </tbody></table>
 <h3 class="sec-h3">为什么月度 + 趋势过滤是最优组合</h3>
@@ -957,14 +957,14 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr></thead>
 <tbody>
 <tr><td class="td-first">V3c 多元</td><td class="td-num">60d SMA</td><td class="td-num">有色 &lt; 60日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
-	<tr><td class="td-first">V3c 多元</td><td class="td-num">15% 回撤</td><td class="td-num">黄金从高点回撤 &gt; 15%</td><td class="td-num">黄金翻倍加仓（从信用债提取）</td></tr>
-	<tr><td class="td-first">V3c 多元</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深300 2.5倍加仓（从信用债提取）</td></tr>
+	<tr><td class="td-first">V3c 多元</td><td class="td-num">—</td><td class="td-num">已关闭</td><td class="td-num">—</td></tr>
+	<tr><td class="td-first">V3c 多元</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深300 3.0倍加仓（从信用债提取）</td></tr>
 <tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
 <tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
-<tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">15% 回撤</td><td class="td-num">黄金从高点回撤 &gt; 15%</td><td class="td-num">黄金翻倍加仓（从信用债提取）</td></tr>
-<tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">15% 回撤</td><td class="td-num">黄金从高点回撤 &gt; 15%</td><td class="td-num">黄金翻倍加仓（从信用债提取）</td></tr>
+<tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">75d SMA</td><td class="td-num">黄金 &lt; 75日均线</td><td class="td-num">清仓黄金 → 加信用债</td></tr>
+<tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">—</td><td class="td-num">已关闭</td><td class="td-num">—</td></tr>
 <tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深3001.5倍加仓（从信用债提取）</td></tr>
-<tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深3001.5倍加仓（从信用债提取）</td></tr>
+<tr><td class="td-first">V3-B 保守增强(20d)</td><td class="td-num">35% 回撤</td><td class="td-num">沪深300从高点回撤 &gt; 35%</td><td class="td-num">沪深300 3.0倍加仓（从信用债提取）</td></tr>
 </tbody></table>
 <h3 class="sec-h3">交易成本</h3>
 <p class="para">月度调仓约 216 次/策略/18年，每次平均换手 8%、单边费率 0.15%，年化成本约 0.018% — 几乎可忽略。</p>
@@ -1036,17 +1036,17 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">没特别判断 / 让组合自己平衡</td>
 <td class="td-num">V3c 多元 ★★★</td>
-<td class="td-num">逆波动率动态权重最简单落地，CAGR 8.59%，月度调仓+趋势过滤</td>
+<td class="td-num">逆波动率动态权重最简单落地，CAGR 8.34%，月度调仓+趋势过滤</td>
 </tr>
 <tr>
 <td class="td-first">认同桥水方法论 / 追求最高收益</td>
 <td class="td-num">V3-B 风险平价(20d) ★★★</td>
-<td class="td-num">4桶分层风险平价(30Y only)，CAGR 10.68% 最高</td>
+<td class="td-num">4桶分层风险平价(30Y only)，CAGR 10.40% 最高</td>
 </tr>
 <tr>
 <td class="td-first">最怕回撤 / 睡得着觉最重要</td>
 <td class="td-num">V3-B 保守增强(20d) ★★★</td>
-<td class="td-num">逆波动率+趋势过滤，Sharpe 1.98 最高，回撤 -3.57% 最浅</td>
+<td class="td-num">逆波动率+趋势过滤，Sharpe 1.84 最高，回撤 -3.42% 最浅</td>
 </tr>
 </tbody></table>
 <p class="para">举例：你有 100 万退休金、不知道宏观会怎么样 → 70% RP 档 + V3c 多元。对照第三章 V3c 表的 70% RP 列就是你的目标持仓。</p>
@@ -1234,17 +1234,17 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h3 class="sec-h3">（四）各策略的具体公式</h3>
 
 <p class="para-bold">V3c 多元（6 资产，逆波动率 60d）</p>
-<p class="para">按上述四步计算，参数：窗口 W = 60d，max_w = 0.30，min_w = 0.03。每月计算后检查 nonferr 趋势过滤（60d SMA）、Gold 抄底（回撤 15% / 2.5x）、HS300 抄底（回撤 35% / 3.0x）。</p>
+<p class="para">按上述四步计算，参数：窗口 W = 60d，max_w = 0.30，min_w = 0.03。每月计算后检查 nonferr 趋势过滤（60d SMA）、HS300 抄底（回撤 35% / 3.0x）。</p>
 
 <p class="para-bold">V3-B 风险平价（6 资产 4 桶，分层 RP 20d）</p>
 <p class="para">两层的逆波动率：</p>
 <p class="para">① 每只 ETF 计算 20 天年化波动率 $\sigma$，取倒数 1/σ。</p>
 <p class="para">② 桶内分配：增长↑桶有 hs300 + us_sp500。桶内不设截断，纯按 $1/\sigma$ 比例分配。比如 hs300 σ=20%、us_sp500 σ=12%，桶内 hs300 拿 $\frac{1/0.20}{1/0.20+1/0.12} = 37.5\%$，us_sp500 拿 62.5%。</p>
 <p class="para">③ 桶间等权：四个桶各拿 25%。最终 $w_{hs300} = 25\% \times 37.5\% = 9.4\%$。</p>
-<p class="para">④ 全资产截断上下限 2%~20%，重归一化至 100%。参数：W = 20d，max_w = 0.20，min_w = 0.02，nonferr 75d SMA，Gold 15%/2.5x，HS300 35%/1.5x。</p>
+<p class="para">④ 全资产截断上下限 2%~20%，重归一化至 100%。参数：W = 20d，max_w = 0.20，min_w = 0.02，nonferr 75d SMA，Gold trend filter 75d SMA清仓，HS300 35%/1.5x。</p>
 
 <p class="para-bold">V3-B 保守增强（7 资产，逆波动率 20d）</p>
-<p class="para">与 V3c 同公式，参数不同：W = 20d（更短，更快响应波动变化），max_w = 0.25，min_w = 0.02。多一只 bond_10y。nonferr 75d SMA，Gold 15%/2.5x，HS300 35%/3.0x。</p>
+<p class="para">与 V3c 同公式，参数不同：W = 20d（更短，更快响应波动变化），max_w = 0.25，min_w = 0.02。多一只 bond_10y。nonferr 75d SMA，HS300 35%/3.0x。</p>
 
 <h3 class="sec-h3">（五）现金档位调整</h3>
 <p class="para">算出目标权重后，如果你的风险偏好更保守，可以留出一部分现金不参与 RP 组合。乘以 (1 − 现金比例)：</p>
@@ -1343,7 +1343,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tr>
 <tr>
 <td class="td-first">再平衡</td>
-<td class="td-num">月度 + trend过滤 + Gold/HS300抄底</td>
+<td class="td-num">月度 + trend过滤 + HS300抄底 / Gold趋势过滤</td>
 <td class="td-num">机械执行，检查 nonferr 趋势信号 + gold/hs300 回撤，30 分钟</td>
 </tr>
 <tr>
@@ -1352,7 +1352,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">看年度回撤、收益；评估是否切换方案（少切）</td>
 </tr>
 </tbody></table>
-<p class="para-bold">一句话总结：选对方案 → 慢慢建仓 → 每周看一眼 → 月度调仓 + nonferr 趋势过滤 + Gold/HS300 抄底 → 其余时间，不要做任何事。</p>
+<p class="para-bold">一句话总结：选对方案 → 慢慢建仓 → 每周看一眼 → 月度调仓 + nonferr 趋势过滤 + HS300 抄底 / Gold 趋势过滤 → 其余时间，不要做任何事。</p>
 <h2 class="ch-h1" id="ch7">八、本方案 vs 网上常见中国版的差异</h2>
 <table class="data-tbl" style="--header-color: #595959;">
 <thead><tr>
@@ -1379,7 +1379,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">调仓规则</td>
 <td class="td-num">季度或不调</td>
-<td class="td-num">月度再平衡 + nonferr 趋势过滤 + Gold/HS300 抄底</td>
+<td class="td-num">月度再平衡 + nonferr 趋势过滤 + HS300 抄底 / Gold 趋势过滤</td>
 </tr>
 <tr>
 <td class="td-first">进取版用品</td>

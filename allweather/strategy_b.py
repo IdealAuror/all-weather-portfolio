@@ -42,6 +42,8 @@ def backtest_b(
     gold_dip_boost: float = GOLD_DIP_BOOST,
     hs300_dip_threshold: float | None = HS300_DIP_THRESHOLD,
     hs300_dip_boost: float = HS300_DIP_BOOST,
+    gold_trend_filter: bool = False,
+    gold_trend_window: int = 75,
 ) -> tuple:
     """Plan B backtest — 分层风险平价 / 逆波动率 + 可选 nonferr 风控 + gold 抄底 + hs300 抄底。
 
@@ -54,7 +56,8 @@ def backtest_b(
         gold_dip_threshold: 黄金回撤阈值（None=禁用抄底）
         gold_dip_boost: 触发后黄金权重增幅倍数（1.5=增加50%）
         hs300_dip_threshold: 沪深300回撤阈值（None=禁用，默认35%仅史诗级股灾触发）
-        hs300_dip_boost: 触发后沪深300权重增幅倍数
+        gold_trend_filter: 黄金SMA趋势过滤，跌破SMA则清仓转入credit（默认False）
+        gold_trend_window: 黄金SMA回看窗口（交易日，默认75）
 
     Returns:
         nv (pd.Series), n_rebal (int)
@@ -152,6 +155,14 @@ def backtest_b(
                 if curr_nf < nf_sma and w.get("nonferr", 0) > 0:
                     w["credit"] = w.get("credit", 0) + w["nonferr"]
                     w["nonferr"] = 0.0
+
+            # --- Gold trend filter: 金价跌破SMA → 清仓转入 credit ---
+            if gold_trend_filter and prices is not None and w.get("gold", 0) > 0:
+                curr_au = prices.iloc[i]["gold"]
+                au_sma = prices["gold"].iloc[max(0, i - gold_trend_window):i].mean()
+                if curr_au < au_sma:
+                    w["credit"] = w.get("credit", 0) + w["gold"]
+                    w["gold"] = 0.0
 
             # --- Gold dip-buying: 回撤超阈值 → 翻倍增持，从 credit 提取 ---
             if gold_dip_threshold is not None and prices is not None and w.get("gold", 0) > 0:

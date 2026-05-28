@@ -69,19 +69,19 @@ allweather/
 5. `step_5_print_reports` — console output
 6. `step_6_save_outputs` — CSV/JSON/Excel/Markdown
 
-### 3 strategies (2026-05-27)
+### 3 strategies (2026-05-28)
 
-- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + gold/hs300 dip-buying. "简约派" — highest Sharpe (1.40), CAGR 8.59%, MDD -5.84%.
-- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window. "学院派" — best CAGR (10.68%), best cumulative return (536.57%), MDD -10.34%, Sharpe 1.33.
-- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + gold/hs300 dip-buying, 20d window, max_w=0.25. "保守增强" — lowest MDD (-3.83%), highest Sharpe (1.64).
+- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + hs300 dip-buying (gold dip-buying disabled). "简约派" — zero negative years, CAGR 8.34%, MDD -4.40%, Sharpe 1.59.
+- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + hs300 dip-buying, 20d window. "学院派" — best CAGR (10.40%), best cumulative return (507.80%), MDD -7.35%, Sharpe 1.37.
+- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + hs300 dip-buying (gold dip-buying disabled), 20d window, max_w=0.25. "保守增强" — lowest MDD (-3.42%), highest Sharpe (1.84), zero negative years.
 
 V3c: 6 assets. V3-B RP: 6 assets (no bond_10y). V3-B 保守增强: 7 assets. div_idx (0.90 corr with hs300) and soymeal (negative Sharpe) removed 2026-05-27.
 
 ### Dynamic rebalancing
 
-- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Code: `backtest.py::backtest_iv`.
-- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
-- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
+- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Gold dip-buying disabled, hs300 dip-buying (35%/3.0x) retained. Code: `backtest.py::backtest_iv`.
+- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d, full clear) + hs300 dip-buying (35%/1.5x). 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
+- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Gold dip-buying disabled, hs300 dip-buying (35%/3.0x) retained. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
 
 ### Cash tiers
 
