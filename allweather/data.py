@@ -346,14 +346,17 @@ def load_panel() -> pd.DataFrame:
 
 
 
-def load_hs300_pe() -> pd.Series:
-    """加载沪深300 PE 时间序列（日频）。不存在返回空 Series。"""
+def load_hs300_pe(col_index: int = 2) -> pd.Series:
+    """加载沪深300 PE 时间序列（日频）。不存在返回空 Series。
+
+    col_index: PE 列索引，默认 2（等权静态市盈率），推荐 7（滚动市盈率中位数）。
+    """
     path = DATA_DIR / "hs300_pe.csv"
     if not path.exists():
         return pd.Series(dtype=float)
     df = pd.read_csv(path)
     date_col = df.columns[0]
-    pe_col = df.columns[2]
+    pe_col = df.columns[col_index]
     df[date_col] = pd.to_datetime(df[date_col])
     return df.set_index(date_col)[pe_col].sort_index()
 
