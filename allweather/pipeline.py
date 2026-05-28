@@ -13,9 +13,9 @@ from .stats import (
     block_bootstrap,
 )
 from .config import (
-    CASH_TIERS, STRESS_EVENTS,
+    CASH_TIERS, STRESS_EVENTS, OUTPUT_DIR,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
-    V3C_ASSETS, BUCKET_GROUPS,
+    V3C_ASSETS, BUCKET_GROUPS, SP500_TREND_WINDOW,
 )
 
 V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
@@ -51,40 +51,64 @@ def step_2_run_backtests(rets):
     t0 = time.time()
     weights = get_weights()
     nv_results = {}
+    weight_history = {}
     n_rebal_total = 0
 
-    # --- V3c: 逆波动率加权（60d，6 资产精简）+ nonferr 趋势过滤 + 抄底 ---
+    # --- V3c: 逆波动率加权（60d，6 资产精简）+ nonferr 趋势过滤 ---
     for tier_label, c in CASH_TIERS:
-        nv, n = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
+        track = (tier_label == "100% RP")
+        result = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
                             nonferr_trend_window=60, assets=V3C_ASSETS,
-                            hs300_dip_boost=3.0,
-                            gold_dip_threshold=None)
+                            hs300_dip_threshold=None,
+                            gold_dip_threshold=None,
+                            track_weights=track)
+        if track:
+            nv, n, wh = result
+            weight_history["V3c 多元"] = wh
+        else:
+            nv, n = result
         nv_results[("V3c 多元", tier_label)] = nv
         n_rebal_total += n
 
 
-    # --- 方案 B: 分层风险平价（20d, 4 桶）+ nonferr 趋势过滤 ---
+    # --- 方案 B: 分层风险平价（20d, 4 桶）+ nonferr 趋势过滤 + gold 趋势过滤 ---
     from .strategy_b import backtest_b
     for tier_label, c in CASH_TIERS:
-        nv, n = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
+        track = (tier_label == "100% RP")
+        result = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
                             rp_buckets=V3B_RP_BUCKETS,
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
-                            hs300_dip_boost=1.5,
+                            hs300_dip_threshold=None,
                             gold_trend_filter=True,
-                            gold_trend_window=75)
+                            gold_trend_window=75,
+                            equity_trend_assets=["us_sp500"],
+                            equity_trend_window=SP500_TREND_WINDOW,
+                            track_weights=track)
+        if track:
+            nv, n, wh = result
+            weight_history["V3-B 风险平价(20d)"] = wh
+        else:
+            nv, n = result
         nv_results[("V3-B 风险平价(20d)", tier_label)] = nv
         n_rebal_total += n
 
     # --- 方案 B 增强: 逆波动率 + nonferr 趋势过滤 ---
     for tier_label, c in CASH_TIERS:
-        nv, n = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
+        track = (tier_label == "100% RP")
+        result = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
                             max_w=0.25,
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
                             weighting_method="inverse_vol",
-                            hs300_dip_boost=3.0,
-                            gold_dip_threshold=None)
+                            hs300_dip_threshold=None,
+                            gold_dip_threshold=None,
+                            track_weights=track)
+        if track:
+            nv, n, wh = result
+            weight_history["V3-B 保守增强(20d)"] = wh
+        else:
+            nv, n = result
         nv_results[("V3-B 保守增强(20d)", tier_label)] = nv
         n_rebal_total += n
 
@@ -92,7 +116,7 @@ def step_2_run_backtests(rets):
     print(f"  ok 完成 {total} 个回测")
     print(f"  ok 总调仓次数: {n_rebal_total}")
     print(f"  ok 用时: {time.time()-t0:.2f}s")
-    return weights, nv_results
+    return weights, nv_results, weight_history
 
 
 def step_3_compute_metrics(nv_results, weights, rets):
@@ -201,7 +225,8 @@ def step_5_print_reports(metrics, boot, weights):
 
 
 def step_6_save_outputs(nv_results, metrics, weights, boot=None,
-                         excel: bool = True, markdown: bool = True):
+                         excel: bool = True, markdown: bool = True,
+                         weight_history: dict = None):
     """Step 6: 保存净值曲线 / 汇总 JSON / 权重 CSV / Excel / Markdown。
 
     excel 和 markdown 都需要 boot（蒙特卡洛结果）。如果只想跑基础三件套，
@@ -246,6 +271,26 @@ def step_6_save_outputs(nv_results, metrics, weights, boot=None,
         p5 = save_markdown_report(**common_args)
         print(f"  ok {p5.name}（Markdown 综合报告）")
 
+    # --- 权重历史 & 图表 ---
+    if weight_history:
+        from .charts import (
+            plot_nav_and_dd, plot_all_tiers_nv,
+            plot_rolling_returns, plot_monthly_returns_comparison,
+            plot_yearly_returns, plot_weight_stack,
+        )
+        for p, wh in weight_history.items():
+            wh_path = OUTPUT_DIR / f"weight_history_{p.replace(' ', '_').replace('(', '').replace(')', '')}.csv"
+            wh.to_csv(wh_path, encoding="utf-8-sig")
+            print(f"  ok {wh_path.name}（{p} 权重历史）")
+
+        plot_nav_and_dd(nv_results)
+        plot_all_tiers_nv(nv_results)
+        plot_rolling_returns(metrics)
+        plot_monthly_returns_comparison(nv_results)
+        plot_yearly_returns(metrics, nv_results=nv_results)
+        plot_weight_stack(weight_history)
+        print(f"  ok charts/（6 张图表）")
+
     print(f"  ok 输出目录: {p1.parent}")
     print(f"  ok 用时: {time.time()-t0:.2f}s")
 
@@ -261,12 +306,13 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True):
     print("=" * 60)
 
     panel, rets = step_1_load_data()
-    weights, nv_results = step_2_run_backtests(rets)
+    weights, nv_results, weight_history = step_2_run_backtests(rets)
     metrics = step_3_compute_metrics(nv_results, weights, rets)
     boot = step_4_bootstrap(weights, rets, nv_results=nv_results)
     step_5_print_reports(metrics, boot, weights)
     step_6_save_outputs(nv_results, metrics, weights, boot=boot,
-                         excel=excel, markdown=markdown)
+                         excel=excel, markdown=markdown,
+                         weight_history=weight_history)
 
     print("\n" + "=" * 60)
     print(f"  完成！总耗时 {time.time()-overall:.1f}s")

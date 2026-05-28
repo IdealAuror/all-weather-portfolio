@@ -121,11 +121,15 @@ def backtest_iv(
     assets: list | None = None,
     gold_trend_filter: bool = False,
     gold_trend_window: int = 75,
+    track_weights: bool = False,
+    vol_target: float | None = None,
+    vol_target_window: int = 60,
 ):
     """逆波动率加权 + 月度再平衡 + nonferr 趋势过滤 + gold/hs300 抄底。
 
     每月按过去 iv_window 日逆波动率重新计算权重，简单直接，无需分桶。
     assets 为空则用全部列。
+    track_weights=True 时额外返回权重历史 DataFrame（调仓日 × 资产）。
     """
     from .risk import inverse_vol_weights
 
@@ -148,19 +152,21 @@ def backtest_iv(
     target = w.values * (1 - cash_ratio)
     h = pd.Series(target, index=cols)
     v = 1.0
+    eff_cash = cash_ratio
+    weight_log = {} if track_weights else None
 
     for i, d in enumerate(rets.index):
         if i == 0:
             nv.loc[d] = 1.0
             continue
 
-        v *= 1 + (h * rets.loc[d, cols]).sum() + cash_ratio * rf_daily
+        v *= 1 + (h * rets.loc[d, cols]).sum() + eff_cash * rf_daily
         nv.loc[d] = v
 
         h = h * (1 + rets.loc[d, cols])
         s = h.sum()
         if s > 0:
-            h = h / s * (1 - cash_ratio)
+            h = h / s * (1 - eff_cash)
 
         if gold_idx >= 0:
             curr_au = prices.iloc[i]["gold"]
@@ -206,9 +212,21 @@ def backtest_iv(
                         w["hs300"] += boost
                         w["credit"] -= boost
 
+            if vol_target is not None and i > max(iv_window, vol_target_window):
+                past = rets.iloc[max(0, i - vol_target_window):i][cols]
+                port_ret = past @ w.values
+                port_vol = port_ret.std() * np.sqrt(252)
+                if port_vol > 0.001 and port_vol > vol_target:
+                    w = w * (vol_target / port_vol)
+            eff_cash = 1.0 - w.sum()
+
             h = w
             n_rebal += 1
+            if track_weights:
+                weight_log[d] = w.copy()
 
+    if track_weights:
+        return nv, n_rebal, pd.DataFrame(weight_log).T
     return nv, n_rebal
 
 

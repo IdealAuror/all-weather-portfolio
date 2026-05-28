@@ -170,13 +170,10 @@ def synthesize_bond_30y(s_10y: pd.Series, s_30y_etf: pd.Series) -> pd.Series:
 
 
 def _load_bond_10y() -> pd.Series:
-    """加载 10Y 国债序列：ETF (2017-08+) + 国债总指数 (2008-2017)。
-
-    国债总指数 (bond_treasury_index_cbond) 覆盖 2008+，比用 credit proxy
-    更适合代表国债收益。
-    """
-    etf = load_series("bond_10y_etf")  # 511260, 2017-08-04 起
+    """加载 10Y 国债序列：ETF (2017-08+) + 国债总指数 (2008-2017) + 企债指数 (2005-2008)。"""
+    etf = load_series("bond_10y_etf")
     treasury_idx = load_series("treasury_idx")
+    credit_idx = load_series("credit_idx")
 
     if etf.empty and treasury_idx.empty:
         raise FileNotFoundError("bond_10y_etf 和 treasury_idx 都不可用")
@@ -184,21 +181,16 @@ def _load_bond_10y() -> pd.Series:
     if etf.empty:
         return treasury_idx
 
-    # treasury_idx 作为 pre-ETF 替代
     if treasury_idx.empty:
-        proxy = load_series("bond_credit")
+        proxy = credit_idx
     else:
-        proxy = treasury_idx
+        proxy = stitch_series(treasury_idx, credit_idx, annual_deduct=0.0)
 
     return stitch_series(etf, proxy, annual_deduct=0.0)
 
 
 def _load_gold_cny() -> pd.Series:
-    """黄金 CNY：ETF (2015+) + 伦敦金×USDCNY (2008-2015)。
-
-    伦敦金 XAU 报价为 USD/oz，乘以 USDCNY 得到 CNY/oz。
-    绝对价格级别会通过 stitch_series 归一化对齐，故不需要除以 31.1035。
-    """
+    """黄金 CNY：ETF (2013+) + 伦敦金×USDCNY (2006-2013) + ETF 持仓推算 (2005-2006)。"""
     etf = load_series("gold")
     london = _load_optional("london_gold")
     usdcny = _load_optional("usdcny")
@@ -209,12 +201,34 @@ def _load_gold_cny() -> pd.Series:
     if london is None or usdcny is None:
         return etf
 
-    # 合并日历，用 ffill 填充汇率
     combined = london.index.union(usdcny.index).union(etf.index).sort_values()
     london = london.reindex(combined).ffill()
     usdcny = usdcny.reindex(combined).ffill()
     gold_cny = london * usdcny
     gold_cny.name = "close"
+
+    # 2005-2006: 黄金 ETF 持仓数据推算金价（伦敦金数据从 2006-05 起）
+    try:
+        import akshare as ak
+        mg = ak.macro_cons_gold()
+        mg["date"] = pd.to_datetime(mg["日期"])
+        mg["proxy"] = mg["总价值"] / mg["总库存"]
+        mg = mg.set_index("date").sort_index()
+
+        cd = mg.index.intersection(gold_cny.index)
+        if len(cd) > 10:
+            ratio = (gold_cny.loc[cd] / mg.loc[cd, "proxy"]).mean()
+            mg_pre = mg[mg.index < gold_cny.index.min()].copy()
+            if len(mg_pre) > 0:
+                mg_pre["gold_cny"] = mg_pre["proxy"] * ratio
+                full_cal = mg_pre.index.union(usdcny.index).union(
+                    pd.date_range(mg_pre.index.min(), gold_cny.index.min(), freq="B"))
+                mg_daily = mg_pre["gold_cny"].reindex(full_cal).sort_index().ffill()
+                mg_daily = mg_daily[mg_daily.index < gold_cny.index.min()]
+                if len(mg_daily) > 0:
+                    gold_cny = pd.concat([mg_daily, gold_cny]).sort_index()
+    except Exception:
+        pass
 
     if etf.empty:
         return gold_cny
@@ -271,7 +285,6 @@ def load_panel() -> pd.DataFrame:
     """
     # 权益：ETF + 指数 proxy
     hs300 = _load_with_index("hs300", "hs300_idx", annual_deduct=0.0)
-    div_idx = _load_with_index("div_lowvol", "div_idx_src", annual_deduct=0.0)
     credit = _load_with_index("bond_credit", "credit_idx", annual_deduct=0.0)
 
     # 海外权益 & 黄金：需要用汇率换算
@@ -317,7 +330,6 @@ def load_panel() -> pd.DataFrame:
 
     panel = pd.DataFrame({
         "hs300":    hs300,
-        "div_idx":  div_idx,
         "us_sp500": us_sp500,
         "credit":   credit,
         "bond_10y": bond_10y,

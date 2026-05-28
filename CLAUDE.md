@@ -71,17 +71,17 @@ allweather/
 
 ### 3 strategies (2026-05-28)
 
-- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + hs300 dip-buying (gold dip-buying disabled). "简约派" — zero negative years, CAGR 8.34%, MDD -4.40%, Sharpe 1.59.
-- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + hs300 dip-buying, 20d window. "学院派" — best CAGR (10.40%), best cumulative return (507.80%), MDD -7.35%, Sharpe 1.37.
-- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + hs300 dip-buying (gold dip-buying disabled), 20d window, max_w=0.25. "保守增强" — lowest MDD (-3.42%), highest Sharpe (1.84), zero negative years.
+- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d (no dip-buying). "简约派" — CAGR 8.40%, MDD -6.96%, Sharpe 1.62.
+- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + sp500 trend filter 120d (no hs300 dip-buying), 20d window. "学院派" — best CAGR (10.14%), best cumulative return (701.56%), MDD -9.48%, Sharpe 1.45.
+- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d (no dip-buying), 20d window, max_w=0.25. "保守增强" — lowest MDD (-6.40%), highest Sharpe (1.74).
 
 V3c: 6 assets. V3-B RP: 6 assets (no bond_10y). V3-B 保守增强: 7 assets. div_idx (0.90 corr with hs300) and soymeal (negative Sharpe) removed 2026-05-27.
 
 ### Dynamic rebalancing
 
-- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Gold dip-buying disabled, hs300 dip-buying (35%/3.0x) retained. Code: `backtest.py::backtest_iv`.
-- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d, full clear) + hs300 dip-buying (35%/1.5x). 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
-- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Gold dip-buying disabled, hs300 dip-buying (35%/3.0x) retained. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
+- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Nonferr trend filter (60d). No dip-buying. Code: `backtest.py::backtest_iv`.
+- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d, full clear). No hs300 dip-buying. 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
+- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Nonferr trend filter (75d). No dip-buying. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
 
 ### Cash tiers
 
@@ -92,7 +92,7 @@ Every strategy × 3 cash levels: 100% RP (0% cash), 85% RP (15% cash), 70% RP (3
 ### 30Y bond synthesis (`data.py::synthesize_bond_30y`)
 
 ETF 511130 launched 2024-03. Three-stage synthesis:
-1. 2008-01 ~ 2020-02: 10Y returns × 3.0 duration multiplier (deduct 0.3%/yr)
+1. 2005-04 ~ 2020-02: 10Y returns × 3.0 duration multiplier (deduct 0.3%/yr)
 2. 2020-02 ~ 2024-03: yield curve spread method (10Y-30Y spread × duration 18.0)
 3. 2024-03 ~ now: real ETF NAV
 
@@ -131,7 +131,7 @@ B-RP drops bond_10y: asset test showed CAGR +1.43% with negligible Sharpe loss (
 
 | Constant | Value | Purpose |
 |---|---|---|
-| `BACKTEST_START/END` | 2008-01-01 / 2025-12-31 | ~18 year window |
+| `BACKTEST_START/END` | 2005-04-08 / 2026-04-30 | ~21 year window |
 | `REBAL_FREQ` | "ME" | Monthly rebalance (V3c) |
 | `REBAL_THRESHOLD` | 0.03 | 3% deviation trigger |
 | `RISK_FREE_ANNUAL` | 0.022 | Sharpe correction |
@@ -143,6 +143,7 @@ B-RP drops bond_10y: asset test showed CAGR +1.43% with negligible Sharpe loss (
 | `GOLD_DIP_BOOST` | 2.5 | Gold weight boost multiplier when triggered (2.5x, grid-search optimal) |
 | `HS300_DIP_THRESHOLD` | 0.35 | hs300 dip-buy trigger (35% DD, catastrophic only) |
 | `HS300_DIP_BOOST` | 2.5 | hs300 weight boost multiplier when triggered (2.5x, grid-search optimal) |
+| `SP500_TREND_WINDOW` | 120 | sp500 SMA lookback, below which position cleared to credit |
 | `BOOTSTRAP_N_SIM` | 1000 | Monte Carlo iterations |
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5-year horizon |
 | `BOOTSTRAP_BLOCK_DAYS` | 21 | ~1 month blocks |
