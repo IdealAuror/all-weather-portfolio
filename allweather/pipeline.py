@@ -6,7 +6,7 @@ import time
 import pandas as pd
 from .data import load_panel
 from .portfolios import get_weights
-from .backtest import backtest, backtest_iv
+from .backtest import backtest_iv
 from .stats import (
     perf_metrics, yearly_returns, event_returns,
     bucket_risk_contribution, regime_returns, rolling_stats,

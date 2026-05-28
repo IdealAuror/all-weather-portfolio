@@ -691,8 +691,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr><td class="td-first">增长↑</td><td class="td-num">沪深 300 ETF</td><td class="td-num">510300</td><td class="td-num">5.1万 (5.1%)</td><td class="td-num">4.3万 (4.3%)</td><td class="td-num">3.6万 (3.6%)</td></tr>
 <tr><td class="td-first">增长↑</td><td class="td-num">标普 500 ETF（QDII）</td><td class="td-num">513500</td><td class="td-num">5.5万 (5.5%)</td><td class="td-num">4.7万 (4.7%)</td><td class="td-num">3.9万 (3.9%)</td></tr>
 <tr><td class="td-first">收益垫</td><td class="td-num">城投债 ETF</td><td class="td-num">511220</td><td class="td-num">20.0万 (20.0%)</td><td class="td-num">17.0万 (17.0%)</td><td class="td-num">14.0万 (14.0%)</td></tr>
-<tr><td class="td-first">增长↓10Y</td><td class="td-num">10 年国债 ETF</td><td class="td-num">511260</td><td class="td-num">20.0万 (20.0%)</td><td class="td-num">17.0万 (17.0%)</td><td class="td-num">14.0万 (14.0%)</td></tr>
-<tr><td class="td-first">增长↓30Y</td><td class="td-num">30 年国债 ETF</td><td class="td-num">511130</td><td class="td-num">20.0万 (20.0%)</td><td class="td-num">17.0万 (17.0%)</td><td class="td-num">14.0万 (14.0%)</td></tr>
+<tr><td class="td-first">增长↓</td><td class="td-num">30 年国债 ETF</td><td class="td-num">511130</td><td class="td-num">20.0万 (20.0%)</td><td class="td-num">17.0万 (17.0%)</td><td class="td-num">14.0万 (14.0%)</td></tr>
 <tr><td class="td-first">通胀↑</td><td class="td-num">黄金 ETF</td><td class="td-num">518880</td><td class="td-num">5.7万 (5.7%)</td><td class="td-num">4.8万 (4.8%)</td><td class="td-num">4.0万 (4.0%)</td></tr>
 <tr><td class="td-first">通胀↑</td><td class="td-num">有色金属 ETF</td><td class="td-num">159980</td><td class="td-num">5.1万 (5.1%)</td><td class="td-num">4.3万 (4.3%)</td><td class="td-num">3.6万 (3.6%)</td></tr>
 <tr><td class="td-first">合计</td><td class="td-num"></td><td class="td-num"></td><td class="td-num">100 万</td><td class="td-num">100 万</td><td class="td-num">100 万</td></tr>
@@ -747,7 +746,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">• 权重完全由数据驱动，无人工判断偏差</p>
 <h3 class="sec-h3">⚠ 劣势</h3>
 <p class="para">• 回撤（-9.48%），最差年份 2011 -5.01%，短期波动容忍度要求较高</p>
-<p class="para">• 5 桶逻辑比另外两个策略复杂——需要理解桶间等权 + 桶内逆波动率两层计算</p>
+<p class="para">• 4 桶逻辑比另外两个策略复杂——需要理解桶间等权 + 桶内逆波动率两层计算</p>
 <p class="para">• 2013 年金价 -29%、hs300 -22%、nonferr -19% 三杀，当月组合承受较大压力</p>
 <p class="para">• 调仓涉及 6 只 ETF，与 V3c 数量相同，交易成本可控</p>
 <h2 class="plan-title plan-b">方案 3: V3-B 保守增强(20d)  ★★★ 强烈推荐</h2>
@@ -874,7 +873,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-num">1023.3 万</td>
 <td class="td-num">514.2 万</td></tr>
 <tr>
-<td class="td-first">最大单仓</td><td class="td-num">10年债 40%</td>
+<td class="td-first">最大单仓</td><td class="td-num">信用债为主（逆波动率动态）</td>
 <td class="td-num">动态调整</td>
 <td class="td-num">动态调整</td></tr>
 <tr>
@@ -981,7 +980,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr><td class="td-first">波动率目标降仓</td><td class="td-num">V3-B / 保守增强<br>目标 4%~8%</td><td class="td-num">无效</td><td class="td-num">组合波动（2.4%~3.5%）远低于目标，缩放系数始终=1.0，21年从未触发</td></tr>
 <tr><td class="td-first">DD 刹车</td><td class="td-num">V3-B / 保守增强<br>阈值 -3%/-5%/-8%</td><td class="td-num">冗余</td><td class="td-num">nonferr 趋势过滤已将 MDD 控制在低位，叠加 DD 刹车 CAGR 和 MDD 几乎不变</td></tr>
 <tr><td class="td-first">Gold / Nonferr 趋势过滤</td><td class="td-num">V3-B / 保守增强<br>窗口 60~250d</td><td class="td-num">无效</td><td class="td-num">黄金是避险资产（危机期跳涨，趋势过滤会错误剔除）。仅 nonferr 值得趋势过滤</td></tr>
-<tr><td class="td-first">方案 C 动态补仓<br>(70/30 现金储备)</td><td class="td-num">V3-B 5桶<br>DD 阈值 -2%/-5%<br>储备 15%~40%</td><td class="td-num">失败</td><td class="td-num">低阈值（-2%）过早耗尽弹药；高阈值（-5%+）永不触发。动态补仓 = 静态现金档位的等价物，现金机会成本 &gt; 择时收益。5桶结构下 V3-B MDD 仅 -4.14%，问题更严重</td></tr>
+<tr><td class="td-first">方案 C 动态补仓<br>(70/30 现金储备)</td><td class="td-num">V3-B（旧5桶结构）<br>DD 阈值 -2%/-5%<br>储备 15%~40%</td><td class="td-num">失败</td><td class="td-num">低阈值（-2%）过早耗尽弹药；高阈值（-5%+）永不触发。动态补仓 = 静态现金档位的等价物，现金机会成本 &gt; 择时收益。5桶结构下 V3-B MDD 仅 -4.14%，问题更严重</td></tr>
 </tbody></table>
 <h2 class="ch-h1" id="ch5">六、风险提示</h2>
 <p class="warning">⚠ 回测窗口偏差：2005-04 ~ 2026-04 覆盖了 2015 股灾、2016 熔断、2018 大熊市等多轮极端行情，未来债券预期收益大概率低于历史。建议把 CAGR 预期下调 1-2 个百分点。</p>
@@ -1070,7 +1069,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">第 1 月</td>
 <td class="td-num">50% 资金</td>
-<td class="td-num">10 年国债、黄金、沪深 300</td>
+<td class="td-num">30 年国债、黄金、沪深 300</td>
 <td class="td-num">城投债</td>
 <td class="td-num">QDII、商品 ETF</td>
 </tr>
@@ -1301,15 +1300,15 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="faq-q">Q：nonferr 趋势过滤触发了，但我觉得有色还会涨，能等等吗？</p>
 <p class="faq-a">A：不能。纪律压倒预测。回测已证明硬过滤（清仓）优于软过滤（减半），转投信用债是经过验证的最优重定向。</p>
 <p class="faq-q">Q：能不能用银行的「全天候」基金代替自己买 ETF？</p>
-<p class="faq-a">A：不推荐。① 这类基金管理费 1-1.5%，年化吃掉 1 个百分点；② 大多是固收+偏债配置，不是真正的风险平价；③ 你看不到底层持仓，无法判断是否符合 RP 框架。自己买 9 个 ETF 总费率约 0.3%/年。</p>
+<p class="faq-a">A：不推荐。① 这类基金管理费 1-1.5%，年化吃掉 1 个百分点；② 大多是固收+偏债配置，不是真正的风险平价；③ 你看不到底层持仓，无法判断是否符合 RP 框架。自己买 7 个 ETF 总费率约 0.3%/年。</p>
 <p class="faq-q">Q：现金那部分（85%/70% 档）放哪里？</p>
 <p class="faq-a">A：首选：场内货币 ETF 511880（华宝添益）或 511990（华宝添益 H 类），日内可买卖；次选：余额宝、微信零钱通；再次：短债 ETF 511360（短融 ETF），收益略高但有波动。不要放活期，年化差 1.5%。</p>
 <p class="faq-q">Q：我有定投习惯，能不能用定投方式建组合？</p>
-<p class="faq-a">A：可以，但要按比例定投：每月固定金额，按目标权重分到 9 个 ETF。不要「今天买这个、明天买那个」——会破坏 RP 结构。定投本身不会替代再平衡，月度调仓日该调还是要调。</p>
+<p class="faq-a">A：可以，但要按比例定投：每月固定金额，按目标权重分到 7 个 ETF。不要「今天买这个、明天买那个」——会破坏 RP 结构。定投本身不会替代再平衡，月度调仓日该调还是要调。</p>
 <p class="faq-q">Q：方案选错了能不能换？</p>
 <p class="faq-a">A：可以，但建议至少持有 1 年再换。频繁切换 = 择时，破坏 RP 的全部哲学。如果确实要换（比如从 V3c 换成 V3-B），按目标权重差额一次性调整即可。</p>
 <p class="faq-q">Q：如果我未来有大额资金注入怎么办？</p>
-<p class="faq-a">A：新加的钱不要破坏现有结构——按当前目标权重分配到 9 个 ETF 即可。比如新加 20 万到 V3c 100% RP 档：买 10 年国债 8 万、标普 500 1.6 万、黄金 2 万…… 以此类推。</p>
+<p class="faq-a">A：新加的钱不要破坏现有结构——按当前目标权重分配到 7 个 ETF 即可。比如新加 20 万到 V3c 100% RP 档：买信用债 10 万、30 年国债 4 万、黄金 3 万、标普 500 1.5 万、沪深 300 1 万、有色 0.5 万…… 以此类推。</p>
 <p class="faq-q">Q：能加杠杆复制桥水原版吗？</p>
 <p class="faq-a">A：强烈不推荐。桥水的杠杆通过机构间回购，成本极低（2-3%）；国内零售融资成本 5-8%，杠杆放大波动但被利息吃掉超额。如果想要更高弹性，选 V3c 100% RP 即可，不要碰融资。</p>
 <h3 class="step-h">🎯 一页执行总结</h3>
@@ -1369,7 +1368,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">资产数</td>
 <td class="td-num">4-5 个</td>
-<td class="td-num">9 个 ETF（含海外、信用、商品）</td>
+<td class="td-num">7 个 ETF（含海外、信用、商品）</td>
 </tr>
 <tr>
 <td class="td-first">权重逻辑</td>
@@ -1447,11 +1446,6 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <td class="td-first">159980</td>
 <td class="td-num">有色金属 ETF（期货）</td>
 <td class="td-num">通胀↑（金属）</td>
-<td class="td-num">全部推荐方案</td>
-</tr>
-<tr>
-<td class="td-first">159985</td>
-<td class="td-num">通胀↑（农产品）</td>
 <td class="td-num">全部推荐方案</td>
 </tr>
 <tr>
