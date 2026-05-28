@@ -69,19 +69,19 @@ allweather/
 5. `step_5_print_reports` — console output
 6. `step_6_save_outputs` — CSV/JSON/Excel/Markdown
 
-### 3 strategies (2026-05-28)
+### 3 strategies (2026-05-29)
 
-- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d (no dip-buying). "简约派" — CAGR 8.40%, MDD -6.96%, Sharpe 1.62.
-- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + sp500 trend filter 120d (no hs300 dip-buying), 20d window. "学院派" — best CAGR (10.14%), best cumulative return (701.56%), MDD -9.48%, Sharpe 1.45.
-- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d (no dip-buying), 20d window, max_w=0.25. "保守增强" — lowest MDD (-6.40%), highest Sharpe (1.74).
+- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + HS300 抄底(PE 30%ile/exit 70%ile + DD 25%/exit peak-15%). "简约派" — CAGR 9.37%, MDD -6.96%, Sharpe 1.49.
+- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + sp500 trend filter 120d + Gold/HS300 抄底, 20d window. "学院派" — best CAGR (11.40%), best cumulative return (923.26%), MDD -9.48%, Sharpe 1.30.
+- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + HS300 抄底, 20d window, max_w=0.25. "保守增强" — lowest MDD (-6.40%), highest Sharpe (1.68).
 
 V3c: 6 assets. V3-B RP: 6 assets (no bond_10y). V3-B 保守增强: 7 assets. div_idx (0.90 corr with hs300) and soymeal (negative Sharpe) removed 2026-05-27.
 
 ### Dynamic rebalancing
 
-- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Nonferr trend filter (60d). No dip-buying. Code: `backtest.py::backtest_iv`.
-- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d, full clear). No hs300 dip-buying. 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
-- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Nonferr trend filter (75d). No dip-buying. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
+- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Nonferr trend filter (60d). HS300 抄底 (PE 30%ile/exit 70%ile + DD 25%/exit peak-15%). No gold dip-buying. Code: `backtest.py::backtest_iv`.
+- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d, full clear). Gold/HS300 抄底. 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
+- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Nonferr trend filter (75d). HS300 抄底 (PE 30%ile/exit 70%ile + DD 25%/exit peak-15%). No gold dip-buying. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
 
 ### Cash tiers
 
@@ -141,8 +141,12 @@ B-RP drops bond_10y: asset test showed CAGR +1.43% with negligible Sharpe loss (
 | `BOND_30Y_AMP` | 3.0 | Fallback duration multiplier |
 | `GOLD_DIP_THRESHOLD` | 0.15 | Gold dip-buy trigger (15% DD from peak) |
 | `GOLD_DIP_BOOST` | 2.5 | Gold weight boost multiplier when triggered (2.5x, grid-search optimal) |
-| `HS300_DIP_THRESHOLD` | 0.35 | hs300 dip-buy trigger (35% DD, catastrophic only) |
-| `HS300_DIP_BOOST` | 2.5 | hs300 weight boost multiplier when triggered (2.5x, grid-search optimal) |
+| `HS300_DIP_THRESHOLD` | 0.25 | hs300 price DD dip-buy trigger (25%, moderate bear market) |
+| `HS300_DIP_BOOST` | 1.8 | hs300 price DD weight boost (1.8x, grid-search optimal) |
+| `HS300_DIP_EXIT_RECOVERY` | 0.15 | hs300 price DD exit (recover to peak-15%) |
+| `HS300_VALUE_ENTRY` | 30 | hs300 PE %ile entry threshold (30%) |
+| `HS300_VALUE_EXIT` | 70 | hs300 PE %ile exit threshold (70%, grid-search optimal) |
+| `HS300_VALUE_BOOST` | 1.8 | hs300 PE valuation boost (1.8x, grid-search optimal) |
 | `SP500_TREND_WINDOW` | 120 | sp500 SMA lookback, below which position cleared to credit |
 | `BOOTSTRAP_N_SIM` | 1000 | Monte Carlo iterations |
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5-year horizon |
