@@ -71,17 +71,17 @@ allweather/
 
 ### 3 strategies (2026-05-29)
 
-- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + HS300 抄底(PE 30%ile/exit 70%ile + DD 25%/exit peak-15%). "简约派" — CAGR 9.37%, MDD -6.96%, Sharpe 1.49.
-- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + sp500 trend filter 120d + Gold/HS300 抄底, 20d window. "学院派" — best CAGR (11.40%), best cumulative return (923.26%), MDD -9.48%, Sharpe 1.30.
-- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + HS300 抄底, 20d window, max_w=0.25. "保守增强" — lowest MDD (-6.40%), highest Sharpe (1.68).
+- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + HS300 AND抄底(价格回撤≥25% AND PE<30%ile → 1.8x). "简约派" — CAGR 8.82%, MDD -6.96%, Sharpe 1.58.
+- **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + sp500 trend filter 120d + Gold dip + HS300 AND抄底, 20d window. "学院派" — best CAGR (10.97%), best cumulative return (840.94%), MDD -9.48%, Sharpe 1.40.
+- **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + HS300 AND抄底, 20d window, max_w=0.25. "保守增强" — lowest MDD (-6.40%), highest Sharpe (1.75).
 
 V3c: 6 assets. V3-B RP: 6 assets (no bond_10y). V3-B 保守增强: 7 assets. div_idx (0.90 corr with hs300) and soymeal (negative Sharpe) removed 2026-05-27.
 
 ### Dynamic rebalancing
 
-- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Nonferr trend filter (60d). HS300 抄底 (PE 30%ile/exit 70%ile + DD 25%/exit peak-15%). No gold dip-buying. Code: `backtest.py::backtest_iv`.
-- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d, full clear). Gold/HS300 抄底. 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
-- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Nonferr trend filter (75d). HS300 抄底 (PE 30%ile/exit 70%ile + DD 25%/exit peak-15%). No gold dip-buying. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
+- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Nonferr trend filter (60d). HS300 AND抄底 (价格回撤≥25% AND PE<30%ile → 1.8x; 退出: 恢复至-15% AND PE>70%ile). No gold dip-buying. Code: `backtest.py::backtest_iv`.
+- **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d, full clear). Gold dip + HS300 AND抄底. 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
+- **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Nonferr trend filter (75d). HS300 AND抄底 (价格回撤≥25% AND PE<30%ile → 1.8x; 退出: 恢复至-15% AND PE>70%ile). No gold dip-buying. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
 
 ### Cash tiers
 
@@ -144,9 +144,8 @@ B-RP drops bond_10y: asset test showed CAGR +1.43% with negligible Sharpe loss (
 | `HS300_DIP_THRESHOLD` | 0.25 | hs300 price DD dip-buy trigger (25%, moderate bear market) |
 | `HS300_DIP_BOOST` | 1.8 | hs300 price DD weight boost (1.8x, grid-search optimal) |
 | `HS300_DIP_EXIT_RECOVERY` | 0.15 | hs300 price DD exit (recover to peak-15%) |
-| `HS300_VALUE_ENTRY` | 30 | hs300 PE %ile entry threshold (30%) |
-| `HS300_VALUE_EXIT` | 70 | hs300 PE %ile exit threshold (70%, grid-search optimal) |
-| `HS300_VALUE_BOOST` | 1.8 | hs300 PE valuation boost (1.8x, grid-search optimal) |
+| `HS300_PE_ENTRY` | 30 | hs300 PE %ile entry threshold (AND logic, <30% required) |
+| `HS300_PE_EXIT` | 70 | hs300 PE %ile exit threshold (AND logic, >70% required) |
 | `SP500_TREND_WINDOW` | 120 | sp500 SMA lookback, below which position cleared to credit |
 | `BOOTSTRAP_N_SIM` | 1000 | Monte Carlo iterations |
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5-year horizon |
