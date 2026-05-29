@@ -6,7 +6,7 @@ from datetime import datetime
 import pandas as pd
 
 from .config import BUCKET_GROUPS, ETF_META, OUTPUT_DIR
-from .portfolios import PORTFOLIO_TAGS
+from .config import PORTFOLIO_TAGS
 
 
 def _pct(v, d=2, sign=False):
@@ -83,12 +83,13 @@ def _section_perf(perf_results):
             _num(m["sharpe"]),
             _num(m["calmar"]),
             _num(m["final_nv"], d=4),
+            _pct(m["geometric_excess_d"], d=3, sign=True),
         ])
     return [
         "## 1. 核心指标（三策略 × 三档现金）",
         "",
         _md_table(
-            ["方案", "档位", "累计收益", "CAGR", "波动", "最大回撤", "Sharpe", "Calmar", "期末净值"],
+            ["方案", "档位", "累计收益", "CAGR", "波动", "最大回撤", "Sharpe", "Calmar", "期末净值", "D_excess"],
             rows,
         ),
         "",

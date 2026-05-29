@@ -13,9 +13,9 @@
 
 import sys
 import pandas as pd
-import numpy as np
 from pathlib import Path
 from datetime import date
+from .risk import inverse_vol_weights, hierarchical_rp_weights
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -55,7 +55,7 @@ STRATEGIES = {
         "window": 60,
         "max_w": 0.30,
         "min_w": 0.03,
-        "nonferr_trend": 60,
+        "nonferr_trend": 75,
         "buckets": None,
     },
     "B-RP": {
@@ -85,39 +85,6 @@ def load_prices():
     """用 data.load_panel() 加载全资产面板（含缝合合成）。"""
     from .data import load_panel
     return load_panel()
-
-
-def inverse_vol_weights(returns, window, max_w, min_w):
-    recent = returns.tail(window)
-    vols = recent.std() * np.sqrt(252)
-    inv_vol = 1 / vols.replace(0, np.nan)
-    raw = inv_vol / inv_vol.sum()
-    capped = raw.clip(lower=min_w, upper=max_w)
-    return capped / capped.sum()
-
-
-def hierarchical_rp_weights(returns, buckets, window, max_w, min_w):
-    recent = returns.tail(window)
-    n_buckets = len(buckets)
-    bucket_w = {}
-    for bname, assets in buckets.items():
-        valid = [a for a in assets if a in recent.columns]
-        if not valid:
-            continue
-        brets = recent[valid]
-        vols = brets.std() * np.sqrt(252)
-        inv = 1 / vols.replace(0, np.nan)
-        bucket_w[bname] = inv / inv.sum()
-
-    bucket_alloc = {k: 1.0 / n_buckets for k in bucket_w}
-    weights = pd.Series(0.0, index=returns.columns)
-    for bname, alloc in bucket_alloc.items():
-        if bname in bucket_w:
-            weights[bucket_w[bname].index] = bucket_w[bname] * alloc
-
-    capped = weights.clip(lower=min_w, upper=max_w)
-    weights = capped / capped.sum()
-    return weights
 
 
 def check_nonferr_trend(prices, window):
