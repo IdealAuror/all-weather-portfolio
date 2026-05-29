@@ -354,12 +354,11 @@ def plot_weight_stack(weight_history: dict):
         ax1.set_title(f"{port} — 权重配置变化（100% RP）", fontsize=12, fontweight="bold")
 
         if risk_cols:
-            ax2.stackplot(wh_pct.index, *[wh_pct[c] for c in risk_cols],
-                          colors=[ASSET_COLORS[c] for c in risk_cols],
-                          labels=[ASSET_LABELS.get(c, c) for c in risk_cols],
-                          alpha=0.85, lw=0.3, edgecolor="white")
-            ymax = max(wh_pct[risk_cols].sum(axis=1).max() * 1.2, 15)
-            ax2.set_ylim(0, ymax)
+            for c in risk_cols:
+                ax2.plot(wh_pct.index, wh_pct[c], color=ASSET_COLORS[c],
+                         label=ASSET_LABELS.get(c, c), lw=0.8, alpha=0.85)
+            ymax = max(wh_pct[risk_cols].max(axis=1).max() * 1.3, 10)
+            ax2.set_ylim(-0.5, ymax)
         ax2.set_ylabel("风险权重 (%)", fontsize=10)
         ax2.legend(loc="upper left", frameon=False, fontsize=6.5, ncol=len(risk_cols),
                    handlelength=1.0, handletextpad=0.3, columnspacing=0.5)
