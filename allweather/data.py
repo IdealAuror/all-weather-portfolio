@@ -361,3 +361,18 @@ def load_hs300_pe(col_index: int = 2) -> pd.Series:
     return df.set_index(date_col)[pe_col].sort_index()
 
 
+def load_hs300_pb(col_index: int = 3) -> pd.Series:
+    """加载沪深300 PB 时间序列（日频）。不存在返回空 Series。
+
+    col_index: PB 列索引，默认 3（PB 中位数），2=加权PB，1=PB。
+    """
+    path = DATA_DIR / "hs300_pb.csv"
+    if not path.exists():
+        return pd.Series(dtype=float)
+    df = pd.read_csv(path)
+    date_col = df.columns[0]
+    pb_col = df.columns[col_index]
+    df[date_col] = pd.to_datetime(df[date_col])
+    return df.set_index(date_col)[pb_col].sort_index()
+
+

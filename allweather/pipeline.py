@@ -10,12 +10,12 @@ from .backtest import backtest_iv
 from .stats import (
     perf_metrics, yearly_returns, event_returns,
     bucket_risk_contribution, regime_returns, rolling_stats,
-    block_bootstrap,
+    block_bootstrap, d_significance,
 )
 from .config import (
     CASH_TIERS, STRESS_EVENTS, OUTPUT_DIR,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
-    V3C_ASSETS, BUCKET_GROUPS, SP500_TREND_WINDOW,
+    V3C_ASSETS, BUCKET_GROUPS, SP500_TREND_WINDOW, GOLD_DIP_THRESHOLD,
 )
 
 V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
@@ -60,7 +60,7 @@ def step_2_run_backtests(rets):
         track = (tier_label == "100% RP")
         result = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
                             nonferr_trend_window=75, assets=V3C_ASSETS,
-                            gold_dip_threshold=None,
+                            gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
                             hs300_value_dip=True,
                             track_weights=track,
                             track_signals=track,
@@ -74,6 +74,13 @@ def step_2_run_backtests(rets):
         nv_results[("V3c 多元", tier_label)] = nv
         n_rebal_total += n
 
+    nv, n = backtest_iv(rets, cash_ratio=0.0, iv_window=60, max_w=0.30, min_w=0.03,
+                        nonferr_trend_window=75, assets=V3C_ASSETS,
+                        gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
+                        hs300_value_dip=True,
+                        dynamic_cash=True)
+    nv_results[("V3c 多元", "动态")] = nv
+    n_rebal_total += n
 
     # --- 方案 B: 分层风险平价（20d, 4 桶）+ nonferr 趋势过滤 + gold 趋势过滤 ---
     from .strategy_b import backtest_b
@@ -100,6 +107,19 @@ def step_2_run_backtests(rets):
         nv_results[("V3-B 风险平价(20d)", tier_label)] = nv
         n_rebal_total += n
 
+    nv, n = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=0.0, rp_window=20,
+                        rp_buckets=V3B_RP_BUCKETS,
+                        nonferr_control="trend_filter",
+                        nonferr_trend_window=75,
+                        gold_trend_filter=True,
+                        gold_trend_window=75,
+                        equity_trend_assets=["us_sp500"],
+                        equity_trend_window=SP500_TREND_WINDOW,
+                        hs300_value_dip=True,
+                        dynamic_cash=True)
+    nv_results[("V3-B 风险平价(20d)", "动态")] = nv
+    n_rebal_total += n
+
     # --- 方案 B 增强: 逆波动率 + nonferr 趋势过滤 ---
     for tier_label, c in CASH_TIERS:
         track = (tier_label == "100% RP")
@@ -108,7 +128,7 @@ def step_2_run_backtests(rets):
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
                             weighting_method="inverse_vol",
-                            gold_dip_threshold=None,
+                            gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
                             hs300_value_dip=True,
                             track_weights=track,
                             track_signals=track,
@@ -121,6 +141,17 @@ def step_2_run_backtests(rets):
             nv, n = result
         nv_results[("V3-B 保守增强(20d)", tier_label)] = nv
         n_rebal_total += n
+
+    nv, n = backtest_b(rets[V3B_ASSETS], cash_ratio=0.0, rp_window=20,
+                        max_w=0.25,
+                        nonferr_control="trend_filter",
+                        nonferr_trend_window=75,
+                        weighting_method="inverse_vol",
+                        gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
+                        hs300_value_dip=True,
+                        dynamic_cash=True)
+    nv_results[("V3-B 保守增强(20d)", "动态")] = nv
+    n_rebal_total += n
 
     total = len(nv_results)
     print(f"  ok 完成 {total} 个回测")
@@ -163,9 +194,14 @@ def step_3_compute_metrics(nv_results, weights, rets):
             rolling[p] = rolling_stats(nv_s)
 
     print(f"  ok 用时: {time.time()-t0:.2f}s")
+    d_sig = {}
+    for (p, tier), nv_s in nv_results.items():
+        if tier == "100% RP":
+            d_sig[p] = d_significance(nv_s)
     return {
         "perf": perf, "yearly": yearly, "risk_contrib": rc,
         "regime": regime, "events": events, "rolling": rolling,
+        "d_sig": d_sig,
     }
 
 
@@ -216,6 +252,8 @@ def step_5_print_reports(metrics, boot, weights):
     print("─" * 60)
     print()
     reports.print_perf_table(metrics["perf"])
+    print()
+    reports.print_d_significance(metrics.get("d_sig", {}))
     print()
     reports.print_yearly_table(metrics["yearly"])
     print()

@@ -6,7 +6,7 @@ from .config import (
     GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
     HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
     HS300_DIP_SMA, HS300_DIP_EXIT_RECOVERY,
-    HS300_PE_ENTRY, HS300_PE_EXIT,
+    HS300_PB_ENTRY, HS300_PE_EXIT,
 )
 
 
@@ -23,6 +23,7 @@ def backtest_iv(
     nonferr_trend_window: int = 75,
     gold_dip_threshold: float | None = GOLD_DIP_THRESHOLD,
     gold_dip_boost: float = GOLD_DIP_BOOST,
+    gold_dip_cap: float | None = None,
     hs300_dip_threshold: float | None = HS300_DIP_THRESHOLD,
     hs300_dip_boost: float = HS300_DIP_BOOST,
     hs300_dip_sma: int = HS300_DIP_SMA,
@@ -34,10 +35,11 @@ def backtest_iv(
     vol_target: float | None = None,
     vol_target_window: int = 60,
     hs300_value_dip: bool = False,
-    hs300_pe_entry: float = HS300_PE_ENTRY,
+    hs300_pb_entry: float = HS300_PB_ENTRY,
     hs300_pe_exit: float = HS300_PE_EXIT,
     track_signals: bool = False,
     signal_label: str = "",
+    dynamic_cash: bool = False,
 ):
     """逆波动率加权 + 月度再平衡 + nonferr 趋势过滤 + gold/hs300 抄底。
 
@@ -46,7 +48,7 @@ def backtest_iv(
     track_weights=True 时额外返回权重历史 DataFrame（调仓日 × 资产）。
     """
     from .risk import inverse_vol_weights, hs300_dip_check, hs300_signal_snapshot
-    from .data import load_hs300_pe
+    from .data import load_hs300_pb, load_hs300_pe
 
     if assets is not None:
         rets = rets[assets]
@@ -63,6 +65,7 @@ def backtest_iv(
     gold_peak = prices.iloc[0]["gold"] if gold_idx >= 0 else 1.0
     hs300_peak = prices.iloc[0]["hs300"] if hs300_idx >= 0 else 1.0
 
+    pb_data = load_hs300_pb() if hs300_value_dip else None
     pe_data = load_hs300_pe() if hs300_value_dip else None
     hs300_boosted = False
 
@@ -99,7 +102,18 @@ def backtest_iv(
         if d.month != rets.index[i - 1].month and i > iv_window:
             window = rets.iloc[max(0, i - iv_window):i]
             new_w = inverse_vol_weights(window, window=iv_window, max_w=max_w, min_w=min_w)
-            w = pd.Series(new_w.values * (1 - cash_ratio), index=cols)
+            eff_cr = cash_ratio
+            if dynamic_cash and hs300_idx >= 0:
+                hs3 = prices["hs300"]
+                peak_3y = hs3.iloc[max(0, i-756):i+1].max()
+                dd_3y = hs3.iloc[i] / peak_3y - 1
+                if dd_3y <= -0.20:
+                    eff_cr = 0.0
+                elif dd_3y >= -0.05:
+                    eff_cr = 0.30
+                else:
+                    eff_cr = 0.15
+            w = pd.Series(new_w.values * (1 - eff_cr), index=cols)
 
             if nonferr_trend_window > 0 and nonferr_idx >= 0 and w.get("nonferr", 0) > 0:
                 curr_nf = prices.iloc[i]["nonferr"]
@@ -122,13 +136,17 @@ def backtest_iv(
                     if w.get("credit", 0) >= boost:
                         w["gold"] += boost
                         w["credit"] -= boost
+                        if gold_dip_cap is not None and w["gold"] > gold_dip_cap:
+                            excess = w["gold"] - gold_dip_cap
+                            w["gold"] = gold_dip_cap
+                            w["credit"] += excess
 
-            # --- hs300 抄底：价格回撤 AND PE 低估 同时满足 ---
-            if hs300_value_dip and pe_data is not None and hs300_idx >= 0 and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
+            # --- hs300 抄底：价格回撤 + 基本面确认 同时满足 ---
+            if hs300_value_dip and hs300_idx >= 0 and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
                 hs300_boosted, hs300_boost = hs300_dip_check(
-                    pe_data, prices, d, i, hs300_peak, hs300_boosted,
+                    pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
                     hs300_dip_threshold, hs300_dip_sma, hs300_dip_exit_recovery,
-                    hs300_pe_entry, hs300_pe_exit, hs300_dip_boost,
+                    hs300_pb_entry, hs300_pe_exit, hs300_dip_boost,
                 )
                 if hs300_boost is not None:
                     boost = w["hs300"] * (hs300_boost - 1)
@@ -137,8 +155,8 @@ def backtest_iv(
                         w["credit"] -= boost
 
             # --- 信号触发日志 ---
-            if track_signals and pe_data is not None and hs300_idx >= 0:
-                snap = hs300_signal_snapshot(pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
+            if track_signals and hs300_idx >= 0:
+                snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
                 signal_log.append({
                     'date': d,
                     'label': signal_label,

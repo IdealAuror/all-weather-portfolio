@@ -121,11 +121,11 @@ def _sheet_recommendation(wb):
 
 def _sheet_perf(wb, perf_results):
     ws = wb.create_sheet("核心指标")
-    _write_title(ws, 1, "三策略 × 三档现金 核心收益指标", 9)
-    headers = ["方案", "档位", "累计收益", "CAGR", "波动", "最大回撤", "Sharpe", "Calmar", "期末净值"]
+    _write_title(ws, 1, "三策略 × 三档现金 核心收益指标", 10)
+    headers = ["方案", "档位", "累计收益", "CAGR", "波动", "最大回撤", "Sharpe", "Calmar", "期末净值", "D_excess"]
     _write_headers(ws, 3, headers)
-    pct_cols = {3, 4, 5, 6}  # 累计/CAGR/波动/MDD
-    num_cols = {7, 8, 9}     # Sharpe/Calmar/final_nv
+    pct_cols = {3, 4, 5, 6, 10}  # 累计/CAGR/波动/MDD/D_excess
+    num_cols = {7, 8, 9}         # Sharpe/Calmar/final_nv
 
     r = 4
     last_port = None
@@ -142,21 +142,22 @@ def _sheet_perf(wb, perf_results):
         ws.cell(row=r, column=7, value=m["sharpe"])
         ws.cell(row=r, column=8, value=m["calmar"])
         ws.cell(row=r, column=9, value=m["final_nv"])
+        ws.cell(row=r, column=10, value=m["geometric_excess_d"])
         for c in pct_cols:
             ws.cell(row=r, column=c).number_format = PCT_FMT
             ws.cell(row=r, column=c).alignment = RIGHT
         for c in num_cols:
             ws.cell(row=r, column=c).number_format = NUM_FMT
             ws.cell(row=r, column=c).alignment = RIGHT
-        for c in range(1, 10):
+        for c in range(1, 11):
             ws.cell(row=r, column=c).border = BORDER
         # 主推 V3c 100% RP 高亮
         if port == "V3c 多元" and tier == "100% RP":
-            for c in range(1, 10):
+            for c in range(1, 11):
                 ws.cell(row=r, column=c).fill = RECO_FILL
         r += 1
     # 负数红字（MDD 一定是负，累计也可能负）
-    rng = f"C4:F{r-1}"
+    rng = f"C4:J{r-1}"
     ws.conditional_formatting.add(rng, CellIsRule(operator="lessThan", formula=["0"], font=NEG_FONT))
     _autofit(ws)
 

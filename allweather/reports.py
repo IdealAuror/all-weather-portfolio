@@ -46,7 +46,7 @@ def print_perf_table(perf_results: dict):
     """
     print_header("【1】三策略 × 三档现金 核心收益指标")
     print(f"  {'方案':<14}{'档位':<10}{'累计收益':>10}{'CAGR':>9}"
-          f"{'波动':>8}{'最大回撤':>10}{'Sharpe':>8}{'Calmar':>8}{'期末净值':>10}")
+          f"{'波动':>8}{'最大回撤':>10}{'Sharpe':>8}{'Calmar':>8}{'期末净值':>10}{'D_excess':>10}")
     last_port = None
     for (port, tier), m in perf_results.items():
         if port != last_port and last_port is not None:
@@ -59,7 +59,29 @@ def print_perf_table(perf_results: dict):
               f"{_fmt_pct(m['mdd'], w=10):>10}"
               f"{_fmt_num(m['sharpe']):>8}"
               f"{_fmt_num(m['calmar']):>8}"
-              f"{m['final_nv']:>10.4f}")
+              f"{m['final_nv']:>10.4f}"
+              f"{_fmt_pct(m['geometric_excess_d'], w=10, d=3, sign=True):>10}")
+
+
+def print_d_significance(d_sig: dict):
+    """D_excess 统计显著性表。d_sig: {port: d_significance dict, ...}"""
+    if not d_sig:
+        return
+    print_header("D_excess 统计显著性（正态参数 Bootstrap × 10000）")
+    print(f"  {'方案':<25}{'D_actual':>10}{'null均值':>10}{'95% CI低':>10}{'95% CI高':>10}{'分位':>8}{'显著?':>8}")
+    for port, ds in d_sig.items():
+        sig = "**" if ds["significant_05"] else "—"
+        print(f"  {port:<25}"
+              f"{_fmt_pct(ds['d_actual'], w=10, d=3, sign=True):>10}"
+              f"{_fmt_pct(ds['d_null_mean'], w=10, d=3, sign=True):>10}"
+              f"{_fmt_pct(ds['ci_95_low'], w=10, d=3, sign=True):>10}"
+              f"{_fmt_pct(ds['ci_95_high'], w=10, d=3, sign=True):>10}"
+              f"{ds['percentile']*100:>7.1f}%"
+              f"{sig:>8}")
+    print()
+    print("  D ≈ null 均值 + 分位 ≈ 50% → 收益分布与正态无异，零尾部风险证据")
+    print("  D << null 低分位(>97.5%) → 显著负偏/肥尾，存在隐藏风险")
+    print("  ** 表示在 5% 水平上统计显著")
 
 
 def print_yearly_table(yearly_results: dict, years=None):

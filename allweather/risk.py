@@ -61,25 +61,27 @@ def hierarchical_rp_weights(
     return capped / capped.sum()
 
 
-def hs300_dip_check(pe_data, prices, d, i, hs300_peak, hs300_boosted,
+def hs300_dip_check(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
                     threshold, sma_window, exit_recovery,
-                    pe_entry, pe_exit, boost_mult):
-    """HS300 AND抄底 — 价格回撤 + PE 低估同时满足才触发。
-    返回 (hs300_boosted, boost_multiplier | None)。
-    """
+                    pb_entry, pe_exit, boost_mult):
+    """HS300 AND抄底 — PB分位确认入场 + PE分位确认出场。"""
+    pb_to_date = pb_data[pb_data.index <= d]
     pe_to_date = pe_data[pe_data.index <= d]
-    if len(pe_to_date) < 252:
+    if len(pb_to_date) < 252 or len(pe_to_date) < 252:
         return hs300_boosted, None
-
+    pb_pct = (pb_to_date < pb_to_date.iloc[-1]).sum() / len(pb_to_date) * 100
     pe_pct = (pe_to_date < pe_to_date.iloc[-1]).sum() / len(pe_to_date) * 100
+    fundamental_ok = pb_pct < pb_entry
+    exit_fundamental = pe_pct > pe_exit
+
     hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
     curr_hs = prices.iloc[i]["hs300"]
     dip_sma = prices["hs300"].iloc[max(0, i - sma_window):i].mean()
 
     if hs300_boosted:
-        if hs300_dd > -exit_recovery and pe_pct > pe_exit:
+        if hs300_dd > -exit_recovery and exit_fundamental:
             return False, None
-    elif (hs300_dd <= -threshold and pe_pct < pe_entry
+    elif (hs300_dd <= -threshold and fundamental_ok
           and curr_hs > dip_sma):
         hs300_boosted = True
 
@@ -88,17 +90,28 @@ def hs300_dip_check(pe_data, prices, d, i, hs300_peak, hs300_boosted,
     return False, None
 
 
-def hs300_signal_snapshot(pe_data, prices, d, i, hs300_peak, hs300_boosted, boost_mult):
+
+def hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, boost_mult):
     sig_dd = round(float(prices.iloc[i]["hs300"] / hs300_peak - 1), 4)
+    sig_pb_val, sig_pb_pct = None, None
     sig_pe_val, sig_pe_pct = None, None
-    pe_to = pe_data[pe_data.index <= d]
-    if len(pe_to) >= 252:
-        sig_pe_val = float(pe_to.iloc[-1])
-        sig_pe_pct = round((pe_to < sig_pe_val).sum() / len(pe_to) * 100, 1)
+    if pb_data is not None:
+        pb_to = pb_data[pb_data.index <= d]
+        if len(pb_to) >= 252:
+            sig_pb_val = float(pb_to.iloc[-1])
+            sig_pb_pct = round((pb_to < sig_pb_val).sum() / len(pb_to) * 100, 1)
+    if pe_data is not None:
+        pe_to = pe_data[pe_data.index <= d]
+        if len(pe_to) >= 252:
+            sig_pe_val = float(pe_to.iloc[-1])
+            sig_pe_pct = round((pe_to < sig_pe_val).sum() / len(pe_to) * 100, 1)
     return {
         'dd_pct': sig_dd,
+        'pb_pctile': sig_pb_pct,
+        'pb_value': sig_pb_val,
         'pe_pctile': sig_pe_pct,
         'pe_value': sig_pe_val,
         'active': hs300_boosted,
         'boost': boost_mult if hs300_boosted else None,
     }
+

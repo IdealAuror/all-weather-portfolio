@@ -7,10 +7,10 @@ from .config import (
     GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
     HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
     HS300_DIP_SMA, HS300_DIP_EXIT_RECOVERY,
-    HS300_PE_ENTRY, HS300_PE_EXIT,
+    HS300_PB_ENTRY, HS300_PE_EXIT,
 )
 from .risk import hierarchical_rp_weights, inverse_vol_weights, hs300_dip_check, hs300_signal_snapshot
-from .data import load_hs300_pe
+from .data import load_hs300_pb, load_hs300_pe
 
 
 def _compute_weights(rets_rp, rp_buckets, window,
@@ -43,6 +43,7 @@ def backtest_b(
     weighting_method: str = "hierarchical_rp",
     gold_dip_threshold: float | None = GOLD_DIP_THRESHOLD,
     gold_dip_boost: float = GOLD_DIP_BOOST,
+    gold_dip_cap: float | None = None,
     hs300_dip_threshold: float | None = HS300_DIP_THRESHOLD,
     hs300_dip_boost: float = HS300_DIP_BOOST,
     hs300_dip_sma: int = HS300_DIP_SMA,
@@ -55,10 +56,11 @@ def backtest_b(
     equity_trend_assets: list | None = None,
     equity_trend_window: int = 120,
     hs300_value_dip: bool = False,
-    hs300_pe_entry: float = HS300_PE_ENTRY,
+    hs300_pb_entry: float = HS300_PB_ENTRY,
     hs300_pe_exit: float = HS300_PE_EXIT,
     track_signals: bool = False,
     signal_label: str = "",
+    dynamic_cash: bool = False,
 ) -> tuple:
     """Plan B backtest — 分层风险平价 / 逆波动率 + 可选 nonferr 风控 + gold 抄底 + hs300 抄底。
 
@@ -118,6 +120,7 @@ def backtest_b(
             prices = (1 + rets_rp).cumprod()
         hs300_peak = prices.iloc[0]["hs300"]
 
+    pb_data = load_hs300_pb() if hs300_value_dip else None
     pe_data = load_hs300_pe() if hs300_value_dip else None
     hs300_boosted = False
 
@@ -160,7 +163,18 @@ def backtest_b(
                                      bucket_method=bucket_method,
                                      max_w=max_w, min_w=min_w,
                                      weighting_method=weighting_method)
-            w = pd.Series(new_w.values * (1 - cash_ratio), index=cols)
+            eff_cr = cash_ratio
+            if dynamic_cash and prices is not None and "hs300" in prices.columns:
+                hs3 = prices["hs300"]
+                peak_3y = hs3.iloc[max(0, i-756):i+1].max()
+                dd_3y = hs3.iloc[i] / peak_3y - 1
+                if dd_3y <= -0.20:
+                    eff_cr = 0.0
+                elif dd_3y >= -0.05:
+                    eff_cr = 0.30
+                else:
+                    eff_cr = 0.15
+            w = pd.Series(new_w.values * (1 - eff_cr), index=cols)
 
             # --- Apply nonferr risk control ---
             if nonferr_control == "dd_stop" and prices is not None:
@@ -204,13 +218,17 @@ def backtest_b(
                     if w.get("credit", 0) >= boost:
                         w["gold"] += boost
                         w["credit"] = w["credit"] - boost
+                        if gold_dip_cap is not None and w["gold"] > gold_dip_cap:
+                            excess = w["gold"] - gold_dip_cap
+                            w["gold"] = gold_dip_cap
+                            w["credit"] = w["credit"] + excess
 
-            # --- hs300 抄底：价格回撤 AND PE 低估 同时满足 ---
-            if hs300_value_dip and pe_data is not None and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
+            # --- hs300 抄底：价格回撤 + 基本面确认 同时满足 ---
+            if hs300_value_dip and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
                 hs300_boosted, hs300_boost = hs300_dip_check(
-                    pe_data, prices, d, i, hs300_peak, hs300_boosted,
+                    pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
                     hs300_dip_threshold, hs300_dip_sma, hs300_dip_exit_recovery,
-                    hs300_pe_entry, hs300_pe_exit, hs300_dip_boost,
+                    hs300_pb_entry, hs300_pe_exit, hs300_dip_boost,
                 )
                 if hs300_boost is not None:
                     boost = w["hs300"] * (hs300_boost - 1)
@@ -219,8 +237,8 @@ def backtest_b(
                         w["credit"] -= boost
 
             # --- 信号触发日志 ---
-            if track_signals and pe_data is not None and "hs300" in cols:
-                snap = hs300_signal_snapshot(pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
+            if track_signals and "hs300" in cols:
+                snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
                 signal_log.append({
                     'date': d,
                     'label': signal_label,

@@ -19,6 +19,13 @@ def perf_metrics(nv: pd.Series) -> dict:
     sharpe_raw = cagr / vol if vol > 0 else float("nan")
     sharpe = (cagr - RISK_FREE_ANNUAL) / vol if vol > 0 else float("nan")
     calmar = cagr / abs(mdd) if mdd < 0 else float("nan")
+    rf_daily = RISK_FREE_ANNUAL / 252
+    excess = r - rf_daily
+    arith_mean_excess = excess.mean() * 252
+    SR_true = arith_mean_excess / vol if vol > 0 else float("nan")
+    G_real = cagr - RISK_FREE_ANNUAL
+    G_theo = arith_mean_excess - vol**2 / 2
+    geometric_excess_d = G_real - G_theo
     return {
         "n_years": n_years,
         "cum_return": cum,
@@ -29,6 +36,10 @@ def perf_metrics(nv: pd.Series) -> dict:
         "sharpe_raw": sharpe_raw,
         "calmar": calmar,
         "final_nv": nv.iloc[-1],
+        "SR_true": SR_true,
+        "G_real": G_real,
+        "G_theoretical": G_theo,
+        "geometric_excess_d": geometric_excess_d,
     }
 
 
@@ -98,6 +109,49 @@ def rolling_stats(nv: pd.Series, window: int = 252) -> dict:
         "neg_year_pct": (rolling_ann < 0).mean(),
         "rolling_ann": rolling_ann,
         "rolling_dd": rolling_dd,
+    }
+
+
+def d_significance(nv: pd.Series, n_sim: int = 10000, seed: int = 42) -> dict:
+    """D_excess 统计显著性 — 正态参数 Bootstrap。
+
+    在收益正态分布的零假设下，模拟 n_sim 条路径，
+    计算 D 的零分布。返回实际 D 在其中的百分位。
+    """
+    r = nv.pct_change().dropna()
+    n_days = len(r)
+    n_years = n_days / 252.0
+    vol = r.std() * np.sqrt(252)
+    cagr = nv.iloc[-1] ** (1 / n_years) - 1
+
+    excess = r - RISK_FREE_ANNUAL / 252
+    arith_actual = excess.mean() * 252
+    d_actual = (cagr - RISK_FREE_ANNUAL) - (arith_actual - vol**2 / 2)
+
+    mu_log_daily = np.log(1 + cagr) / 252
+    sigma_d = vol / np.sqrt(252)
+    rf_daily = RISK_FREE_ANNUAL / 252
+
+    rng = np.random.RandomState(seed)
+    D_sim = np.zeros(n_sim)
+    for s in range(n_sim):
+        log_r = rng.normal(mu_log_daily, sigma_d, n_days)
+        sim_r = np.exp(log_r) - 1
+        sim_excess = sim_r - rf_daily
+        sim_arith = sim_excess.mean() * 252
+        sim_nv_end = (1 + sim_r).prod()
+        sim_cagr = sim_nv_end ** (1 / n_years) - 1
+        D_sim[s] = (sim_cagr - RISK_FREE_ANNUAL) - (sim_arith - vol**2 / 2)
+
+    percentile = float((D_sim < d_actual).mean())
+    return {
+        "d_actual": d_actual,
+        "d_null_mean": float(D_sim.mean()),
+        "d_null_std": float(D_sim.std()),
+        "ci_95_low": float(np.percentile(D_sim, 2.5)),
+        "ci_95_high": float(np.percentile(D_sim, 97.5)),
+        "percentile": percentile,
+        "significant_05": percentile > 0.975 or percentile < 0.025,
     }
 
 
