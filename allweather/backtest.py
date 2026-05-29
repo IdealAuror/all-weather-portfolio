@@ -6,10 +6,9 @@ from .config import (
     GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
     HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
     HS300_DIP_SMA, HS300_DIP_EXIT_RECOVERY,
-    HS300_VALUE_PE_COL, HS300_VALUE_ENTRY, HS300_VALUE_EXIT,
-    HS300_VALUE_BOOST, HS300_VALUE_SMA,
-    HS300_VALUE_PE_ABS, HS300_VALUE_BOOST_ABS,
+    HS300_PB_ENTRY, HS300_PE_EXIT,
 )
+
 
 
 def backtest_iv(
@@ -21,9 +20,10 @@ def backtest_iv(
     iv_window: int = 60,
     max_w: float = 0.25,
     min_w: float = 0.03,
-    nonferr_trend_window: int = 60,
+    nonferr_trend_window: int = 75,
     gold_dip_threshold: float | None = GOLD_DIP_THRESHOLD,
     gold_dip_boost: float = GOLD_DIP_BOOST,
+    gold_dip_cap: float | None = None,
     hs300_dip_threshold: float | None = HS300_DIP_THRESHOLD,
     hs300_dip_boost: float = HS300_DIP_BOOST,
     hs300_dip_sma: int = HS300_DIP_SMA,
@@ -35,15 +35,11 @@ def backtest_iv(
     vol_target: float | None = None,
     vol_target_window: int = 60,
     hs300_value_dip: bool = False,
-    hs300_pe_col: int = HS300_VALUE_PE_COL,
-    hs300_pe_entry: float = HS300_VALUE_ENTRY,
-    hs300_pe_exit: float = HS300_VALUE_EXIT,
-    hs300_value_boost: float = HS300_VALUE_BOOST,
-    hs300_value_sma: int = HS300_VALUE_SMA,
-    hs300_pe_abs: float = HS300_VALUE_PE_ABS,
-    hs300_value_boost_abs: float = HS300_VALUE_BOOST_ABS,
+    hs300_pb_entry: float = HS300_PB_ENTRY,
+    hs300_pe_exit: float = HS300_PE_EXIT,
     track_signals: bool = False,
     signal_label: str = "",
+    dynamic_cash: bool = False,
 ):
     """逆波动率加权 + 月度再平衡 + nonferr 趋势过滤 + gold/hs300 抄底。
 
@@ -51,8 +47,8 @@ def backtest_iv(
     assets 为空则用全部列。
     track_weights=True 时额外返回权重历史 DataFrame（调仓日 × 资产）。
     """
-    from .risk import inverse_vol_weights
-    from .data import load_hs300_pe
+    from .risk import inverse_vol_weights, hs300_dip_check, hs300_signal_snapshot
+    from .data import load_hs300_pb, load_hs300_pe
 
     if assets is not None:
         rets = rets[assets]
@@ -69,9 +65,9 @@ def backtest_iv(
     gold_peak = prices.iloc[0]["gold"] if gold_idx >= 0 else 1.0
     hs300_peak = prices.iloc[0]["hs300"] if hs300_idx >= 0 else 1.0
 
-    pe_data = load_hs300_pe(col_index=hs300_pe_col) if hs300_value_dip else None
+    pb_data = load_hs300_pb() if hs300_value_dip else None
+    pe_data = load_hs300_pe() if hs300_value_dip else None
     hs300_boosted = False
-    hs300_dd_boosted = False
 
     w = inverse_vol_weights(rets.iloc[:max(iv_window, len(rets))], window=iv_window, max_w=max_w, min_w=min_w)
     target = w.values * (1 - cash_ratio)
@@ -106,7 +102,18 @@ def backtest_iv(
         if d.month != rets.index[i - 1].month and i > iv_window:
             window = rets.iloc[max(0, i - iv_window):i]
             new_w = inverse_vol_weights(window, window=iv_window, max_w=max_w, min_w=min_w)
-            w = pd.Series(new_w.values * (1 - cash_ratio), index=cols)
+            eff_cr = cash_ratio
+            if dynamic_cash and hs300_idx >= 0:
+                hs3 = prices["hs300"]
+                peak_3y = hs3.iloc[max(0, i-756):i+1].max()
+                dd_3y = hs3.iloc[i] / peak_3y - 1
+                if dd_3y <= -0.20:
+                    eff_cr = 0.0
+                elif dd_3y >= -0.05:
+                    eff_cr = 0.30
+                else:
+                    eff_cr = 0.15
+            w = pd.Series(new_w.values * (1 - eff_cr), index=cols)
 
             if nonferr_trend_window > 0 and nonferr_idx >= 0 and w.get("nonferr", 0) > 0:
                 curr_nf = prices.iloc[i]["nonferr"]
@@ -129,74 +136,31 @@ def backtest_iv(
                     if w.get("credit", 0) >= boost:
                         w["gold"] += boost
                         w["credit"] -= boost
+                        if gold_dip_cap is not None and w["gold"] > gold_dip_cap:
+                            excess = w["gold"] - gold_dip_cap
+                            w["gold"] = gold_dip_cap
+                            w["credit"] += excess
 
-            # --- hs300 价格回撤抄底 ---
-            if hs300_dip_threshold is not None and hs300_idx >= 0 and w.get("hs300", 0) > 0:
-                hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
-                curr_hs = prices.iloc[i]["hs300"]
-                dip_sma = prices["hs300"].iloc[max(0, i - hs300_dip_sma):i].mean()
-                if hs300_dd_boosted:
-                    if hs300_dd > -hs300_dip_exit_recovery:
-                        hs300_dd_boosted = False
-                elif hs300_dd <= -hs300_dip_threshold and curr_hs > dip_sma:
-                    hs300_dd_boosted = True
-                if hs300_dd_boosted:
-                    boost = w["hs300"] * (hs300_dip_boost - 1)
+            # --- hs300 抄底：价格回撤 + 基本面确认 同时满足 ---
+            if hs300_value_dip and hs300_idx >= 0 and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
+                hs300_boosted, hs300_boost = hs300_dip_check(
+                    pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
+                    hs300_dip_threshold, hs300_dip_sma, hs300_dip_exit_recovery,
+                    hs300_pb_entry, hs300_pe_exit, hs300_dip_boost,
+                )
+                if hs300_boost is not None:
+                    boost = w["hs300"] * (hs300_boost - 1)
                     if w.get("credit", 0) >= boost:
                         w["hs300"] += boost
                         w["credit"] -= boost
 
-            # --- hs300 PE 估值抄底 ---
-            if hs300_value_dip and pe_data is not None and hs300_idx >= 0 and w.get("hs300", 0) > 0 and i > hs300_value_sma:
-                pe_to_date = pe_data[pe_data.index <= d]
-                if len(pe_to_date) >= 252:
-                    curr_pe = pe_to_date.iloc[-1]
-                    pe_pct = (pe_to_date < curr_pe).sum() / len(pe_to_date) * 100
-                    curr_hs = prices.iloc[i]["hs300"]
-                    hs_sma = prices["hs300"].iloc[max(0, i - hs300_value_sma):i].mean()
-                    if hs300_boosted:
-                        if pe_pct > hs300_pe_exit:
-                            hs300_boosted = False
-                    elif pe_pct < hs300_pe_entry and curr_hs > hs_sma:
-                        hs300_boosted = True
-                    if hs300_boosted:
-                        b = hs300_value_boost_abs if curr_pe < hs300_pe_abs else hs300_value_boost
-                        boost = w["hs300"] * (b - 1)
-                        if w.get("credit", 0) >= boost:
-                            w["hs300"] += boost
-                            w["credit"] -= boost
-
             # --- 信号触发日志 ---
-            if track_signals:
-                pe_active = hs300_boosted
-                pe_pct_log, pe_val_log, pe_boost_log = None, None, None
-                dd_active = hs300_dd_boosted
-                dd_pct_log, dd_boost_log = None, None
-
-                if pe_data is not None and hs300_idx >= 0:
-                    pe_to = pe_data[pe_data.index <= d]
-                    if len(pe_to) >= 252:
-                        pe_val_log = float(pe_to.iloc[-1])
-                        pe_pct_log = round((pe_to < pe_val_log).sum() / len(pe_to) * 100, 1)
-                        if hs300_boosted:
-                            pe_boost_log = hs300_value_boost_abs if pe_val_log < hs300_pe_abs else hs300_value_boost
-
-                if hs300_dip_threshold is not None and hs300_idx >= 0:
-                    dd_pct_log = round(float(prices.iloc[i]["hs300"] / hs300_peak - 1), 4)
-                    if hs300_dd_boosted:
-                        dd_boost_log = hs300_dip_boost
-
+            if track_signals and hs300_idx >= 0:
+                snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
                 signal_log.append({
                     'date': d,
                     'label': signal_label,
-                    'pe_active': pe_active,
-                    'pe_pctile': pe_pct_log,
-                    'pe_value': pe_val_log,
-                    'pe_boost': pe_boost_log,
-                    'dd_active': dd_active,
-                    'dd_pct': dd_pct_log,
-                    'dd_boost': dd_boost_log,
-                    'overlap': pe_active and dd_active,
+                    **snap,
                 })
 
             if vol_target is not None and i > max(iv_window, vol_target_window):
@@ -219,3 +183,5 @@ def backtest_iv(
     if track_signals:
         return nv, n_rebal, pd.DataFrame(signal_log)
     return nv, n_rebal
+
+

@@ -7,7 +7,6 @@ from .config import (
     BUCKET_GROUPS, ETF_META, CASH_TIERS, ASSETS, OUTPUT_DIR,
     STRESS_EVENTS,
 )
-from .portfolios import PORTFOLIO_TAGS
 
 LINE = "=" * 100
 
@@ -47,7 +46,7 @@ def print_perf_table(perf_results: dict):
     """
     print_header("【1】三策略 × 三档现金 核心收益指标")
     print(f"  {'方案':<14}{'档位':<10}{'累计收益':>10}{'CAGR':>9}"
-          f"{'波动':>8}{'最大回撤':>10}{'Sharpe':>8}{'Calmar':>8}{'期末净值':>10}")
+          f"{'波动':>8}{'最大回撤':>10}{'Sharpe':>8}{'Calmar':>8}{'期末净值':>10}{'D_excess':>10}")
     last_port = None
     for (port, tier), m in perf_results.items():
         if port != last_port and last_port is not None:
@@ -60,7 +59,29 @@ def print_perf_table(perf_results: dict):
               f"{_fmt_pct(m['mdd'], w=10):>10}"
               f"{_fmt_num(m['sharpe']):>8}"
               f"{_fmt_num(m['calmar']):>8}"
-              f"{m['final_nv']:>10.4f}")
+              f"{m['final_nv']:>10.4f}"
+              f"{_fmt_pct(m['geometric_excess_d'], w=10, d=3, sign=True):>10}")
+
+
+def print_d_significance(d_sig: dict):
+    """D_excess 统计显著性表。d_sig: {port: d_significance dict, ...}"""
+    if not d_sig:
+        return
+    print_header("D_excess 统计显著性（正态参数 Bootstrap × 10000）")
+    print(f"  {'方案':<25}{'D_actual':>10}{'null均值':>10}{'95% CI低':>10}{'95% CI高':>10}{'分位':>8}{'显著?':>8}")
+    for port, ds in d_sig.items():
+        sig = "**" if ds["significant_05"] else "—"
+        print(f"  {port:<25}"
+              f"{_fmt_pct(ds['d_actual'], w=10, d=3, sign=True):>10}"
+              f"{_fmt_pct(ds['d_null_mean'], w=10, d=3, sign=True):>10}"
+              f"{_fmt_pct(ds['ci_95_low'], w=10, d=3, sign=True):>10}"
+              f"{_fmt_pct(ds['ci_95_high'], w=10, d=3, sign=True):>10}"
+              f"{ds['percentile']*100:>7.1f}%"
+              f"{sig:>8}")
+    print()
+    print("  D ≈ null 均值 + 分位 ≈ 50% → 收益分布与正态无异，零尾部风险证据")
+    print("  D << null 低分位(>97.5%) → 显著负偏/肥尾，存在隐藏风险")
+    print("  ** 表示在 5% 水平上统计显著")
 
 
 def print_yearly_table(yearly_results: dict, years=None):
@@ -170,28 +191,28 @@ def print_summary_recommendation():
     print()
 
     cards = [
-        ("V3c 多元", "★★★", "简约派", "6资产逆波动率 60d + nonferr趋势过滤(60d)",
+        ("V3c 多元", "★★★", "简约派", "6资产逆波动率 60d + nonferr趋势过滤(75d) + HS300 AND抄底",
          ["+ 资产最少(6个)，执行最简单",
-          "+ 回撤可控(-6.96%)，回报稳健(9.37%)",
+          "+ 回撤可控(-7.01%)，回报稳健(8.93%)",
           "+ 每月调仓一次，交易频率低",
           "- 无桶级风控，单资产上限 30% 较宽松",
           "- 长期回报低于 V3-B RP"],
          "适合：初入全天候、不想研究桶逻辑、追求简单透明"),
 
-        ("V3-B 风险平价(20d)", "★★★", "学院派", "4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d)",
-         ["+ 长期回报最高 CAGR 11.40%，累计 923%",
+        ("V3-B 风险平价(20d)", "★★★", "学院派", "4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300 AND抄底",
+         ["+ 长期回报最高 CAGR 10.97%，累计 841%",
           "+ 四桶真正等权(25%x4)，全天候理念最纯正",
           "+ 桶级分散 + 资产级分散 + 三趋势过滤三重风控",
           "- 回撤(-9.48%)，最差年份 2011 -5.01%",
           "- 4桶逻辑比另外两个策略复杂"],
          "适合：长期持有者(5年+)、认同正统全天候理念、能承受短期波动"),
 
-        ("V3-B 保守增强(20d)", "★★★", "保守增强", "逆波动率 20d + nonferr趋势(75d)，max_w=0.25",
-         ["+ 回撤最低(-6.40%)，Sharpe 最高(1.68)",
+        ("V3-B 保守增强(20d)", "★★★", "保守增强", "逆波动率 20d + nonferr趋势(75d) + HS300 AND抄底，max_w=0.25",
+         ["+ 回撤最低(-6.40%)，Sharpe 最高(1.75)",
           "+ 熊市表现最好(2008 +14.95%，2022 +3.42%)",
           "+ 风险调整后效率最优",
-          "- 牛市可能跑输(2019 +9.61%，2017 +4.17%)",
-          "- 长期累计回报最低(414%)"],
+          "- 牛市可能跑输(2019 +7.58%，2017 +2.67%)",
+          "- 长期累计回报最低(369%)"],
          "适合：保守型资金、退休/教育金、无法承受大幅回撤"),
     ]
 
