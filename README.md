@@ -15,19 +15,19 @@
 
 | 方案 | 风格 | CAGR | 最大回撤 | Sharpe | 一句话 |
 |---|---|---|---|---|---|
-| **V3c 多元** | 简约派 | 8.82% | -6.96% | 1.58 | 6资产逆波动率 60d + HS300 AND抄底 — 零负收益年份 |
+| **V3c 多元** | 简约派 | 8.93% | -7.01% | 1.62 | 6资产逆波动率 60d + HS300 AND抄底 — 零负收益年份 |
 | **V3-B 风险平价(20d)** | 学院派 | **10.97%** | -9.48% | 1.40 | 4桶等权 RP + 三趋势过滤 + Gold/HS300抄底 — 回报最高 |
 | **V3-B 保守增强(20d)** | 保守增强 | 7.43% | **-6.40%** | **1.75** | 逆波动率 + HS300 AND抄底 — 零负收益年份 |
 
 > V3-B RP 含 nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d) + Gold/HS300 抄底，月度调仓。
-> V3c 和 B-Con 含 nonferr trend filter（60d / 75d）+ HS300 AND抄底（价格回撤≥25% AND PE<30%ile → 1.8x; 退出同理: 恢复至-15% AND PE>70%ile）。
+> V3c 和 B-Con 含 nonferr trend filter（75d）+ HS300 AND抄底（价格回撤≥25% AND PE<30%ile AND price>SMA120 → 1.8x; 退出同理: 恢复至-15% AND PE>70%ile）。
 > V3c：6 资产；B-RP：6 资产 4 桶（无 bond_10y）；B-Con：7 资产 5 桶。
 
 ### 策略评估
 
 **V3c 多元 (简约派)**
-- 资产最少(6个)，执行最简单；21年零负收益年份（滚动1年负收益率 4.75%）
-- 逆波动率 60d + nonferr 趋势过滤 + HS300 抄底（PE+价格回撤双信号）
+- 资产最少(6个)，执行最简单；21年零负收益年份（滚动1年负收益率 4.81%）
+- 逆波动率 60d + nonferr 趋势过滤(75d) + HS300 抄底（PE+价格回撤+SMA120 三信号）
 - 适合：初入全天候、不想研究桶逻辑、追求简单透明
 
 **V3-B 风险平价(20d) (学院派)**
@@ -136,10 +136,10 @@ python main.py --help         查看完整帮助
 |---|---|---|
 | 回测区间 | 2005-04 ~ 2026-04 | ~21 年 |
 | 调仓频率 | 月度 | 每月初重算权重 |
-| nonferr 趋势过滤 | V3c 60d / B-RP+B-Con 75d SMA | 跌破 SMA 则权重转入 credit |
+| nonferr 趋势过滤 | 75d SMA（三策略统一） | 跌破 SMA 则权重转入 credit |
 | Gold trend filter | B-RP only, 75d SMA, full clear | 跌破 SMA 则清仓黄金转入 credit |
 | SP500 trend filter | B-RP only, 120d SMA, full clear | 跌破 SMA 则清仓标普500转入 credit |
-| HS300 AND抄底 | 价格回撤≥25% AND PE<30%ile → 1.8x | 退出: 恢复至-15% AND PE>70%ile |
+| HS300 AND抄底 | 价格回撤≥25% AND PE<30%ile AND price>SMA120 → 1.8x | 退出: 恢复至-15% AND PE>70%ile |
 | 无风险利率 | 2.2% 年化 | 用于 Sharpe 修正 |
 
 ## 自定义

@@ -71,7 +71,7 @@ allweather/
 
 ### 3 strategies (2026-05-29)
 
-- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 60d + HS300 AND抄底(价格回撤≥25% AND PE<30%ile → 1.8x). "简约派" — CAGR 8.82%, MDD -6.96%, Sharpe 1.58.
+- **V3c 多元** ★★★: 6-asset inverse vol 60d (max_w=0.30, min_w=0.03) + nonferr trend filter 75d + HS300 AND抄底(价格回撤≥25% AND PE<30%ile AND price>SMA120 → 1.8x). "简约派" — CAGR 8.93%, MDD -7.01%, Sharpe 1.62.
 - **V3-B 风险平价(20d)** ★★★: 4-bucket hierarchical RP (30Y only, no 10Y) + nonferr trend filter 75d + gold trend filter 75d + sp500 trend filter 120d + Gold dip + HS300 AND抄底, 20d window. "学院派" — best CAGR (10.97%), best cumulative return (840.94%), MDD -9.48%, Sharpe 1.40.
 - **V3-B 保守增强(20d)** ★★★: Inverse vol + nonferr trend filter 75d + HS300 AND抄底, 20d window, max_w=0.25. "保守增强" — lowest MDD (-6.40%), highest Sharpe (1.75).
 
@@ -79,7 +79,7 @@ V3c: 6 assets. V3-B RP: 6 assets (no bond_10y). V3-B 保守增强: 7 assets. div
 
 ### Dynamic rebalancing
 
-- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Nonferr trend filter (60d). HS300 AND抄底 (价格回撤≥25% AND PE<30%ile → 1.8x; 退出: 恢复至-15% AND PE>70%ile). No gold dip-buying. Code: `backtest.py::backtest_iv`.
+- **V3c**: Inverse vol weighting, monthly rebalance (60d lookback), 6 assets filtered via V3C_ASSETS. Nonferr trend filter (75d). HS300 AND抄底 (价格回撤≥25% AND PE<30%ile AND price>SMA120 → 1.8x; 退出: 恢复至-15% AND PE>70%ile). No gold dip-buying. Code: `backtest.py::backtest_iv`.
 - **V3-B RP**: No fixed weights. Monthly: 4 macro buckets equal-weighted (25% each), within-bucket inverse-vol weights (HRP). Nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d, full clear). Gold dip + HS300 AND抄底. 6 assets (no bond_10y). Code: `strategy_b.py::backtest_b` with `rp_buckets=V3B_RP_BUCKETS`.
 - **V3-B 保守增强**: No fixed weights. Monthly: flat inverse vol (no buckets). Nonferr trend filter (75d). HS300 AND抄底 (价格回撤≥25% AND PE<30%ile → 1.8x; 退出: 恢复至-15% AND PE>70%ile). No gold dip-buying. 7 assets. Code: `strategy_b.py::backtest_b` with `weighting_method="inverse_vol"`.
 

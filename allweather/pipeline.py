@@ -59,7 +59,7 @@ def step_2_run_backtests(rets):
     for tier_label, c in CASH_TIERS:
         track = (tier_label == "100% RP")
         result = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
-                            nonferr_trend_window=60, assets=V3C_ASSETS,
+                            nonferr_trend_window=75, assets=V3C_ASSETS,
                             gold_dip_threshold=None,
                             hs300_value_dip=True,
                             track_weights=track,

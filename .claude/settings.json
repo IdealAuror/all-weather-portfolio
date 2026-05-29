@@ -16,7 +16,8 @@
       "Bash(py vol_target_search.py)",
       "Bash(py equity_filter_search.py)",
       "Bash(py update_html.py)",
-      "Bash(py main.py --no-excel --no-markdown)"
+      "Bash(py main.py --no-excel --no-markdown)",
+      "Bash(where python *)"
     ]
   }
 }
