@@ -7,7 +7,6 @@ from .config import (
     BUCKET_GROUPS, ETF_META, CASH_TIERS, ASSETS, OUTPUT_DIR,
     STRESS_EVENTS,
 )
-from .portfolios import PORTFOLIO_TAGS
 
 LINE = "=" * 100
 
@@ -170,7 +169,7 @@ def print_summary_recommendation():
     print()
 
     cards = [
-        ("V3c 多元", "★★★", "简约派", "6资产逆波动率 60d + nonferr趋势过滤(75d)",
+        ("V3c 多元", "★★★", "简约派", "6资产逆波动率 60d + nonferr趋势过滤(75d) + HS300 AND抄底",
          ["+ 资产最少(6个)，执行最简单",
           "+ 回撤可控(-7.01%)，回报稳健(8.93%)",
           "+ 每月调仓一次，交易频率低",
@@ -178,7 +177,7 @@ def print_summary_recommendation():
           "- 长期回报低于 V3-B RP"],
          "适合：初入全天候、不想研究桶逻辑、追求简单透明"),
 
-        ("V3-B 风险平价(20d)", "★★★", "学院派", "4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d)",
+        ("V3-B 风险平价(20d)", "★★★", "学院派", "4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300 AND抄底",
          ["+ 长期回报最高 CAGR 10.97%，累计 841%",
           "+ 四桶真正等权(25%x4)，全天候理念最纯正",
           "+ 桶级分散 + 资产级分散 + 三趋势过滤三重风控",
@@ -186,7 +185,7 @@ def print_summary_recommendation():
           "- 4桶逻辑比另外两个策略复杂"],
          "适合：长期持有者(5年+)、认同正统全天候理念、能承受短期波动"),
 
-        ("V3-B 保守增强(20d)", "★★★", "保守增强", "逆波动率 20d + nonferr趋势(75d)，max_w=0.25",
+        ("V3-B 保守增强(20d)", "★★★", "保守增强", "逆波动率 20d + nonferr趋势(75d) + HS300 AND抄底，max_w=0.25",
          ["+ 回撤最低(-6.40%)，Sharpe 最高(1.75)",
           "+ 熊市表现最好(2008 +14.95%，2022 +3.42%)",
           "+ 风险调整后效率最优",

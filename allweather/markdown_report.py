@@ -6,7 +6,7 @@ from datetime import datetime
 import pandas as pd
 
 from .config import BUCKET_GROUPS, ETF_META, OUTPUT_DIR
-from .portfolios import PORTFOLIO_TAGS
+from .config import PORTFOLIO_TAGS
 
 
 def _pct(v, d=2, sign=False):

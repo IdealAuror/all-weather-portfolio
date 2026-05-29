@@ -16,9 +16,7 @@ DEFAULT_END   = "20260430"
 TARGETS = {
     # A 股权益 ETF NAV（含分红，不用价格指数）
     "hs300":      ("etf_nav", "510300"),
-    "div_lowvol": ("etf_nav", "510880"),
     # 债券指数
-    "cb_10y_idx": ("idx_em", "sh000139"),  # 上证 10 年国债
     # ETF 净值（避开折溢价）
     "bond_30y_etf": ("etf_nav", "511130"),
     "bond_10y_etf": ("etf_nav", "511260"),
@@ -29,13 +27,11 @@ TARGETS = {
     # QDII
     "us_sp500":     ("etf_nav", "513500"),
     # 短债/货币
-    "bond_short":   ("etf_nav", "511880"),
     # 缝合用替代数据
     "nonferr_idx":  ("idx", "sh000823"),   # 中证有色金属指数
     "soymeal_fut":  ("fut_dce", "M0"),     # 豆粕期货主力连续（DCE）
     # 2008+ 延长回测数据源
     "hs300_idx":    ("idx", "sh000300"),   # CSI 300 指数 (2008+)
-    "div_idx_src":  ("idx", "sh000922"),   # 中证红利指数 (2008+)
     "credit_idx":   ("idx", "sh000013"),   # 上证企债指数 (2008+)
     "treasury_idx": ("treasury", None),    # 国债总指数 (2008+)
     "london_gold":  ("foreign_fut", "XAU"),  # 伦敦金 USD/oz (2006+)
@@ -263,8 +259,8 @@ def fetch_all(force: bool = False, start: str = DEFAULT_START, end: str = DEFAUL
 
 def check_data_complete() -> bool:
     """检查回测必需的 CSV 是否齐全。"""
-    required = ["hs300", "div_lowvol", "cb_10y_idx", "bond_30y_etf",
-                "bond_credit", "gold", "nonferr", "soymeal", "us_sp500", "bond_short"]
+    required = ["hs300", "bond_30y_etf",
+                "bond_credit", "gold", "nonferr", "soymeal", "us_sp500"]
     missing = [n for n in required if not (DATA_DIR / f"{n}.csv").exists()]
     return len(missing) == 0, missing
 

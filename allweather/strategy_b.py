@@ -9,7 +9,7 @@ from .config import (
     HS300_DIP_SMA, HS300_DIP_EXIT_RECOVERY,
     HS300_PE_ENTRY, HS300_PE_EXIT,
 )
-from .risk import hierarchical_rp_weights, inverse_vol_weights
+from .risk import hierarchical_rp_weights, inverse_vol_weights, hs300_dip_check, hs300_signal_snapshot
 from .data import load_hs300_pe
 
 
@@ -207,48 +207,24 @@ def backtest_b(
 
             # --- hs300 抄底：价格回撤 AND PE 低估 同时满足 ---
             if hs300_value_dip and pe_data is not None and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
-                pe_to_date = pe_data[pe_data.index <= d]
-                if len(pe_to_date) >= 252:
-                    pe_pct = (pe_to_date < pe_to_date.iloc[-1]).sum() / len(pe_to_date) * 100
-                    hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
-                    curr_hs = prices.iloc[i]["hs300"]
-                    dip_sma = prices["hs300"].iloc[max(0, i - hs300_dip_sma):i].mean()
-                    if hs300_boosted:
-                        if hs300_dd > -hs300_dip_exit_recovery and pe_pct > hs300_pe_exit:
-                            hs300_boosted = False
-                    elif (hs300_dd <= -hs300_dip_threshold and pe_pct < hs300_pe_entry
-                          and curr_hs > dip_sma):
-                        hs300_boosted = True
-                    if hs300_boosted:
-                        boost = w["hs300"] * (hs300_dip_boost - 1)
-                        if w.get("credit", 0) >= boost:
-                            w["hs300"] += boost
-                            w["credit"] -= boost
+                hs300_boosted, hs300_boost = hs300_dip_check(
+                    pe_data, prices, d, i, hs300_peak, hs300_boosted,
+                    hs300_dip_threshold, hs300_dip_sma, hs300_dip_exit_recovery,
+                    hs300_pe_entry, hs300_pe_exit, hs300_dip_boost,
+                )
+                if hs300_boost is not None:
+                    boost = w["hs300"] * (hs300_boost - 1)
+                    if w.get("credit", 0) >= boost:
+                        w["hs300"] += boost
+                        w["credit"] -= boost
 
             # --- 信号触发日志 ---
-            if track_signals:
-                sig_dd, sig_pe_pct, sig_pe_val, sig_boost = None, None, None, None
-
-                if hs300_dip_threshold is not None and "hs300" in cols:
-                    sig_dd = round(float(prices.iloc[i]["hs300"] / hs300_peak - 1), 4)
-
-                if pe_data is not None and "hs300" in cols:
-                    pe_to = pe_data[pe_data.index <= d]
-                    if len(pe_to) >= 252:
-                        sig_pe_val = float(pe_to.iloc[-1])
-                        sig_pe_pct = round((pe_to < sig_pe_val).sum() / len(pe_to) * 100, 1)
-
-                if hs300_boosted:
-                    sig_boost = hs300_dip_boost
-
+            if track_signals and pe_data is not None and "hs300" in cols:
+                snap = hs300_signal_snapshot(pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
                 signal_log.append({
                     'date': d,
                     'label': signal_label,
-                    'active': hs300_boosted,
-                    'dd_pct': sig_dd,
-                    'pe_pctile': sig_pe_pct,
-                    'pe_value': sig_pe_val,
-                    'boost': sig_boost,
+                    **snap,
                 })
 
             if vol_target is not None and i > max(rp_window, vol_target_window):

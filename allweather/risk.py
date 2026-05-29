@@ -1,59 +1,10 @@
-"""风控模块 —— 趋势过滤、回撤止损、波动率目标、相关性断路器、逆波动率加权。"""
-
+"""风控模块 —— 逆波动率加权、分层风险平价、HS300 AND抄底。"""
 import numpy as np
 import pandas as pd
 
 
-def trend_filter(returns_12m: pd.Series) -> bool:
-    """过去 12 个月总收益为负 → True（触发避险）。"""
-    if len(returns_12m) < 20:
-        return False
-    cum = (1 + returns_12m).prod() - 1
-    return cum < 0
-
-
-def drawdown_stop(nv: pd.Series, threshold: float = 0.08) -> bool:
-    """当前回撤超过 threshold → True（触发降仓）。"""
-    if len(nv) < 20:
-        return False
-    dd = (nv / nv.cummax()) - 1
-    return dd.iloc[-1] < -threshold
-
-
-def vol_target_scale(returns, target_vol: float = 0.06,
-                     window: int = 60) -> float:
-    """返回仓位缩放系数：实际波动 vs 目标波动。上限 1.0（不加杠杆）。"""
-    if isinstance(returns, pd.DataFrame):
-        recent = returns.tail(window)
-    else:
-        recent = returns.iloc[-window:]
-    if len(recent) < 20:
-        return 1.0
-    if isinstance(recent, pd.DataFrame):
-        ann_vol = recent.std().mean() * np.sqrt(252)
-    else:
-        ann_vol = recent.std() * np.sqrt(252)
-    if ann_vol < 0.001:
-        return 1.0
-    scale = target_vol / ann_vol
-    return min(scale, 1.0)
-
-
-def correlation_breaker(returns: pd.DataFrame, threshold: float = 0.30,
-                        window: int = 60) -> bool:
-    """平均两两相关性 > threshold → True（触发降仓）。"""
-    recent = returns.tail(window)
-    if len(recent) < 20:
-        return False
-    corr = recent.corr().values
-    n = corr.shape[0]
-    upper = corr[np.triu_indices(n, k=1)]
-    return upper.mean() > threshold
-
-
 def inverse_vol_weights(returns: pd.DataFrame, window: int = 60,
                         max_w: float = 0.25, min_w: float = 0.02) -> pd.Series:
-    """用过去 window 日逆波动率算权重，再截断到 [min_w, max_w]。"""
     if len(returns) < 20:
         n = returns.shape[1]
         return pd.Series(1.0 / n, index=returns.columns)
@@ -73,7 +24,6 @@ def hierarchical_rp_weights(
     min_w: float = 0.02,
     bucket_method: str = "equal",
 ) -> pd.Series:
-    """分层风险平价：桶间等权/等风险 + 桶内逆波动率。"""
     if len(returns) < 20:
         n = returns.shape[1]
         return pd.Series(1.0 / n, index=returns.columns)
@@ -109,3 +59,46 @@ def hierarchical_rp_weights(
 
     capped = raw.clip(lower=min_w, upper=max_w)
     return capped / capped.sum()
+
+
+def hs300_dip_check(pe_data, prices, d, i, hs300_peak, hs300_boosted,
+                    threshold, sma_window, exit_recovery,
+                    pe_entry, pe_exit, boost_mult):
+    """HS300 AND抄底 — 价格回撤 + PE 低估同时满足才触发。
+    返回 (hs300_boosted, boost_multiplier | None)。
+    """
+    pe_to_date = pe_data[pe_data.index <= d]
+    if len(pe_to_date) < 252:
+        return hs300_boosted, None
+
+    pe_pct = (pe_to_date < pe_to_date.iloc[-1]).sum() / len(pe_to_date) * 100
+    hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
+    curr_hs = prices.iloc[i]["hs300"]
+    dip_sma = prices["hs300"].iloc[max(0, i - sma_window):i].mean()
+
+    if hs300_boosted:
+        if hs300_dd > -exit_recovery and pe_pct > pe_exit:
+            return False, None
+    elif (hs300_dd <= -threshold and pe_pct < pe_entry
+          and curr_hs > dip_sma):
+        hs300_boosted = True
+
+    if hs300_boosted:
+        return True, boost_mult
+    return False, None
+
+
+def hs300_signal_snapshot(pe_data, prices, d, i, hs300_peak, hs300_boosted, boost_mult):
+    sig_dd = round(float(prices.iloc[i]["hs300"] / hs300_peak - 1), 4)
+    sig_pe_val, sig_pe_pct = None, None
+    pe_to = pe_data[pe_data.index <= d]
+    if len(pe_to) >= 252:
+        sig_pe_val = float(pe_to.iloc[-1])
+        sig_pe_pct = round((pe_to < sig_pe_val).sum() / len(pe_to) * 100, 1)
+    return {
+        'dd_pct': sig_dd,
+        'pe_pctile': sig_pe_pct,
+        'pe_value': sig_pe_val,
+        'active': hs300_boosted,
+        'boost': boost_mult if hs300_boosted else None,
+    }

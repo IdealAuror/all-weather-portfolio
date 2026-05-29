@@ -361,6 +361,3 @@ def load_hs300_pe(col_index: int = 2) -> pd.Series:
     return df.set_index(date_col)[pe_col].sort_index()
 
 
-def get_returns() -> pd.DataFrame:
-    """便捷函数：返回日收益率面板。"""
-    return load_panel().pct_change().dropna()

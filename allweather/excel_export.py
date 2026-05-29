@@ -19,7 +19,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.formatting.rule import CellIsRule
 
 from .config import BUCKET_GROUPS, ETF_META, OUTPUT_DIR
-from .portfolios import PORTFOLIO_TAGS
+from .config import PORTFOLIO_TAGS
 
 # === 样式常量 ===
 HEADER_FILL = PatternFill("solid", fgColor="DCE6F1")

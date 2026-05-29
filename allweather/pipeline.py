@@ -5,8 +5,8 @@
 import time
 import pandas as pd
 from .data import load_panel
-from .portfolios import get_weights
-from .backtest import backtest, backtest_iv
+
+from .backtest import backtest_iv
 from .stats import (
     perf_metrics, yearly_returns, event_returns,
     bucket_risk_contribution, regime_returns, rolling_stats,
@@ -49,7 +49,7 @@ def step_2_run_backtests(rets):
     print("Step 2/6: 跑组合回测")
     print("─" * 60)
     t0 = time.time()
-    weights = get_weights()
+    weights = {}
     nv_results = {}
     weight_history = {}
     signal_logs = {}
