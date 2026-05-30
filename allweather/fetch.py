@@ -23,13 +23,11 @@ TARGETS = {
     "bond_credit":  ("etf_nav", "511220"),
     "gold":         ("etf_nav", "518880"),
     "nonferr":      ("etf_nav", "159980"),
-    "soymeal":      ("etf_nav", "159985"),
     # QDII
     "us_sp500":     ("etf_nav", "513500"),
     # 短债/货币
     # 缝合用替代数据
     "nonferr_idx":  ("idx", "sh000823"),   # 中证有色金属指数
-    "soymeal_fut":  ("fut_dce", "M0"),     # 豆粕期货主力连续（DCE）
     # 2008+ 延长回测数据源
     "hs300_idx":    ("idx", "sh000300"),   # CSI 300 指数 (2008+)
     "credit_idx":   ("idx", "sh000013"),   # 上证企债指数 (2008+)
@@ -260,7 +258,7 @@ def fetch_all(force: bool = False, start: str = DEFAULT_START, end: str = DEFAUL
 def check_data_complete() -> bool:
     """检查回测必需的 CSV 是否齐全。"""
     required = ["hs300", "bond_30y_etf",
-                "bond_credit", "gold", "nonferr", "soymeal", "us_sp500"]
+                "bond_credit", "gold", "nonferr", "us_sp500"]
     missing = [n for n in required if not (DATA_DIR / f"{n}.csv").exists()]
     return len(missing) == 0, missing
 
