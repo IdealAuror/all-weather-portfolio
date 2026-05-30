@@ -100,14 +100,118 @@ def print_yearly_table(yearly_results: dict, years=None):
 def print_risk_contribution(rc_results: dict):
     if not rc_results:
         return
-    print_header("【3】桶级风险贡献分解（协方差视角）")
-    ports = list(rc_results.keys())
-    buckets = list(rc_results[ports[0]].keys())
-    print(f"  {'桶':<22}" + "".join(f"{p:>14}" for p in ports))
-    for b in buckets:
-        line = f"  {b:<22}"
+    # 判断是静态快照还是时变结果
+    sample = next(iter(rc_results.values()))
+    # 时变格式：值嵌套 {"mean": ..., "std": ...}
+    is_tv = isinstance(sample, dict) and any(
+        isinstance(v, dict) and "mean" in v for v in sample.values()
+    )
+    if is_tv:
+        print_header("【3】桶级风险贡献归因（时变 · 日均值 ± 1σ）")
+        ports = list(rc_results.keys())
+        buckets = [k for k in list(rc_results[ports[0]].keys()) if not k.startswith("_")]
+        print(f"  {'桶':<22}" + "".join(f"{p:>22}" for p in ports))
+        for b in buckets:
+            line = f"  {b:<22}"
+            for p in ports:
+                v = rc_results[p][b]
+                line += f"{_fmt_pct(v['mean'], w=8)}±{_fmt_pct(v['std'], w=8)}"
+            print(line)
+        # 风险集中度：max/min 非零桶均值
         for p in ports:
-            line += _fmt_pct(rc_results[p][b], w=14)
+            vals = [rc_results[p][b]["mean"] for b in buckets]
+            positive_vals = [v for v in vals if v > 0.001]
+            if positive_vals:
+                ratio = max(positive_vals) / min(positive_vals)
+            else:
+                ratio = float("nan")
+            print(f"    {p} 风险集中度(max/min): {ratio:.2f}x" if not pd.isna(ratio)
+                  else f"    {p} 风险集中度: n/a")
+    else:
+        print_header("【3】桶级风险贡献分解（协方差视角）")
+        ports = list(rc_results.keys())
+        buckets = list(rc_results[ports[0]].keys())
+        print(f"  {'桶':<22}" + "".join(f"{p:>14}" for p in ports))
+        for b in buckets:
+            line = f"  {b:<22}"
+            for p in ports:
+                line += _fmt_pct(rc_results[p][b], w=14)
+            print(line)
+
+
+def print_weight_stability_table(ws_results: dict):
+    """权重稳定性表。ws_results: {port: weight_stability dict}"""
+    if not ws_results:
+        return
+    print_header("【3b】权重稳定性分析（假设单边成本 10bp）")
+    print(f"  {'方案':<22}{'月均换手':>10}{'月最大换手':>10}{'年化换手':>10}"
+          f"{'有效资产N':>12}{'有效N-min':>10}{'年成本拖累':>12}")
+    for port, s in ws_results.items():
+        print(f"  {port:<22}"
+              f"{_fmt_pct(s['monthly_turnover_mean'], w=10)}"
+              f"{_fmt_pct(s['monthly_turnover_max'], w=10)}"
+              f"{_fmt_num(s['annual_churn'], w=10)}"
+              f"{_fmt_num(s['effective_n_mean'], w=12, d=2)}"
+              f"{_fmt_num(s['effective_n_min'], w=10, d=2)}"
+              f"{_fmt_pct(s['cost_drag_annual'], w=12)}")
+
+
+def print_signal_summary(signal_logs: dict):
+    """信号触发频率汇总。signal_logs: {label: pd.DataFrame}"""
+    if not signal_logs:
+        return
+    print_header("【3c】风控信号触发频率汇总（年均次数）")
+
+    # 定义各策略关心的信号列
+    signal_cols = {
+        "nonferr_filtered":     "有色趋势过滤",
+        "gold_filtered":        "黄金趋势过滤",
+        "us_sp500_filtered":    "SP500趋势过滤",
+        "gold_dip_active":      "黄金抄底",
+        "active":               "HS300抄底",
+    }
+
+    for label, sl in signal_logs.items():
+        if sl.empty:
+            continue
+        sl = sl.copy()
+        if "date" in sl.columns:
+            sl["year"] = pd.to_datetime(sl["date"]).dt.year
+        else:
+            continue
+
+        print_subheader(f"{label}")
+        # 只取该策略实际存在的信号列
+        avail = {k: v for k, v in signal_cols.items() if k in sl.columns}
+        if not avail:
+            print("    （无信号列）")
+            continue
+
+        yearly = sl.groupby("year")
+        years_list = sorted(sl["year"].unique())
+        print(f"  {'年度':<8}" + "".join(f"{v:>14}" for v in avail.values()))
+        for y in years_list:
+            ydata = yearly.get_group(y)
+            line = f"  {y:<8}"
+            for k in avail:
+                if k in sl.columns:
+                    if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all():
+                        count = ydata[k].sum()
+                    else:
+                        count = (ydata[k] > 0).sum()
+                    line += f"{int(count):>14}"
+                else:
+                    line += f"{'n/a':>14}"
+            print(line)
+
+        # 合计行
+        line = f"  {'合计':<8}"
+        for k in avail:
+            if k in sl.columns:
+                total = int(sl[k].sum()) if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all() else int((sl[k] > 0).sum())
+                line += f"{total:>14}"
+            else:
+                line += f"{'n/a':>14}"
         print(line)
 
 

@@ -11,11 +11,13 @@ from .stats import (
     perf_metrics, yearly_returns, event_returns,
     bucket_risk_contribution, regime_returns, rolling_stats,
     block_bootstrap, d_significance,
+    weight_stability, risk_contribution_time_varying,
 )
 from .config import (
     CASH_TIERS, STRESS_EVENTS, OUTPUT_DIR,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
-    V3C_ASSETS, BUCKET_GROUPS, SP500_TREND_WINDOW, GOLD_DIP_THRESHOLD,
+    V3C_ASSETS, BUCKETS, BUCKET_GROUPS,
+    SP500_TREND_WINDOW, GOLD_DIP_THRESHOLD,
 )
 
 V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
@@ -162,7 +164,7 @@ def step_2_run_backtests(rets):
     return weights, nv_results, weight_history, signal_logs
 
 
-def step_3_compute_metrics(nv_results, weights, rets):
+def step_3_compute_metrics(nv_results, weights, rets, weight_history=None, signal_logs=None):
     """Step 3: 计算所有衍生指标。"""
     print("\n" + "─" * 60)
     print("Step 3/6: 计算衍生指标")
@@ -175,6 +177,8 @@ def step_3_compute_metrics(nv_results, weights, rets):
     regime = {}
     events = {}
     rolling = {}
+    ws = {}
+    rc_tv = {}
 
     for p in weights:
         key = (p, "100% RP")
@@ -195,6 +199,12 @@ def step_3_compute_metrics(nv_results, weights, rets):
             events[p] = event_returns(nv_s, STRESS_EVENTS)
             rolling[p] = rolling_stats(nv_s)
 
+    # 权重稳定性（使用 weight_history 中的动态权重）
+    if weight_history:
+        for p, wh in weight_history.items():
+            ws[p] = weight_stability(wh)
+            rc_tv[p] = risk_contribution_time_varying(wh, rets, BUCKETS)
+
     print(f"  ok 用时: {time.time()-t0:.2f}s")
     d_sig = {}
     for (p, tier), nv_s in nv_results.items():
@@ -204,6 +214,8 @@ def step_3_compute_metrics(nv_results, weights, rets):
         "perf": perf, "yearly": yearly, "risk_contrib": rc,
         "regime": regime, "events": events, "rolling": rolling,
         "d_sig": d_sig,
+        "weight_stability": ws,
+        "risk_contrib_tv": rc_tv,
     }
 
 
@@ -247,7 +259,7 @@ def step_4_bootstrap(weights, rets, nv_results=None):
     return boot
 
 
-def step_5_print_reports(metrics, boot, weights):
+def step_5_print_reports(metrics, boot, weights, weight_history=None, signal_logs=None):
     """Step 5: 打印控制台报告。"""
     print("\n" + "─" * 60)
     print("Step 5/6: 输出报告")
@@ -261,6 +273,13 @@ def step_5_print_reports(metrics, boot, weights):
     print()
     reports.print_risk_contribution(metrics["risk_contrib"])
     print()
+    reports.print_risk_contribution(metrics.get("risk_contrib_tv", {}))
+    print()
+    reports.print_weight_stability_table(metrics.get("weight_stability", {}))
+    print()
+    if signal_logs:
+        reports.print_signal_summary(signal_logs)
+        print()
     reports.print_regime_table(metrics["regime"])
     print()
     reports.print_event_table(metrics["events"])
@@ -313,12 +332,15 @@ def step_6_save_outputs(nv_results, metrics, weights, boot=None,
         nv_results=nv_results,
         perf_results=metrics["perf"],
         yearly_results=metrics["yearly"],
-        rc_results=metrics["risk_contrib"],
+        rc_results=metrics.get("risk_contrib_tv", metrics["risk_contrib"]),
         regime_results=metrics["regime"],
         event_results=metrics["events"],
         rolling_results=metrics["rolling"],
         boot_results=boot,
         weights_dict=weights,
+        ws_results=metrics.get("weight_stability"),
+        rc_tv_results=metrics.get("risk_contrib_tv"),
+        signal_logs=signal_logs,
     )
 
     if excel:
@@ -378,10 +400,12 @@ def step_6_save_outputs(nv_results, metrics, weights, boot=None,
     print(f"  ok 用时: {time.time()-t0:.2f}s")
 
 
-def run_full_pipeline(excel: bool = True, markdown: bool = True):
+def run_full_pipeline(excel: bool = True, markdown: bool = True,
+                       note: str = ""):
     """跑完整流程：6 步串联。
 
     excel/markdown 控制是否在 step6 写综合报告（默认全开）。
+    note 将写入实验日志（experiments.jsonl）。
     """
     overall = time.time()
     print("\n" + "=" * 60)
@@ -390,13 +414,22 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True):
 
     panel, rets = step_1_load_data()
     weights, nv_results, weight_history, signal_logs = step_2_run_backtests(rets)
-    metrics = step_3_compute_metrics(nv_results, weights, rets)
+    metrics = step_3_compute_metrics(nv_results, weights, rets,
+                                     weight_history=weight_history,
+                                     signal_logs=signal_logs)
     boot = step_4_bootstrap(weights, rets, nv_results=nv_results)
-    step_5_print_reports(metrics, boot, weights)
+    step_5_print_reports(metrics, boot, weights,
+                         weight_history=weight_history,
+                         signal_logs=signal_logs)
     step_6_save_outputs(nv_results, metrics, weights, boot=boot,
                          excel=excel, markdown=markdown,
                          weight_history=weight_history,
                          signal_logs=signal_logs)
+
+    # 追加实验日志
+    from .experiment_log import save_run
+    log_path = save_run(metrics["perf"], metrics, conclusion=note)
+    print(f"  ok {log_path.name}（实验日志）")
 
     print("\n" + "=" * 60)
     print(f"  完成！总耗时 {time.time()-overall:.1f}s")

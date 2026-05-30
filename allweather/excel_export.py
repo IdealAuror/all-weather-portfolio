@@ -183,7 +183,39 @@ def _sheet_risk_contrib(wb, rc_results):
     if not rc_results:
         return
     ws = wb.create_sheet("风险贡献")
+    # 判断是否时变结果
+    sample = next(iter(rc_results.values()))
+    is_tv = isinstance(sample, dict) and any(
+        isinstance(v, dict) and "mean" in v for v in sample.values()
+    )
     ports = list(rc_results.keys())
+
+    if is_tv:
+        _write_title(ws, 1, "桶级风险贡献归因（时变 · 日均值 ± 1σ）", len(ports) + 2)
+        _write_headers(ws, 3, ["桶"] + [f"{p}_均值" for p in ports] + [f"{p}_std" for p in ports])
+        buckets = [k for k in list(rc_results[ports[0]].keys()) if not k.startswith("_")]
+        for i, b in enumerate(buckets, start=4):
+            ws.cell(row=i, column=1, value=b).alignment = LEFT
+            for j, p in enumerate(ports, start=2):
+                v = rc_results[p][b]
+                ws.cell(row=i, column=j, value=float(v["mean"]))
+            for j, p in enumerate(ports, start=2 + len(ports)):
+                v = rc_results[p][b]
+                ws.cell(row=i, column=j, value=float(v["std"]))
+        _apply_pct_neg_red(ws, 4, 3 + len(buckets), 2, 1 + 2 * len(ports))
+        for r in range(4, 4 + len(buckets)):
+            ws.cell(row=r, column=1).border = BORDER
+        # 风险集中度
+        conc_row = 4 + len(buckets) + 1
+        _write_title(ws, conc_row, "风险集中度 (max/min 非零桶均值)", 1 + 2 * len(ports))
+        for j, p in enumerate(ports, start=2):
+            vals = [rc_results[p][b]["mean"] for b in buckets]
+            positive_vals = [v for v in vals if v > 0.001]
+            ratio = max(positive_vals) / min(positive_vals) if positive_vals else None
+            ws.cell(row=conc_row + 1, column=j, value=float(ratio) if ratio is not None else None)
+        _autofit(ws)
+        return
+
     _write_title(ws, 1, "桶级风险贡献分解（协方差视角）", len(ports) + 1)
     _write_headers(ws, 3, ["桶"] + ports)
     buckets = list(rc_results[ports[0]].keys())
@@ -194,6 +226,34 @@ def _sheet_risk_contrib(wb, rc_results):
     _apply_pct_neg_red(ws, 4, 3 + len(buckets), 2, 1 + len(ports))
     for r in range(4, 4 + len(buckets)):
         ws.cell(row=r, column=1).border = BORDER
+    _autofit(ws)
+
+
+def _sheet_weight_stability(wb, ws_results):
+    if not ws_results:
+        return
+    ws = wb.create_sheet("权重稳定性")
+    headers = ["方案", "月均换手", "月最大换手", "年化换手", "有效资产N", "有效N-min", "年成本拖累", "假设单边成本bp"]
+    _write_title(ws, 1, "权重稳定性分析", len(headers))
+    _write_headers(ws, 3, headers)
+    pct_cols = {2, 3, 4, 7}
+    for i, (port, s) in enumerate(ws_results.items(), start=4):
+        ws.cell(row=i, column=1, value=port).alignment = LEFT
+        ws.cell(row=i, column=2, value=s["monthly_turnover_mean"])
+        ws.cell(row=i, column=3, value=s["monthly_turnover_max"])
+        ws.cell(row=i, column=4, value=s["annual_churn"])
+        ws.cell(row=i, column=5, value=s["effective_n_mean"])
+        ws.cell(row=i, column=6, value=s.get("effective_n_min", 0))
+        ws.cell(row=i, column=7, value=s["cost_drag_annual"])
+        ws.cell(row=i, column=8, value=s.get("cost_bp_assumed", 10))
+        for c in pct_cols:
+            ws.cell(row=i, column=c).number_format = PCT_FMT
+            ws.cell(row=i, column=c).alignment = RIGHT
+        ws.cell(row=i, column=5).number_format = NUM_FMT
+        ws.cell(row=i, column=6).number_format = NUM_FMT
+        ws.cell(row=i, column=8).number_format = "0"
+        for c in range(1, len(headers) + 1):
+            ws.cell(row=i, column=c).border = BORDER
     _autofit(ws)
 
 
@@ -369,6 +429,9 @@ def save_excel_report(
     boot_results,
     weights_dict,
     filename="report.xlsx",
+    ws_results=None,
+    rc_tv_results=None,
+    signal_logs=None,
 ):
     """生成 output/report.xlsx 多 sheet 综合报告。"""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -379,7 +442,8 @@ def save_excel_report(
     _sheet_recommendation(wb)
     _sheet_perf(wb, perf_results)
     _sheet_yearly(wb, yearly_results)
-    _sheet_risk_contrib(wb, rc_results)
+    _sheet_risk_contrib(wb, rc_tv_results if rc_tv_results else rc_results)
+    _sheet_weight_stability(wb, ws_results or {})
     _sheet_regime(wb, regime_results)
     _sheet_events(wb, event_results)
     _sheet_rolling(wb, rolling_results)

@@ -114,6 +114,41 @@ def _section_yearly(yearly_results, years=None):
 def _section_risk_contrib(rc_results):
     if not rc_results:
         return []
+    # 判断是静态快照还是时变结果
+    sample = next(iter(rc_results.values()))
+    is_tv = isinstance(sample, dict) and any(
+        isinstance(v, dict) and "mean" in v for v in sample.values()
+    )
+
+    if is_tv:
+        ports = list(rc_results.keys())
+        buckets = [k for k in list(rc_results[ports[0]].keys()) if not k.startswith("_")]
+        rows = []
+        for b in buckets:
+            row = [b]
+            for p in ports:
+                v = rc_results[p][b]
+                row.append(f"{_pct(v['mean'])} ± {_pct(v['std'])}")
+            rows.append(row)
+        # 风险集中度
+        conc_rows = []
+        for p in ports:
+            vals = [rc_results[p][b]["mean"] for b in buckets]
+            positive_vals = [v for v in vals if v > 0.001]
+            if positive_vals:
+                ratio = max(positive_vals) / min(positive_vals)
+            else:
+                ratio = float("nan")
+            conc_rows.append(f"- **{p}** 风险集中度 (max/min): {ratio:.2f}x"
+                             if not pd.isna(ratio)
+                             else f"- **{p}** 风险集中度: n/a")
+        return [
+            "## 3. 桶级风险贡献归因（时变 · 日均值 ± 1σ）",
+            "",
+            _md_table(["桶"] + ports, rows),
+            "",
+        ] + conc_rows + [""]
+
     ports = list(rc_results.keys())
     buckets = list(rc_results[ports[0]].keys())
     rows = []
@@ -125,6 +160,91 @@ def _section_risk_contrib(rc_results):
         _md_table(["桶"] + ports, rows),
         "",
     ]
+
+
+def _section_weight_stability(ws_results):
+    if not ws_results:
+        return []
+    rows = []
+    for port, s in ws_results.items():
+        rows.append([
+            port,
+            _pct(s["monthly_turnover_mean"]),
+            _pct(s["monthly_turnover_max"]),
+            _num(s["annual_churn"]),
+            _num(s["effective_n_mean"], d=2),
+            _num(s.get("effective_n_min", 0), d=2),
+            _pct(s["cost_drag_annual"]),
+        ])
+    return [
+        "## 3b. 权重稳定性分析（假设单边成本 10bp）",
+        "",
+        _md_table(
+            ["方案", "月均换手", "月最大换手", "年化换手", "有效资产N", "有效N-min", "年成本拖累"],
+            rows,
+        ),
+        "",
+    ]
+
+
+def _section_signal_summary(signal_logs: dict):
+    """信号触发频率汇总（Markdown）。"""
+    if not signal_logs:
+        return []
+
+    signal_cols = {
+        "nonferr_filtered":     "有色趋势过滤",
+        "gold_filtered":        "黄金趋势过滤",
+        "us_sp500_filtered":    "SP500趋势过滤",
+        "gold_dip_active":      "黄金抄底",
+        "active":               "HS300抄底",
+    }
+
+    parts = ["## 3c. 风控信号触发频率汇总（年均次数）", ""]
+
+    for label, sl in signal_logs.items():
+        if sl.empty:
+            continue
+        sl = sl.copy()
+        if "date" in sl.columns:
+            sl["year"] = pd.to_datetime(sl["date"]).dt.year
+        else:
+            continue
+
+        avail = {k: v for k, v in signal_cols.items() if k in sl.columns}
+        if not avail:
+            continue
+
+        parts.append(f"### {label}")
+        parts.append("")
+
+        years_list = sorted(sl["year"].unique())
+        headers = ["年度"] + list(avail.values())
+        rows = []
+        for y in years_list:
+            ydata = sl[sl["year"] == y]
+            row = [str(y)]
+            for k in avail:
+                if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all():
+                    row.append(str(int(ydata[k].sum())))
+                else:
+                    row.append(str(int((ydata[k] > 0).sum())))
+            rows.append(row)
+
+        # 合计行
+        total_row = ["合计"]
+        for k in avail:
+            series = sl[k]
+            if series.dtype == bool or series.dropna().isin([0, 1]).all():
+                total_row.append(str(int(series.sum())))
+            else:
+                total_row.append(str(int((series > 0).sum())))
+        rows.append(total_row)
+
+        parts.append(_md_table(headers, rows))
+        parts.append("")
+
+    return parts
 
 
 def _section_regime(regime_results):
@@ -254,6 +374,7 @@ def _section_footer():
         "| `output/nv_curves.csv` | 9 条净值曲线（宽表）|",
         "| `output/summary.json` | 核心指标汇总 |",
         "| `output/weights.csv` | 三策略权重 |",
+        "| `experiments.jsonl` | 实验日志（`--note` 可附带结论）|",
         "",
     ]
 
@@ -273,6 +394,9 @@ def save_markdown_report(
     boot_results,
     weights_dict,
     filename="report.md",
+    ws_results=None,
+    signal_logs=None,
+    rc_tv_results=None,
 ):
     """生成 output/report.md。"""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -282,6 +406,8 @@ def save_markdown_report(
     parts.extend(_section_perf(perf_results))
     parts.extend(_section_yearly(yearly_results))
     parts.extend(_section_risk_contrib(rc_results))
+    parts.extend(_section_weight_stability(ws_results or {}))
+    parts.extend(_section_signal_summary(signal_logs or {}))
     parts.extend(_section_regime(regime_results))
     parts.extend(_section_events(event_results))
     parts.extend(_section_rolling(rolling_results))

@@ -72,6 +72,103 @@ def bucket_risk_contribution(weights: pd.Series, rets: pd.DataFrame) -> dict:
             for bucket, lst in BUCKETS.items()}
 
 
+def weight_stability(weight_history: pd.DataFrame, cost_bp: float = 10) -> dict:
+    """权重稳定性指标：换手率、有效资产数、成本拖累。
+
+    weight_history: 调仓日 × 资产的权重 DataFrame。
+    cost_bp: 单边交易成本基点（默认 10bp = 0.1%）。
+    """
+    if weight_history.empty:
+        return {"monthly_turnover_mean": 0, "monthly_turnover_max": 0,
+                "annual_churn": 0, "effective_n_mean": 0,
+                "cost_drag_annual": 0}
+
+    # 月均换手率：每个调仓日权重变动之和 / 2
+    w_diff = weight_history.diff().abs().sum(axis=1)
+    turnover = w_diff / 2
+    monthly_turnover_mean = turnover.mean()
+    monthly_turnover_max = turnover.max()
+
+    # 年化换手率（月度调仓 → ×12）
+    annual_churn = monthly_turnover_mean * 12
+
+    # 有效资产数：1 / sum(w_i^2)
+    eff_n = 1 / (weight_history ** 2).sum(axis=1)
+    effective_n_mean = eff_n.mean()
+    effective_n_min = eff_n.min()
+
+    # 成本拖累：年化换手 × 双边成本
+    cost_drag_annual = annual_churn * (cost_bp * 2 / 10000)
+
+    return {
+        "monthly_turnover_mean": monthly_turnover_mean,
+        "monthly_turnover_max": monthly_turnover_max,
+        "annual_churn": annual_churn,
+        "effective_n_mean": effective_n_mean,
+        "effective_n_min": effective_n_min,
+        "cost_drag_annual": cost_drag_annual,
+        "cost_bp_assumed": cost_bp,
+    }
+
+
+def risk_contribution_time_varying(
+    weight_history: pd.DataFrame, rets: pd.DataFrame,
+    buckets: dict, window: int = 252,
+) -> dict:
+    """时变风险贡献归因 — 在每个调仓日计算桶级风险贡献，然后取时间序列均值。
+
+    weight_history: 调仓日 × 资产的权重 DataFrame。
+    rets: 完整日收益率 DataFrame。
+    buckets: {桶名: [资产列表]}。
+    window: 协方差估计窗口（交易日，默认 252 ≈ 1 年）。
+    """
+    if weight_history.empty:
+        return {}
+
+    bucket_series = {b: [] for b in buckets}
+    n_valid = 0
+
+    for date in weight_history.index:
+        w = weight_history.loc[date]
+        # 只取有收益数据的资产
+        valid_assets = [a for a in w.index if a in rets.columns]
+        if len(valid_assets) < 2:
+            continue
+        wv = w[valid_assets].values
+
+        # 取调仓日前 window 个交易日估计协方差
+        end_idx = rets.index.get_loc(date) if date in rets.index else -1
+        if end_idx < window:
+            continue
+        r = rets[valid_assets].iloc[end_idx - window:end_idx]
+        cov = r.cov().values * 252
+        port_var = wv @ cov @ wv
+        if port_var <= 0:
+            continue
+
+        # 边际风险贡献：w * (Σw) / σ²
+        mc = wv * (cov @ wv) / port_var
+        mc_s = pd.Series(mc, index=valid_assets)
+
+        for bucket, assets in buckets.items():
+            valid = [a for a in assets if a in mc_s.index]
+            bucket_series[bucket].append(mc_s[valid].sum() if valid else 0.0)
+        n_valid += 1
+
+    result = {}
+    for bucket, vals in bucket_series.items():
+        if vals:
+            arr = np.array(vals)
+            result[bucket] = {
+                "mean": float(arr.mean()),
+                "std": float(arr.std()),
+                "min": float(arr.min()),
+                "max": float(arr.max()),
+            }
+    result["_n_observations"] = n_valid
+    return result
+
+
 def regime_returns(nv: pd.Series, rets: pd.DataFrame) -> dict:
     """4 宏观情景（股牛/熊 × 债牛/熊）平均季度收益。"""
     qhs = rets["hs300"].resample("QE").apply(lambda x: (1 + x).prod() - 1)
