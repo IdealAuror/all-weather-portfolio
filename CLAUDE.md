@@ -79,6 +79,17 @@ This file provides guidance to Claude Code when working with code in this reposi
 - Commit message 禁止 Co-Authored-By 署名
 - 大改动可开 feature 分支，最终合 main
 
+## 模型选择
+
+日常分析用当前模型（Flash）。以下场景**必须**用 Agent + `model: "opus"` 启动子任务，子任务完成后将结论带回主会话：
+
+- **复杂策略分析** — 多变量对比、参数响应面解读、敏感度网格的统计推断
+- **统计诊断** — D_excess 尾部风险分析、Bootstrap 分布解读、过拟合检验
+- **回测异常排查** — 归因分析、事件期解剖、多因子分离
+- **新机制设计** — 优化闭环中"问题定义→假设→设计"前三个阶段
+
+简单任务（改常量、更新文档、常规 commit）不走 Agent，直接在当前会话处理。
+
 ## 项目信息
 
 Bridgewater All Weather × 中国 A 股 ETF 回测研究。输出：控制台 + `output/report.xlsx` + `output/report.md` + `docs/index.html` (GitHub Pages)。

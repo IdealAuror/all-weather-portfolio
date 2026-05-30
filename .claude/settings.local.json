@@ -135,7 +135,17 @@
       "Bash(python3 -c ' *)",
       "Bash(awk -F',' 'NR>1{print $1}')",
       "Bash(awk -F',' 'NR>1{print $1}' \"c:/Users/MOSS/Desktop/全季节策略/data/hs300_pe.csv\")",
-      "Bash(.venvScriptspython -c ' *)"
+      "Bash(.venvScriptspython -c ' *)",
+      "Bash(clear *)",
+      "Bash(.venv/Scripts/python main.py)",
+      "Bash(mkdir -p \"C:/Users/MOSS/Desktop/全季节策略/docs/charts\")",
+      "Bash(cp \"C:/Users/MOSS/Desktop/全季节策略/output/charts/\"*.png \"C:/Users/MOSS/Desktop/全季节策略/docs/charts/\")",
+      "Bash(.venv/Scripts/python main.py --no-excel --no-markdown)",
+      "Bash(.venv/Scripts/python tmp_update_tables.py)",
+      "Bash(/e/Tools/Python/python.exe main.py --no-excel --no-markdown)",
+      "Bash(.venv/Scripts/python.exe main.py --no-excel --no-markdown)",
+      "Bash(.venv/Scripts/python.exe -c \"import pandas as pd; df = pd.read_csv\\('output/signal_log.csv'\\); print\\(df.columns.tolist\\(\\)\\); print\\(df.head\\(3\\).to_string\\(\\)\\)\")",
+      "Bash(.venv/Scripts/python.exe *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio"

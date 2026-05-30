@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import pandas as pd
 from .config import (
-    BUCKET_GROUPS, ETF_META, CASH_TIERS, ASSETS, OUTPUT_DIR,
+    BUCKET_GROUPS, ETF_META, CASH_TIERS, OUTPUT_DIR,
     STRESS_EVENTS,
 )
 

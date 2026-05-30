@@ -18,7 +18,6 @@ BOND_30Y_AMP = 3.0
 # 仅对合成段（ETF 上市前的替代数据）应用，ETF 真实数据段不扣减
 SAFETY_DEDUCT = {
     "nonferr":  0.005,   # 申万有色指数不含管理费、跟踪误差
-    "soymeal":  0.020,   # 豆粕期货展期损耗+管理费+contango+无现货锚
     "bond_30y": 0.003,   # ×3.0 久期放大的期权费率差
 }
 
@@ -40,7 +39,7 @@ CASH_TIERS = [
 ASSETS = [
     "hs300", "us_sp500", "credit",
     "bond_10y", "bond_30y",
-    "gold", "nonferr", "soymeal",
+    "gold", "nonferr",
 ]
 
 ETF_META = {
@@ -51,7 +50,6 @@ ETF_META = {
     "bond_30y":  {"code": "511130", "name": "30 年国债 ETF",       "bucket": "增长↓30Y", "role": "长久期利率债"},
     "gold":      {"code": "518880", "name": "黄金 ETF",            "bucket": "通胀↑", "role": "实物黄金"},
     "nonferr":   {"code": "159980", "name": "有色金属 ETF",        "bucket": "通胀↑", "role": "工业金属"},
-    "soymeal":   {"code": "159985", "name": "豆粕 ETF",           "bucket": "通胀↑", "role": "农产品"},
 }
 
 # === 桶定义（用于风险贡献分析）===
