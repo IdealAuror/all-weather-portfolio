@@ -27,6 +27,8 @@ V3B_RP_BUCKETS = {
 }
 V3B_RP_ASSETS = [a for assets in V3B_RP_BUCKETS.values() for a in assets]
 from . import reports
+DOCS_DIR = OUTPUT_DIR.parent / "docs"
+from .update_docs import save_docs_json, patch_index_html
 
 
 def step_1_load_data():
@@ -350,6 +352,27 @@ def step_6_save_outputs(nv_results, metrics, weights, boot=None,
         plot_yearly_returns(metrics, nv_results=nv_results)
         plot_weight_stack(weight_history)
         print(f"  ok charts/（6 张图表）")
+
+    # --- 同步 docs/data.json + 图表到 docs/charts/ ---
+    save_docs_json(
+        perf_results=metrics["perf"],
+        yearly_results=metrics["yearly"],
+        event_results=metrics["events"],
+        regime_results=metrics["regime"],
+        rolling_results=metrics["rolling"],
+        boot_results=boot,
+        weight_history=weight_history or {},
+    )
+    patch_index_html()
+
+    import shutil
+    chart_src = OUTPUT_DIR / "charts"
+    chart_dst = DOCS_DIR / "charts"
+    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    chart_dst.mkdir(parents=True, exist_ok=True)
+    for f in chart_src.glob("*.png"):
+        shutil.copy2(f, chart_dst / f.name)
+    print(f"  ok docs/data.json + docs/charts/（GitHub Pages 同步）")
 
     print(f"  ok 输出目录: {p1.parent}")
     print(f"  ok 用时: {time.time()-t0:.2f}s")
