@@ -255,6 +255,10 @@ def step_4_bootstrap(weights, rets, nv_results=None):
             rets_for_p = rets[list(proxy_w.index)]
             boot[portfolio] = block_bootstrap(proxy_w, rets_for_p)
 
+    # 沪深300满仓基准
+    hs300_w = pd.Series([1.0], index=["hs300"])
+    boot["沪深300"] = block_bootstrap(hs300_w, rets[["hs300"]])
+
     print(f"  ok 用时: {time.time()-t0:.2f}s")
     return boot
 
@@ -296,7 +300,8 @@ def step_5_print_reports(metrics, boot, weights, weight_history=None, signal_log
 def step_6_save_outputs(nv_results, metrics, weights, boot=None,
                          excel: bool = True, markdown: bool = True,
                          weight_history: dict = None,
-                         signal_logs: dict = None):
+                         signal_logs: dict = None,
+                         benchmark_nv: pd.Series = None):
     """Step 6: 保存净值曲线 / 汇总 JSON / 权重 CSV / Excel / Markdown。
 
     excel 和 markdown 都需要 boot（蒙特卡洛结果）。如果只想跑基础三件套，
@@ -361,19 +366,26 @@ def step_6_save_outputs(nv_results, metrics, weights, boot=None,
             plot_nav_and_dd, plot_all_tiers_nv,
             plot_rolling_returns, plot_monthly_returns_comparison,
             plot_yearly_returns, plot_weight_stack,
+            plot_bootstrap_distribution,
+            plot_yearly_bar,
+            plot_regime_quadrant,
         )
         for p, wh in weight_history.items():
             wh_path = OUTPUT_DIR / f"weight_history_{p.replace(' ', '_').replace('(', '').replace(')', '')}.csv"
             wh.to_csv(wh_path, encoding="utf-8-sig")
             print(f"  ok {wh_path.name}（{p} 权重历史）")
 
-        plot_nav_and_dd(nv_results)
+        plot_nav_and_dd(nv_results)                              # 无基准
+        plot_nav_and_dd(nv_results, benchmark_nv=benchmark_nv)   # 带沪深300
         plot_all_tiers_nv(nv_results)
         plot_rolling_returns(metrics)
         plot_monthly_returns_comparison(nv_results)
         plot_yearly_returns(metrics, nv_results=nv_results)
         plot_weight_stack(weight_history)
-        print(f"  ok charts/（6 张图表）")
+        plot_bootstrap_distribution(boot, perf_results=metrics["perf"])
+        plot_yearly_bar(metrics, nv_results=nv_results)
+        plot_regime_quadrant(metrics)
+        print(f"  ok charts/（9 张图表）")
 
     # --- 同步 docs/data.json + 图表到 docs/charts/ ---
     save_docs_json(
@@ -421,10 +433,12 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True,
     step_5_print_reports(metrics, boot, weights,
                          weight_history=weight_history,
                          signal_logs=signal_logs)
+    hs300_nv = panel["hs300"] / panel["hs300"].iloc[0]
     step_6_save_outputs(nv_results, metrics, weights, boot=boot,
                          excel=excel, markdown=markdown,
                          weight_history=weight_history,
-                         signal_logs=signal_logs)
+                         signal_logs=signal_logs,
+                         benchmark_nv=hs300_nv)
 
     # 追加实验日志
     from .experiment_log import save_run

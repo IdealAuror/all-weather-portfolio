@@ -283,4 +283,5 @@ def block_bootstrap(weights: pd.Series, rets: pd.DataFrame,
         "p75": qs[0.75], "p95": qs[0.95],
         "ann_median": (1 + qs[0.5]) ** (1 / 5) - 1,
         "loss_prob": (s < 0).mean(),
+        "samples": samples,
     }
