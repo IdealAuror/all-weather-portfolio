@@ -8,7 +8,9 @@
 [![Backtest](https://img.shields.io/badge/backtest-2005--2026-green)]()
 </div>
 
-基于真实 A 股 / 债 / 商品 ETF 数据的全天候风险平价（Risk Parity）回测工程，覆盖 **2005–2026 年（~21 年完整牛熊周期）**，提供 3 套可落地策略，每套支持 4 档现金管理（100% / 85% / 70% / 动态），共 12 个回测。在线文档：[https://idealauror.github.io/all-weather-portfolio/](https://idealauror.github.io/all-weather-portfolio/)
+基于真实 A 股 / 债 / 商品 ETF 数据的全天候风险平价（Risk Parity）回测工程，覆盖 **2005–2026 年（~21 年完整牛熊周期）**，提供 3 套可落地策略，每套支持 4 档现金管理（100% / 85% / 70% / 动态），共 12 个回测。
+
+在线文档：[https://idealauror.github.io/all-weather-portfolio/](https://idealauror.github.io/all-weather-portfolio/)
 
 
 ## 策略速查
