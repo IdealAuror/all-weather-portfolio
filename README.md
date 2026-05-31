@@ -10,13 +10,6 @@
 
 基于真实 A 股 / 债 / 商品 ETF 数据的全天候风险平价（Risk Parity）回测工程，覆盖 **2005–2026 年（~21 年完整牛熊周期）**，提供 3 套可落地策略，每套支持 4 档现金管理（100% / 85% / 70% / 动态），共 12 个回测。
 
----
-
-## 概要
-
-三套策略基于同一资产宇宙，在**简单执行**、**长期回报**、**低回撤**三个方向各有侧重，风格不重叠。完整指标见 [完整回测报告](output/report.md)。
-
----
 
 ## 策略速查
 
@@ -105,24 +98,12 @@ python -m allweather.rebalance --signals     # 只看当前市场信号状态
 | 文件 | 说明 |
 |------|------|
 | `output/report.xlsx` | 11-sheet Excel 综合报告 |
-| `output/report.md` | Markdown 完整报告（指标/逐年/事件/Bootstrap） |
 | `output/nv_curves.csv` | 全部回测净值曲线宽表 |
 | `output/weight_history_*.csv` | 三策略权重历史 |
 | `output/signal_log.csv` | 风控信号触发日志 |
 | `docs/charts/*.png` | 分析图表 |
 | `docs/data.json` | 结构化指标（前端展示用） |
 
----
-
-## 深入阅读
-
-| 资源 | 说明 |
-|------|------|
-| [完整回测报告](output/report.md) | 自动生成，含全部 12 回测指标、逐年收益、14 事件分析、Bootstrap 分位、风控信号频率 |
-| [策略设计论文](docs/strategy-paper.md) | 每个决策的因果逻辑——资产选择、桶结构、趋势过滤、抄底机制、参数选择，以及被否决的替代方案 |
-| [在线文档 (GitHub Pages)](https://idealauror.github.io/all-weather-portfolio/) | 含交互式表格和完整图表的 HTML 版本 |
-
----
 
 ## 回测局限
 
