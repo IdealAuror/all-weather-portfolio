@@ -38,6 +38,9 @@ def backtest_iv(
     track_signals: bool = False,
     signal_label: str = "",
     dynamic_cash: bool = False,
+    equity_trend_assets: list | None = None,
+    equity_trend_window: int = 120,
+    equity_trend_windows: dict | None = None,
 ):
     """逆波动率加权 + 月度再平衡 + nonferr 趋势过滤 + gold/hs300 抄底。
 
@@ -120,6 +123,18 @@ def backtest_iv(
                     w["credit"] = w.get("credit", 0) + w["nonferr"]
                     w["nonferr"] = 0.0
 
+            # --- Equity trend filter: 资产跌破SMA → 清仓转入 credit ---
+            if equity_trend_assets:
+                for eq in equity_trend_assets:
+                    if eq in w.index and w.get(eq, 0) > 0:
+                        curr = prices.iloc[i][eq]
+                        wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
+                        if i > wdw:
+                            sma = prices[eq].iloc[max(0, i - wdw):i].mean()
+                            if curr < sma:
+                                w["credit"] = w.get("credit", 0) + w[eq]
+                                w[eq] = 0.0
+
             if gold_trend_filter and gold_idx >= 0 and w.get("gold", 0) > 0:
                 curr_au = prices.iloc[i]["gold"]
                 au_sma = prices["gold"].iloc[max(0, i - gold_trend_window):i].mean()
@@ -165,6 +180,14 @@ def backtest_iv(
                     au_sma = prices["gold"].iloc[max(0, i - gold_trend_window):i].mean()
                     entry['gold_below_sma'] = bool(prices.iloc[i]["gold"] < au_sma)
                     entry['gold_filtered'] = w.get("gold", 0) == 0
+                # SP500 / WTI 趋势过滤
+                if equity_trend_assets:
+                    for eq in equity_trend_assets:
+                        if eq in prices.columns:
+                            wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
+                            eq_sma = prices[eq].iloc[max(0, i - wdw):i].mean()
+                            entry[f'{eq}_below_sma'] = bool(prices.iloc[i][eq] < eq_sma)
+                            entry[f'{eq}_filtered'] = w.get(eq, 0) == 0
                 # Gold 抄底
                 if gold_dip_threshold is not None and gold_idx >= 0:
                     gold_dd = float(prices.iloc[i]["gold"] / gold_peak - 1)

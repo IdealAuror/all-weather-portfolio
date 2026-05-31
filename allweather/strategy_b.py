@@ -52,12 +52,15 @@ def backtest_b(
     track_weights: bool = False,
     equity_trend_assets: list | None = None,
     equity_trend_window: int = 120,
+    equity_trend_windows: dict | None = None,
     hs300_value_dip: bool = False,
     hs300_pb_entry: float = HS300_PB_ENTRY,
     hs300_pe_exit: float = HS300_PE_EXIT,
     track_signals: bool = False,
     signal_label: str = "",
     dynamic_cash: bool = False,
+    post_process_max_w: float | None = None,
+    target_weight_smoothing: float | None = None,
 ) -> tuple:
     """Plan B backtest — 分层风险平价 / 逆波动率 + 可选 nonferr 风控 + gold 抄底 + hs300 抄底。
 
@@ -178,15 +181,17 @@ def backtest_b(
                     w["credit"] = w.get("credit", 0) + w["gold"]
                     w["gold"] = 0.0
 
-            # --- Equity trend filter: 权益跌破SMA → 清仓转入 credit ---
-            if equity_trend_assets and prices is not None and i > equity_trend_window:
+            # --- Equity trend filter: 资产跌破SMA → 清仓转入 credit（支持 per-asset window）---
+            if equity_trend_assets and prices is not None:
                 for eq in equity_trend_assets:
                     if eq in w.index and w.get(eq, 0) > 0:
                         curr = prices.iloc[i][eq]
-                        sma = prices[eq].iloc[max(0, i - equity_trend_window):i].mean()
-                        if curr < sma:
-                            w["credit"] = w.get("credit", 0) + w[eq]
-                            w[eq] = 0.0
+                        wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
+                        if i > wdw:
+                            sma = prices[eq].iloc[max(0, i - wdw):i].mean()
+                            if curr < sma:
+                                w["credit"] = w.get("credit", 0) + w[eq]
+                                w[eq] = 0.0
 
             # --- Gold dip-buying: 回撤超阈值 → 翻倍增持，从 credit 提取 ---
             if gold_dip_threshold is not None and prices is not None and w.get("gold", 0) > 0:
@@ -227,12 +232,14 @@ def backtest_b(
                     au_sma = prices["gold"].iloc[max(0, i - gold_trend_window):i].mean()
                     entry['gold_below_sma'] = bool(prices.iloc[i]["gold"] < au_sma)
                     entry['gold_filtered'] = w.get("gold", 0) == 0
-                # SP500 趋势过滤
-                if equity_trend_assets and prices is not None and i > equity_trend_window:
+                # SP500 / WTI 趋势过滤
+                if equity_trend_assets and prices is not None:
                     for eq in equity_trend_assets:
                         if eq in prices.columns:
-                            eq_sma = prices[eq].iloc[max(0, i - equity_trend_window):i].mean()
-                            entry[f'{eq}_below_sma'] = bool(prices.iloc[i][eq] < eq_sma)
+                            wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
+                            if i > wdw:
+                                eq_sma = prices[eq].iloc[max(0, i - wdw):i].mean()
+                                entry[f'{eq}_below_sma'] = bool(prices.iloc[i][eq] < eq_sma)
                             entry[f'{eq}_filtered'] = w.get(eq, 0) == 0
                 # Gold 抄底
                 if gold_dip_threshold is not None and prices is not None and "gold" in prices.columns:
@@ -244,6 +251,28 @@ def backtest_b(
                     snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
                     entry.update(snap)
                 signal_log.append(entry)
+
+            # --- Post-processing: re-enforce max_w after all override operations ---
+            if post_process_max_w is not None:
+                total_excess = 0.0
+                for asset in list(w.index):
+                    if w[asset] > post_process_max_w:
+                        total_excess += w[asset] - post_process_max_w
+                        w[asset] = post_process_max_w
+                if total_excess > 1e-10:
+                    under = [a for a in w.index if w[a] < post_process_max_w]
+                    under_total = sum(w[a] for a in under)
+                    if under_total > 0:
+                        for a in under:
+                            w[a] += total_excess * (w[a] / under_total)
+
+            # --- Target weight smoothing: EMA blend with prior portfolio ---
+            if target_weight_smoothing is not None and target_weight_smoothing < 1.0:
+                h_prev = h.copy()
+                w_u = w / w.sum()
+                hp_u = h_prev / h_prev.sum()
+                w_u = target_weight_smoothing * w_u + (1 - target_weight_smoothing) * hp_u
+                w = pd.Series(w_u.values * (1 - eff_cash), index=cols) if w.sum() > 0 else w
 
             eff_cash = 1.0 - w.sum()
 

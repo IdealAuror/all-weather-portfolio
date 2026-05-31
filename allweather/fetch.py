@@ -36,6 +36,7 @@ TARGETS = {
     "shfe_copper":  ("sina_fut", "CU0"),   # 沪铜连续 (2005+)
     "usdcny":       ("fx_boc", "USDCNY"),  # 美元人民币汇率 (2008+)
     "sp500_idx":    ("sp500", None),       # S&P500 指数 USD (2008+)
+    "wti":          ("foreign_fut", "CL"), # WTI 原油连续合约 USD (1996+)
 }
 
 

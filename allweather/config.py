@@ -19,6 +19,7 @@ BOND_30Y_AMP = 3.0
 SAFETY_DEDUCT = {
     "nonferr":  0.005,   # 申万有色指数不含管理费、跟踪误差
     "bond_30y": 0.003,   # ×3.0 久期放大的期权费率差
+    "wti":      0.010,   # 原油 QDII 基金管理费 1.0%/年 + 跟踪误差
 }
 
 # === 调仓规则 ===
@@ -39,7 +40,7 @@ CASH_TIERS = [
 ASSETS = [
     "hs300", "us_sp500", "credit",
     "bond_10y", "bond_30y",
-    "gold", "nonferr",
+    "gold", "nonferr", "wti",
 ]
 
 ETF_META = {
@@ -50,6 +51,7 @@ ETF_META = {
     "bond_30y":  {"code": "511130", "name": "30 年国债 ETF",       "bucket": "增长↓30Y", "role": "长久期利率债"},
     "gold":      {"code": "518880", "name": "黄金 ETF",            "bucket": "通胀↑", "role": "实物黄金"},
     "nonferr":   {"code": "159980", "name": "有色金属 ETF",        "bucket": "通胀↑", "role": "工业金属"},
+    "wti":       {"code": "501018", "name": "南方原油 LOF",        "bucket": "通胀↑", "role": "能源商品"},
 }
 
 # === 桶定义（用于风险贡献分析）===
@@ -60,7 +62,7 @@ BUCKETS = {
     "增长↓10Y":       ["bond_10y"],
     "增长↓30Y":       ["bond_30y"],
     "通胀↑黄金":      ["gold"],
-    "通胀↑商品":      ["nonferr"],
+    "通胀↑商品":      ["nonferr", "wti"],
 }
 
 BUCKET_GROUPS = {
@@ -68,7 +70,7 @@ BUCKET_GROUPS = {
     "收益垫":  ["credit"],
     "增长↓10Y": ["bond_10y"],
     "增长↓30Y": ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr"],
+    "通胀↑":   ["gold", "nonferr", "wti"],
 }
 
 # === 关键事件压力测试 ===
@@ -99,6 +101,7 @@ BOOTSTRAP_SEED = 42
 
 # === V3c 精简资产 ===
 V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr"]
+# wti — 已集成但 QDII 限购+溢价异常，暂不可执行
 
 # === 方案 B 常量（分层风险平价）===
 RISK_PARITY_WINDOW = 20           # V3-B 波动率窗口（交易日）
@@ -120,11 +123,13 @@ HS300_PE_EXIT = 70               # PE%ile 退出阈值（PE不再便宜才退出
 
 # === 标普500 趋势过滤 ===
 SP500_TREND_WINDOW = 120     # 标普500 SMA 回看窗口（交易日），跌破则清仓转入 credit
+WTI_TREND_WINDOW = 75        # 原油 SMA 回看窗口，同 nonferr（趋势性强，75d 敏感度最优）
 
 
 # === 策略标签 ===
 PORTFOLIO_TAGS = {
-    "V3c 多元":            {"stars": "★★★", "label": "简约派 — 6资产逆波动率 60d + nonferr 趋势过滤(75d) + HS300 AND抄底"},
+    "V3c 多元":            {"stars": "★★★", "label": "简约派 — 6资产逆波动率 60d + nonferr(75d) + HS300 AND抄底"},
     "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300 AND抄底"},
-    "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d + nonferr趋势(75d) + HS300 AND抄底，max_w=0.25"},
+    "V3-B 风险平价桶(20d)": {"stars": "★★★", "label": "预算派 — 4桶逆波动率 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300 AND抄底"},
+    "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d + nonferr(75d) + HS300 AND抄底，max_w=0.25"},
 }

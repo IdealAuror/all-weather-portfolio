@@ -317,6 +317,9 @@ def load_panel() -> pd.DataFrame:
     else:
         nonferr = nonferr_proxy
 
+    # 原油 WTI (USD×USDCNY)
+    wti_cny = _load_wti_cny()
+
     panel = pd.DataFrame({
         "hs300":    hs300,
         "us_sp500": us_sp500,
@@ -325,6 +328,7 @@ def load_panel() -> pd.DataFrame:
         "bond_30y": bond_30y,
         "gold":     gold,
         "nonferr":  nonferr,
+        "wti":      wti_cny,
     })
     panel.index = pd.to_datetime(panel.index)
     panel = panel.sort_index()
@@ -332,6 +336,25 @@ def load_panel() -> pd.DataFrame:
 
     return panel
 
+
+
+def _load_wti_cny() -> pd.Series:
+    """WTI 原油 CNY：WTI USD × USDCNY，全段扣减 QDII 管理费 1.0%/年。"""
+    wti = load_series("wti")
+    usdcny = _load_optional("usdcny")
+    if wti.empty:
+        raise FileNotFoundError("wti data not available")
+    if usdcny is None or usdcny.empty:
+        return wti  # 无汇率数据时回退 USD
+    combined = wti.index.union(usdcny.index).sort_values()
+    wti = wti.reindex(combined).ffill()
+    usdcny = usdcny.reindex(combined).ffill()
+    wti_cny = (wti * usdcny).dropna()
+    daily_deduct = SAFETY_DEDUCT.get("wti", 0.0) / 252.0
+    if daily_deduct > 0:
+        ret = wti_cny.pct_change().fillna(0.0) - daily_deduct
+        wti_cny = (1 + ret).cumprod() * wti_cny.iloc[0]
+    return wti_cny
 
 
 def load_hs300_pe(col_index: int = 2) -> pd.Series:

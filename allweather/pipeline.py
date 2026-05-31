@@ -59,7 +59,7 @@ def step_2_run_backtests(rets):
     signal_logs = {}
     n_rebal_total = 0
 
-    # --- V3c: 逆波动率加权（60d，6 资产精简）+ nonferr 趋势过滤 ---
+    # --- V3c: 逆波动率加权（60d，6 资产）+ nonferr 趋势过滤 ---
     for tier_label, c in CASH_TIERS:
         track = (tier_label == "100% RP")
         result = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
@@ -124,7 +124,46 @@ def step_2_run_backtests(rets):
     nv_results[("V3-B 风险平价(20d)", "动态")] = nv
     n_rebal_total += n
 
-    # --- 方案 B 增强: 逆波动率 + nonferr 趋势过滤 ---
+    # --- 方案 B 风险平价桶: 分层风险平价（20d, 4桶 risk_parity 桶间）+ same风控 ---
+    for tier_label, c in CASH_TIERS:
+        track = (tier_label == "100% RP")
+        result = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=c, rp_window=20,
+                            rp_buckets=V3B_RP_BUCKETS,
+                            bucket_method="risk_parity",
+                            nonferr_control="trend_filter",
+                            nonferr_trend_window=75,
+                            gold_trend_filter=True,
+                            gold_trend_window=75,
+                            equity_trend_assets=["us_sp500"],
+                            equity_trend_window=SP500_TREND_WINDOW,
+                            hs300_value_dip=True,
+                            track_weights=track,
+                            track_signals=track,
+                            signal_label="V3-B 风险平价桶")
+        if track:
+            nv, n, wh, sl = result
+            weight_history["V3-B 风险平价桶(20d)"] = wh
+            signal_logs["V3-B 风险平价桶"] = sl
+        else:
+            nv, n = result
+        nv_results[("V3-B 风险平价桶(20d)", tier_label)] = nv
+        n_rebal_total += n
+
+    nv, n = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=0.0, rp_window=20,
+                        rp_buckets=V3B_RP_BUCKETS,
+                        bucket_method="risk_parity",
+                        nonferr_control="trend_filter",
+                        nonferr_trend_window=75,
+                        gold_trend_filter=True,
+                        gold_trend_window=75,
+                        equity_trend_assets=["us_sp500"],
+                        equity_trend_window=SP500_TREND_WINDOW,
+                        hs300_value_dip=True,
+                        dynamic_cash=True)
+    nv_results[("V3-B 风险平价桶(20d)", "动态")] = nv
+    n_rebal_total += n
+
+    # --- 方案 B 增强: 逆波動率 + nonferr 趋势过滤 ---
     for tier_label, c in CASH_TIERS:
         track = (tier_label == "100% RP")
         result = backtest_b(rets[V3B_ASSETS], cash_ratio=c, rp_window=20,
@@ -243,6 +282,12 @@ def step_4_bootstrap(weights, rets, nv_results=None):
             if "保守增强" in portfolio:
                 proxy_w = inverse_vol_weights(
                     boot_rets[V3B_ASSETS].tail(20), window=20, max_w=0.25, min_w=RISK_PARITY_MIN_WEIGHT)
+            elif "风险平价桶" in portfolio:
+                proxy_w = hierarchical_rp_weights(
+                    boot_rets[V3B_RP_ASSETS].tail(20), rp_buckets_boot_rp, 20,
+                    RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
+                    bucket_method="risk_parity",
+                )
             elif "V3c" in portfolio:
                 proxy_w = inverse_vol_weights(
                     boot_rets[V3C_ASSETS].tail(60), window=60, max_w=0.30, min_w=0.03)
@@ -254,6 +299,10 @@ def step_4_bootstrap(weights, rets, nv_results=None):
                 )
             rets_for_p = rets[list(proxy_w.index)]
             boot[portfolio] = block_bootstrap(proxy_w, rets_for_p)
+
+    # 沪深300满仓基准
+    hs300_w = pd.Series([1.0], index=["hs300"])
+    boot["沪深300"] = block_bootstrap(hs300_w, rets[["hs300"]])
 
     print(f"  ok 用时: {time.time()-t0:.2f}s")
     return boot
@@ -296,7 +345,8 @@ def step_5_print_reports(metrics, boot, weights, weight_history=None, signal_log
 def step_6_save_outputs(nv_results, metrics, weights, boot=None,
                          excel: bool = True, markdown: bool = True,
                          weight_history: dict = None,
-                         signal_logs: dict = None):
+                         signal_logs: dict = None,
+                         benchmark_nv: pd.Series = None):
     """Step 6: 保存净值曲线 / 汇总 JSON / 权重 CSV / Excel / Markdown。
 
     excel 和 markdown 都需要 boot（蒙特卡洛结果）。如果只想跑基础三件套，
@@ -361,19 +411,24 @@ def step_6_save_outputs(nv_results, metrics, weights, boot=None,
             plot_nav_and_dd, plot_all_tiers_nv,
             plot_rolling_returns, plot_monthly_returns_comparison,
             plot_yearly_returns, plot_weight_stack,
+            plot_bootstrap_distribution,
+            plot_yearly_bar,
         )
         for p, wh in weight_history.items():
             wh_path = OUTPUT_DIR / f"weight_history_{p.replace(' ', '_').replace('(', '').replace(')', '')}.csv"
             wh.to_csv(wh_path, encoding="utf-8-sig")
             print(f"  ok {wh_path.name}（{p} 权重历史）")
 
-        plot_nav_and_dd(nv_results)
+        plot_nav_and_dd(nv_results)                              # 无基准
+        plot_nav_and_dd(nv_results, benchmark_nv=benchmark_nv)   # 带沪深300
         plot_all_tiers_nv(nv_results)
         plot_rolling_returns(metrics)
         plot_monthly_returns_comparison(nv_results)
         plot_yearly_returns(metrics, nv_results=nv_results)
         plot_weight_stack(weight_history)
-        print(f"  ok charts/（6 张图表）")
+        plot_bootstrap_distribution(boot, perf_results=metrics["perf"])
+        plot_yearly_bar(metrics, nv_results=nv_results)
+        print(f"  ok charts/（8 张图表）")
 
     # --- 同步 docs/data.json + 图表到 docs/charts/ ---
     save_docs_json(
@@ -421,10 +476,12 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True,
     step_5_print_reports(metrics, boot, weights,
                          weight_history=weight_history,
                          signal_logs=signal_logs)
+    hs300_nv = panel["hs300"] / panel["hs300"].iloc[0]
     step_6_save_outputs(nv_results, metrics, weights, boot=boot,
                          excel=excel, markdown=markdown,
                          weight_history=weight_history,
-                         signal_logs=signal_logs)
+                         signal_logs=signal_logs,
+                         benchmark_nv=hs300_nv)
 
     # 追加实验日志
     from .experiment_log import save_run

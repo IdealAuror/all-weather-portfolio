@@ -1,34 +1,27 @@
-"""实操再平衡工具 — 根据最新行情计算目标权重，生成调仓指令。
+"""实操再平衡工具 — 根据最新行情计算目标权重 + 全信号仪表盘 + 三策略对比。
 
 用法：
-    py -m allweather.rebalance                 # 交互式
-    py -m allweather.rebalance --strat V3c     # 指定策略
-    py -m allweather.rebalance --strat B-RP --tier 85
-
-输出：
-    1. 各策略目标权重表
-    2. 对比当前持仓（如提供）
-    3. 买卖清单（份额 + 金额）
+    python -m allweather.rebalance                 # 交互式，三策略对比
+    python -m allweather.rebalance --strat V3c     # 看单个策略详情
+    python -m allweather.rebalance --strat B-RP --tier 85
+    python -m allweather.rebalance --signals       # 只看当前信号状态
 """
 
 import sys
 import pandas as pd
+import numpy as np
 from pathlib import Path
-from datetime import date
+from .config import (
+    ROOT, ASSETS, ETF_META,
+    RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
+    GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
+    HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
+    HS300_PB_ENTRY, HS300_PE_EXIT, HS300_DIP_EXIT_RECOVERY,
+    SP500_TREND_WINDOW,
+)
 from .risk import inverse_vol_weights, hierarchical_rp_weights
 
-DATA_DIR = Path(__file__).parent.parent / "data"
-
-TICKER_INFO = {
-    "hs300":     ("510300", "沪深 300 ETF"),
-    "us_sp500":  ("513500", "标普 500 ETF（QDII）"),
-    "credit":    ("511220", "城投债 ETF"),
-    "bond_10y":  ("511260", "10 年国债 ETF"),
-    "bond_30y":  ("511130", "30 年国债 ETF"),
-    "gold":      ("518880", "黄金 ETF"),
-    "nonferr":   ("159980", "有色金属 ETF"),
-}
-
+# === 策略定义 ===
 V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr"]
 V3B_RP_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr"]
 V3B_CON_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr"]
@@ -49,109 +42,301 @@ V3B_CON_BUCKETS = {
 
 STRATEGIES = {
     "V3c": {
-        "name": "V3c 多元",
-        "assets": V3C_ASSETS,
-        "method": "inverse_vol",
-        "window": 60,
-        "max_w": 0.30,
-        "min_w": 0.03,
-        "nonferr_trend": 75,
-        "buckets": None,
+        "name": "V3c 多元", "assets": V3C_ASSETS,
+        "method": "inverse_vol", "window": 60,
+        "max_w": 0.30, "min_w": 0.03,
     },
     "B-RP": {
-        "name": "V3-B 风险平价(20d)",
-        "assets": V3B_RP_ASSETS,
-        "method": "hierarchical_rp",
-        "window": 20,
-        "max_w": 0.20,
-        "min_w": 0.02,
-        "nonferr_trend": 75,
+        "name": "V3-B 风险平价(20d)", "assets": V3B_RP_ASSETS,
+        "method": "hierarchical_rp", "window": 20,
+        "max_w": 0.20, "min_w": 0.02,
         "buckets": V3B_RP_BUCKETS,
     },
     "B-Con": {
-        "name": "V3-B 保守增强(20d)",
-        "assets": V3B_CON_ASSETS,
-        "method": "inverse_vol",
-        "window": 20,
-        "max_w": 0.25,
-        "min_w": 0.02,
-        "nonferr_trend": 75,
-        "buckets": None,
+        "name": "V3-B 保守增强(20d)", "assets": V3B_CON_ASSETS,
+        "method": "inverse_vol", "window": 20,
+        "max_w": 0.25, "min_w": 0.02,
     },
 }
 
-
-def load_prices():
-    """用 data.load_panel() 加载全资产面板（含缝合合成）。"""
-    from .data import load_panel
-    return load_panel()
+LINE = "=" * 72
 
 
-def check_nonferr_trend(prices, window):
-    """检查有色金属是否跌破 SMA → True=触发过滤, 应清仓 nonferr。"""
-    if "nonferr" not in prices.columns or len(prices) < window:
+# ============================================================
+# 信号状态检测
+# ============================================================
+
+def _sma_filter(prices, asset, window):
+    """资产跌破 SMA → 返回 True（应清仓）。"""
+    if asset not in prices.columns or len(prices) < window:
         return False
-    nf = prices["nonferr"]
-    sma = nf.iloc[-window:].mean()
-    return nf.iloc[-1] < sma
+    s = prices[asset]
+    return s.iloc[-1] < s.iloc[-window:].mean()
 
+
+def _drawdown(prices, asset, lookback=252):
+    """当前从 N 日高点的回撤。"""
+    if asset not in prices.columns or len(prices) < lookback:
+        return 0.0
+    s = prices[asset].iloc[-lookback:]
+    peak = s.max()
+    return s.iloc[-1] / peak - 1
+
+
+def compute_signal_states(prices):
+    """返回当前所有风控信号状态。"""
+    rets = prices.pct_change().dropna()
+    latest = prices.index[-1]
+    d = latest
+
+    signals = {}
+
+    # --- SMA trend filters ---
+    signals["nonferr_below_sma75"] = _sma_filter(prices, "nonferr", 75)
+    signals["gold_below_sma75"] = _sma_filter(prices, "gold", 75)
+    signals["sp500_below_sma120"] = _sma_filter(prices, "us_sp500", SP500_TREND_WINDOW)
+
+    # --- Gold dip ---
+    gold_dd = _drawdown(prices, "gold", 252)
+    signals["gold_dd_pct"] = gold_dd
+    signals["gold_dip_active"] = gold_dd <= -GOLD_DIP_THRESHOLD
+
+    # --- HS300 dip ---
+    hs300_dd = _drawdown(prices, "hs300", 756)
+    signals["hs300_dd_pct"] = hs300_dd
+
+    # HS300 SMA check (> SMA120 for entry)
+    hs300_sma120 = prices["hs300"].iloc[-120:].mean() if len(prices) >= 120 else 0
+    signals["hs300_above_sma120"] = prices["hs300"].iloc[-1] > hs300_sma120 if len(prices) >= 120 else False
+
+    # HS300 PB/PE percentile
+    try:
+        pb_data = load_hs300_pb()
+        pe_data = load_hs300_pe()
+        if pb_data is not None and len(pb_data[pb_data.index <= d]) >= 252:
+            pb_to = pb_data[pb_data.index <= d]
+            pb_val = pb_to.iloc[-1]
+            pb_pct = (pb_to < pb_val).sum() / len(pb_to) * 100
+            signals["pb_pctile"] = float(pb_pct)
+            signals["pb_entry_ok"] = pb_pct < HS300_PB_ENTRY
+        else:
+            signals["pb_pctile"] = None
+            signals["pb_entry_ok"] = False
+
+        if pe_data is not None and len(pe_data[pe_data.index <= d]) >= 252:
+            pe_to = pe_data[pe_data.index <= d]
+            pe_val = pe_to.iloc[-1]
+            pe_pct = (pe_to < pe_val).sum() / len(pe_to) * 100
+            signals["pe_pctile"] = float(pe_pct)
+            signals["pe_exit_ok"] = pe_pct < HS300_PE_EXIT
+        else:
+            signals["pe_pctile"] = None
+            signals["pe_exit_ok"] = False
+    except (FileNotFoundError, OSError):
+        signals["pb_pctile"] = None
+        signals["pe_pctile"] = None
+        signals["pb_entry_ok"] = False
+        signals["pe_exit_ok"] = False
+
+    # HS300 AND condition
+    dd_ok = signals["hs300_dd_pct"] <= -HS300_DIP_THRESHOLD
+    pb_ok = signals.get("pb_entry_ok", False)
+    sma_ok = signals.get("hs300_above_sma120", False)
+    signals["hs300_dip_ready"] = dd_ok and pb_ok and sma_ok
+    signals["hs300_dip_exit"] = signals.get("pe_exit_ok", True) is False
+
+    return signals
+
+
+# ============================================================
+# 权重计算
+# ============================================================
 
 def compute_target_weights(strat_key, prices, cash_ratio=0.0):
     cfg = STRATEGIES[strat_key]
     rets_all = prices.pct_change().dropna()
-    rets = rets_all[cfg["assets"]]
+    rets = rets_all[cfg["assets"]].dropna()
 
     if cfg["method"] == "inverse_vol":
         w = inverse_vol_weights(rets, cfg["window"], cfg["max_w"], cfg["min_w"])
     else:
         w = hierarchical_rp_weights(rets, cfg["buckets"], cfg["window"],
                                      cfg["max_w"], cfg["min_w"])
-
-    nf_triggered = check_nonferr_trend(prices, cfg["nonferr_trend"])
-    if nf_triggered and "nonferr" in w.index and "credit" in w.index:
-        w["credit"] += w["nonferr"]
-        w["nonferr"] = 0.0
-
-    w = w * (1 - cash_ratio)
-    return w, nf_triggered
+    return w * (1 - cash_ratio)
 
 
-def format_weight_table(strat_key, w, nf_triggered):
+def apply_signal_overrides(strat_key, w, signals):
+    """按策略应用各风控措施到目标权重。"""
+    w = w.copy()
+
+    # nonferr trend filter (all strategies)
+    if signals.get("nonferr_below_sma75", False) and "nonferr" in w.index and "credit" in w.index:
+        if w["nonferr"] > 0:
+            w["credit"] += w["nonferr"]
+            w["nonferr"] = 0.0
+
+    # gold trend filter (only V3-B RP and V3c)
+    if strat_key != "B-Con":
+        if signals.get("gold_below_sma75", False) and "gold" in w.index and "credit" in w.index:
+            if w["gold"] > 0:
+                w["credit"] += w["gold"]
+                w["gold"] = 0.0
+
+    # SP500 trend filter (all strategies now include it)
+    if signals.get("sp500_below_sma120", False) and "us_sp500" in w.index and "credit" in w.index:
+        if w["us_sp500"] > 0:
+            w["credit"] += w["us_sp500"]
+            w["us_sp500"] = 0.0
+
+    # Gold dip (V3c and B-Con use cap 0.20)
+    if signals.get("gold_dip_active", False) and "gold" in w.index and "credit" in w.index:
+        if w["gold"] > 0:
+            boost = w["gold"] * GOLD_DIP_BOOST
+            if w["credit"] >= boost:
+                w["gold"] += boost
+                w["credit"] -= boost
+                if strat_key in ("V3c", "B-Con"):
+                    cap = 0.20
+                    if w["gold"] > cap:
+                        w["credit"] += w["gold"] - cap
+                        w["gold"] = cap
+
+    # HS300 AND dip
+    if signals.get("hs300_dip_ready", False) and "hs300" in w.index and "credit" in w.index:
+        if w["hs300"] > 0:
+            boost = w["hs300"] * (HS300_DIP_BOOST - 1)
+            if w["credit"] >= boost:
+                w["hs300"] += boost
+                w["credit"] -= boost
+
+    return w / w.sum()  # renormalize to 1.0
+
+
+# ============================================================
+# 显示格式
+# ============================================================
+
+def _pct(v):
+    return f"{v*100:>6.1f}%"
+
+
+def _fmt_bool(v, yes="⚡触发", no="正常"):
+    return yes if v else no
+
+
+def display_signal_dashboard(signals):
+    """风控信号仪表盘。"""
+    print(f"\n{LINE}")
+    print("  当前市场信号状态")
+    print(LINE)
+
+    au_dd = signals.get("gold_dd_pct", 0)
+    hs_dd = signals.get("hs300_dd_pct", 0)
+
+    print(f"  nonferr vs SMA75:  {_fmt_bool(signals['nonferr_below_sma75'])}")
+    print(f"  gold vs SMA75:     {_fmt_bool(signals['gold_below_sma75'])}")
+    print(f"  SP500 vs SMA120:   {_fmt_bool(signals['sp500_below_sma120'])}")
+    print(f"  Gold 回撤:         {au_dd*100:>5.1f}%  ({_fmt_bool(signals['gold_dip_active'], '可抄底', '未触发')})")
+    print(f"  HS300 回撤:        {hs_dd*100:>5.1f}%  ({_fmt_bool(signals['hs300_dd_pct'] <= -HS300_DIP_THRESHOLD, '深度回撤', '正常')})")
+
+    pb = signals.get("pb_pctile")
+    pe = signals.get("pe_pctile")
+    print(f"  PB 分位:           {f'{pb:.0f}%ile' if pb is not None else 'n/a'}  "
+          f"({_fmt_bool(signals.get('pb_entry_ok', False), '便宜 ✓', '偏贵 ✗')})")
+    print(f"  PE 分位:           {f'{pe:.0f}%ile' if pe is not None else 'n/a'}  "
+          f"({_fmt_bool(pe is not None and pe < 70, '正常', '偏贵需出场')})")
+    print(f"  HS300 AND 抄底:    {'🔴 已就绪' if signals['hs300_dip_ready'] else '⚪ 等待条件'}")
+
+
+def display_weight_table(strat_key, w, signals):
+    """单个策略详细权重表。"""
     cfg = STRATEGIES[strat_key]
-    lines = []
-    lines.append(f"\n{'='*70}")
-    lines.append(f"  {cfg['name']} — 目标权重")
-    lines.append(f"  方法: {cfg['method']}, 窗口: {cfg['window']}d, "
-                 f"max_w={cfg['max_w']}, min_w={cfg['min_w']}")
-    if cfg['nonferr_trend']:
-        flag = " ⚠ 已触发!" if nf_triggered else " 正常"
-        lines.append(f"  nonferr 趋势过滤({cfg['nonferr_trend']}d SMA):{flag}")
-    lines.append(f"{'='*70}")
-    lines.append(f"{'资产':<25} {'代码':<8} {'目标权重':>8}")
-    lines.append("-" * 45)
+
+    print(f"\n{LINE}")
+    print(f"  {cfg['name']}")
+    print(f"  方法: {cfg['method']}, 窗口: {cfg['window']}d, "
+          f"max_w={cfg['max_w']}, min_w={cfg['min_w']}")
+    print(LINE)
+    print(f"  {'资产':<22} {'代码':<8} {'权重':>8}  |  {'风控状态':<20}")
+    print("  " + "-" * 72)
+
     for a in cfg["assets"]:
-        code, name = TICKER_INFO[a]
-        pct = w.get(a, 0) * 100
-        lines.append(f"{name:<25} {code:<8} {pct:>7.1f}%")
-    if nf_triggered and w.get("nonferr", 0) == 0:
-        lines.append(f"  → nonferr 跌破 SMA，权重已转入 credit")
-    lines.append(f"{' '*25} {'合计':<8} {w.sum()*100:>7.1f}%")
-    return "\n".join(lines)
+        meta = ETF_META.get(a, {"code": "", "name": a})
+        pct = w.get(a, 0)
+        status = []
+        if a == "nonferr" and signals.get("nonferr_below_sma75", False) and pct == 0:
+            status.append("趋势过滤→credit")
+        if a == "gold" and signals.get("gold_below_sma75", False) and pct == 0:
+            status.append("趋势过滤→credit")
+        if a == "gold" and signals.get("gold_dip_active", False) and pct > 0:
+            status.append(f"抄底×{GOLD_DIP_BOOST:.0f}")
+        if a == "us_sp500" and signals.get("sp500_below_sma120", False) and pct == 0:
+            status.append("趋势过滤→credit")
+        if a == "hs300" and signals.get("hs300_dip_ready", False) and pct > 0:
+            status.append(f"AND抄底×{HS300_DIP_BOOST:.1f}")
+        if a == "credit":
+            nf = signals.get("nonferr_below_sma75", False)
+            sp = signals.get("sp500_below_sma120", False)
+            au = signals.get("gold_below_sma75", False)
+            incoming = []
+            if nf: incoming.append("nonferr")
+            if sp: incoming.append("SP500")
+            if au: incoming.append("gold")
+            if incoming:
+                status.append(f"接收{'/'.join(incoming)}")
+        s = ", ".join(status) if status else "—"
+        print(f"  {meta['name']:<22} {meta['code']:<8} {_pct(pct):>8}  |  {s:<20}")
+
+    print(f"  {'':<22} {'合计':<8} {_pct(w.sum()):>8}")
 
 
-def format_trade_list(strat_key, target_w, holdings_dict, total_value):
+def display_all_strategies(prices, signals, tier="100"):
+    """三策略目标权重同屏对比。"""
+    cash_ratio = 1 - int(tier) / 100
+    results = {}
+    for k in ["V3c", "B-RP", "B-Con"]:
+        w0 = compute_target_weights(k, prices, cash_ratio)
+        w1 = apply_signal_overrides(k, w0, signals)
+        results[k] = w1
+
+    print(f"\n{LINE}")
+    print(f"  三策略目标权重对比（{tier}% RP）  数据: {prices.index[-1].date()}")
+    print(LINE)
+
+    # Header
+    print(f"  {'资产':<22} {'代码':<8}", end="")
+    for k in ["V3c", "B-RP", "B-Con"]:
+        print(f"{STRATEGIES[k]['name']:>20}", end="")
+    print()
+
+    print("  " + "-" * 80)
+
+    for a in ASSETS:
+        meta = ETF_META.get(a, {"code": "", "name": a})
+        print(f"  {meta['name']:<22} {meta['code']:<8}", end="")
+        for k in ["V3c", "B-RP", "B-Con"]:
+            pct = results[k].get(a, 0)
+            print(f"{_pct(pct):>20}", end="")
+        print()
+
+    print(f"  {'':<22} {'合计':<8}", end="")
+    for k in ["V3c", "B-RP", "B-Con"]:
+        print(f"{_pct(results[k].sum()):>20}", end="")
+    print()
+
+
+def display_trade_list(strat_key, target_w, holdings_dict, total_value):
+    """生成买卖清单。"""
     cfg = STRATEGIES[strat_key]
-    lines = []
-    lines.append(f"\n{'='*70}")
-    lines.append(f"  调仓清单 — {cfg['name']}")
-    lines.append(f"  组合总市值: ¥{total_value:,.0f}")
-    lines.append(f"{'='*70}")
-    lines.append(f"{'资产':<12} {'代码':<8} {'当前':>10} {'目标':>10} {'差额':>10} {'操作':>12}")
-    lines.append("-" * 70)
+    print(f"\n{LINE}")
+    print(f"  调仓清单 — {cfg['name']}   组合总市值: ¥{total_value:,.0f}")
+    print(LINE)
+    print(f"  {'资产':<22} {'代码':<8} {'当前':>10} {'目标':>10} {'差额':>10}  {'操作':<12}")
+    print("  " + "-" * 72)
 
     any_trade = False
     for a in cfg["assets"]:
-        code, name = TICKER_INFO[a]
+        meta = ETF_META.get(a, {"code": "", "name": a})
         target = target_w.get(a, 0) * total_value
         current = holdings_dict.get(a, 0)
         diff = target - current
@@ -159,25 +344,25 @@ def format_trade_list(strat_key, target_w, holdings_dict, total_value):
         if abs(diff) < total_value * 0.005:
             action = "不动"
         elif diff > 0:
-            action = f"买入 ¥{diff:,.0f}"
+            action = f"买入 ¥{diff:>8,.0f}"
             any_trade = True
         else:
-            action = f"卖出 ¥{-diff:,.0f}"
+            action = f"卖出 ¥{-diff:>8,.0f}"
             any_trade = True
 
-        lines.append(f"{name:<12} {code:<8} ¥{current:>9,.0f} ¥{target:>9,.0f} "
-                     f"{'+' if diff>=0 else ''}¥{diff:>8,.0f} {action:>12}")
+        print(f"  {meta['name']:<22} {meta['code']:<8} "
+              f"¥{current:>9,.0f} ¥{target:>9,.0f} "
+              f"{'+' if diff>=0 else '-'}¥{abs(diff):>8,.0f}  {action:<12}")
 
     if not any_trade:
-        lines.append("\n  ✓ 所有资产偏离 < 0.5%，无需调仓")
-    return "\n".join(lines)
+        print(f"\n  ✓ 所有资产偏离 < 0.5%，无需调仓")
 
 
 def parse_holdings_input():
     """交互式输入当前持仓。"""
     print("\n输入当前持仓金额（元），直接回车跳过该项：")
     holdings = {}
-    for key, (code, name) in TICKER_INFO.items():
+    for key, (code, name) in ETF_META.items():
         try:
             inp = input(f"  {name} ({code}): ").strip()
             if inp:
@@ -187,20 +372,32 @@ def parse_holdings_input():
     return holdings
 
 
-def validate_holdings(holdings, assets):
-    for k, v in holdings.items():
-        if v < 0:
-            raise ValueError(f"{TICKER_INFO[k][1]} 金额不能为负: {v}")
-    total = sum(holdings.values())
-    if total <= 0:
-        raise ValueError("持仓总市值必须 > 0")
-    return total
+# ============================================================
+# 数据加载
+# ============================================================
 
+def load_hs300_pb():
+    from .data import load_hs300_pb as _load
+    return _load()
+
+def load_hs300_pe():
+    from .data import load_hs300_pe as _load
+    return _load()
+
+def load_prices():
+    from .data import load_panel
+    return load_panel()
+
+
+# ============================================================
+# 主入口
+# ============================================================
 
 def main():
     args = sys.argv[1:]
     strat_key = None
     tier = None
+    show_signals_only = False
 
     i = 0
     while i < len(args):
@@ -208,58 +405,90 @@ def main():
             strat_key = args[i + 1]; i += 2
         elif args[i] == "--tier" and i + 1 < len(args):
             tier = args[i + 1]; i += 2
+        elif args[i] in ("--signals", "-s"):
+            show_signals_only = True; i += 1
         elif args[i] in ("-h", "--help"):
             print(__doc__)
             return
         else:
             i += 1
 
-    if strat_key not in STRATEGIES:
-        print("可选策略: V3c / B-RP / B-Con")
-        strat_key = input("选择策略: ").strip()
-        if strat_key not in STRATEGIES:
-            print(f"无效策略: {strat_key}")
-            return
-
-    if tier not in ("100", "85", "70"):
-        tier = input("现金档位 (100/85/70, 默认 100): ").strip() or "100"
-    cash_ratio = 1 - int(tier) / 100
-
-    print(f"\n加载行情数据...")
-    prices = load_prices()
-
-    cfg = STRATEGIES[strat_key]
-    missing = [a for a in cfg["assets"] if a not in prices.columns]
-    if missing:
-        print(f"缺少数据: {missing}")
+    if strat_key is not None and strat_key not in STRATEGIES:
+        print(f"可选策略: {' / '.join(STRATEGIES.keys())}")
         return
 
+    if tier is None:
+        tier = "100"
+    if tier not in ("100", "85", "70"):
+        tier = "100"
+
+    print(f"加载行情数据...")
+    prices = load_prices()
     last_date = prices.index[-1].strftime("%Y-%m-%d")
-    print(f"最新数据日期: {last_date}")
+    print(f"最新数据: {last_date}  |  共 {len(prices)} 个交易日\n")
 
-    w, nf_triggered = compute_target_weights(strat_key, prices, cash_ratio)
-    print(format_weight_table(strat_key, w, nf_triggered))
+    signals = compute_signal_states(prices)
 
-    has_holdings = input("\n有当前持仓数据吗？输入金额生成调仓清单 (y/n): ").strip().lower()
-    if has_holdings == "y":
-        holdings = parse_holdings_input()
-        if holdings:
-            try:
-                total = validate_holdings(holdings, cfg["assets"])
-                print(format_trade_list(strat_key, w, holdings, total))
-            except ValueError as e:
-                print(f"输入错误: {e}")
-                return
+    # --signals: 只看信号
+    if show_signals_only:
+        display_signal_dashboard(signals)
+        print()
+        return
 
-    print(f"\n{'='*70}")
+    # 指定单一策略
+    if strat_key:
+        cfg = STRATEGIES[strat_key]
+        missing = [a for a in cfg["assets"] if a not in prices.columns]
+        if missing:
+            print(f"缺少数据: {missing}")
+            return
+
+        cash_ratio = 1 - int(tier) / 100
+        w0 = compute_target_weights(strat_key, prices, cash_ratio)
+        w = apply_signal_overrides(strat_key, w0, signals)
+
+        display_signal_dashboard(signals)
+        display_weight_table(strat_key, w, signals)
+
+        has_holdings = input("\n有当前持仓数据吗？输入金额生成调仓清单 (y/n): ").strip().lower()
+        if has_holdings == "y":
+            holdings = parse_holdings_input()
+            if holdings:
+                total = sum(holdings.values())
+                if total > 0 and all(v >= 0 for v in holdings.values()):
+                    display_trade_list(strat_key, w, holdings, total)
+
+    else:
+        # 默认：三策略对比 + 信号仪表盘
+        display_signal_dashboard(signals)
+        display_all_strategies(prices, signals, tier)
+
+        # 选一个看详情
+        print(f"\n策略: {' / '.join(STRATEGIES.keys())}")
+        pick = input("看哪个策略详情? (直接回车跳过): ").strip()
+        if pick in STRATEGIES:
+            cash_ratio = 1 - int(tier) / 100
+            w0 = compute_target_weights(pick, prices, cash_ratio)
+            w = apply_signal_overrides(pick, w0, signals)
+            display_weight_table(pick, w, signals)
+
+            has_holdings = input("\n有当前持仓数据吗？ (y/n): ").strip().lower()
+            if has_holdings == "y":
+                holdings = parse_holdings_input()
+                if holdings:
+                    total = sum(holdings.values())
+                    if total > 0 and all(v >= 0 for v in holdings.values()):
+                        display_trade_list(pick, w, holdings, total)
+
+    # 调仓提示
+    print(f"\n{LINE}")
     print("  调仓规则:")
-    print(f"  1. 每月最后一个交易日执行一次")
-    if cfg["nonferr_trend"]:
-        print(f"  2. 检查 nonferr vs {cfg['nonferr_trend']}d SMA — 跌破则清仓转 credit")
-    print(f"  3. 先卖后买 — 卖出资金 T+0 可用后再买入")
-    print(f"  4. 偏离 < 0.5% 不用动，省手续费")
-    print(f"  5. 标普 500 QDII 经常限购，买不到用场外联接 050025 替代")
-    print(f"{'='*70}\n")
+    print("  1. 每月最后一个交易日执行一次")
+    print("  2. 先卖后买 — 卖出资金 T+0 可用后再买入")
+    print(f"  3. nonferr/gold/SP500 跌破 SMA → 清仓转 credit")
+    print("  4. 偏离 < 0.5% 不用动，省手续费")
+    print("  5. 标普 500 QDII 经常限购，买不到用场外联接 050025 替代")
+    print(f"{LINE}\n")
 
 
 if __name__ == "__main__":

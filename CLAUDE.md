@@ -103,8 +103,9 @@ py main.py --no-markdown           # 跳过 Markdown
 py main.py --fetch                 # 拉数据 + 回测
 py main.py --fetch-only            # 仅拉数据
 py main.py --force-fetch           # 强制重拉
-python -m allweather.rebalance              # 实盘再平衡（交互式）
-python -m allweather.rebalance --strat V3c  # 仅看 V3c 目标权重
+python -m allweather.rebalance              # 实盘再平衡（三策略对比 + 信号仪表盘）
+python -m allweather.rebalance --strat V3c  # 只看 V3c 详情
+python -m allweather.rebalance --signals    # 只看当前市场信号状态
 ```
 
 CI：`.github/workflows/backtest.yml` 跑 `py main.py`，检查 Sharpe/MDD 边界。
@@ -129,7 +130,7 @@ allweather/
 
 ### 6 步流水线
 
-1. 加载 9 资产面板 → 2. 跑 3 策略 × 3 现金档 = 9 回测 → 3. 算衍生指标 + D_excess 显著性 → 4. Block Bootstrap (1000×5yr, 21d block) → 5. 打印控制台 → 6. 保存 CSV/JSON/Excel/Markdown/图表
+1. 加载 8 资产面板 → 2. 跑 3 策略 × 3 现金档 = 9 回测（+3 动态现金 = 12）→ 3. 算衍生指标 + D_excess 显著性 → 4. Block Bootstrap (1000×5yr, 21d block) → 5. 打印控制台 → 6. 保存 CSV/JSON/Excel/Markdown/图表
 
 ### 三策略
 
@@ -137,9 +138,10 @@ allweather/
 |------|------|----------|--------|------|
 | V3c 多元 | `backtest.py::backtest_iv` | 逆波动率 60d (max 0.30) + nonferr 75d + HS300 AND抄底 | 6 | 最简，每月调仓 |
 | V3-B 风险平价(20d) | `strategy_b.py::backtest_b` | 4 桶等权 HRP + nonferr 75d + gold 75d + sp500 120d + Gold dip + HS300 AND抄底 | 6 (无 bond_10y) | CAGR 最高，三重风控 |
-| V3-B 保守增强(20d) | `strategy_b.py::backtest_b` | 逆波动率 20d (max 0.25) + nonferr 75d + HS300 AND抄底 | 7 | 回撤最低，Sharpe 最高 |
+| V3-B 保守增强(20d) | `strategy_b.py::backtest_b` | 逆波动率 20d (max 0.25) + nonferr 75d + HS300 AND抄底 | 7 (含 bond_10y) | 回撤最低，Sharpe 最高 |
 
 × 3 现金档：100% RP / 85% RP / 70% RP。div_idx 和 soymeal 已于 2026-05-27 移除。
+wti（原油 501018）已集成数据管道和引擎，因 QDII 限购暂不可执行。
 
 ### 资产与桶
 
@@ -150,6 +152,7 @@ allweather/
 | 增长↓10Y | bond_10y | — | — | ✓ |
 | 增长↓30Y | bond_30y | ✓ | ✓ | ✓ |
 | 通胀↑ | gold, nonferr | ✓ | ✓ | ✓ |
+| 通胀↑备选 | ~~wti~~ *(QDII限购)* | — | — | — |
 
 V3-B RP 去掉了 bond_10y：CAGR +1.43pp，Sharpe 仅 -0.02。
 
@@ -174,6 +177,7 @@ V3-B RP 去掉了 bond_10y：CAGR +1.43pp，Sharpe 仅 -0.02。
 | `HS300_DIP_BOOST` | 1.8 | HS300 抄底倍数 |
 | `HS300_PB_ENTRY` / `HS300_PE_EXIT` | 30 / 70 | AND 逻辑 入场PB / 出场PE 分位阈值 |
 | `SP500_TREND_WINDOW` | 120 | SP500 SMA 回看 |
+| `WTI_TREND_WINDOW` | 75 | 原油 SMA 回看（同 nonferr） |
 | `BOOTSTRAP_N_SIM` | 1000 | 蒙特卡洛次数 |
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5 年 |
 | `BOOTSTRAP_BLOCK_DAYS` | 21 | ~1 个月块 |
