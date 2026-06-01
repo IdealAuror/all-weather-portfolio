@@ -290,7 +290,8 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
                          excel: bool = True, markdown: bool = True,
                          weight_history: dict = None,
                          signal_logs: dict = None,
-                         benchmark_nv: pd.Series = None):
+                         benchmark_nv: pd.Series = None,
+                         panel: pd.DataFrame = None):
     """Step 6: 保存净值曲线 / 汇总 JSON / 权重 CSV / Excel / Markdown。
 
     excel 和 markdown 都需要 boot（蒙特卡洛结果）。如果只想跑基础三件套，
@@ -373,6 +374,15 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
         print(f"  ok charts/（8 张图表）")
 
     # --- 同步 docs/data.json + 图表到 docs/charts/ ---
+    signals = None
+    prices_series = None
+    if panel is not None:
+        try:
+            from .rebalance import compute_signal_states
+            signals = compute_signal_states(panel)
+        except Exception:
+            pass
+        prices_series = panel.iloc[-1]
     save_docs_json(
         perf_results=metrics["perf"],
         yearly_results=metrics["yearly"],
@@ -381,6 +391,8 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
         rolling_results=metrics["rolling"],
         boot_results=boot,
         weight_history=weight_history or {},
+        signals=signals,
+        latest_prices=prices_series,
     )
     patch_index_html()
 
@@ -423,7 +435,8 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True,
                          excel=excel, markdown=markdown,
                          weight_history=weight_history,
                          signal_logs=signal_logs,
-                         benchmark_nv=hs300_nv)
+                         benchmark_nv=hs300_nv,
+                         panel=panel)
 
     # 追加实验日志
     from .experiment_log import save_run

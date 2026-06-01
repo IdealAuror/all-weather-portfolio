@@ -211,6 +211,29 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
     .ch-h1 { page-break-before: auto; }
     .plan-title { page-break-before: auto; }
 }
+/* 实时信号与建仓面板 */
+.signal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0; }
+.signal-card { background: #f8f9fa; border-radius: 8px; padding: 10px 14px; border-left: 4px solid #2e75b6; }
+.signal-card.ok { border-left-color: #27ae60; }
+.signal-card.warn { border-left-color: #f39c12; }
+.signal-card.danger { border-left-color: #e74c3c; }
+.signal-card .lbl { font-size: 11px; color: #888; }
+.signal-card .val { font-size: 16px; font-weight: bold; margin-top: 2px; }
+.signal-card .sub { font-size: 12px; color: #666; margin-top: 2px; }
+.dashboard-section { margin: 16px 0; }
+.dashboard-section h3 { font-size: 16px; color: #1f4e79; margin: 12px 0 8px; }
+.build-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.build-input { padding: 8px 12px; font-size: 16px; border: 2px solid #2e75b6; border-radius: 6px; width: 200px; }
+.build-btn { padding: 8px 20px; font-size: 16px; background: #2e75b6; color: white; border: none; border-radius: 6px; cursor: pointer; }
+.build-btn:hover { background: #1f4e79; }
+.tbl-wrap { overflow-x: auto; }
+.tbl-wrap table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 13px; }
+.tbl-wrap th { background: #f0f6fc; padding: 6px 8px; border-bottom: 2px solid #ddd; font-size: 12px; white-space: nowrap; }
+.tbl-wrap td { padding: 4px 8px; border-bottom: 1px solid #eee; text-align: right; }
+.tbl-wrap td:first-child { text-align: left; }
+.tbl-wrap .tot { font-weight: bold; border-top: 2px solid #2e75b6; }
+.strat-tab { display: inline-block; padding: 6px 14px; margin: 2px; border-radius: 6px; cursor: pointer; font-size: 13px; background: #e8eaed; }
+.strat-tab.active { background: #2e75b6; color: white; }
 </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -240,6 +263,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h1 class="doc-title">桥水全天候策略 · 中国版实践</h1>
 <p class="doc-subtitle">基于风险平价（Risk Parity）的 A 股投资者落地方案</p>
 <p class="doc-meta">回测期: 2005-04 ~ 2026-04（~21 年）  |  调仓规则: 月度调仓 + nonferr/Gold/SP500 趋势过滤(B-RP)  |  本金示例: 100 万<button class="dl-btn" onclick="downloadHTML()">下载 HTML</button></p>
+<div id="rt-dashboard" class="dashboard-section"><p style="color:#888;font-size:13px;">加载实时信号...</p></div>
 <h2 class="ch-h1" id="ch0">一、桥水全天候策略核心逻辑</h2>
 <p class="para">桥水基金（Bridgewater）的全天候策略（All Weather Strategy）是投资界最著名的风险平价（Risk Parity）实践。它的核心逻辑非常纯粹：既然我们无法准确预测未来，那就构建一个在任何宏观环境下都不会重伤的组合，让时间和复利做朋友。</p>
 <h3 class="sec-h3">（一）四象限框架：把宏观风险拆开看</h3>
@@ -1461,6 +1485,8 @@ function downloadHTML() {
 
 
 
+
+
 <!-- ALLWEATHER_SYNC_START --><script>
 (function(){
 const D = {"V3c 多元": {"100% RP": {"cum_return": 5.462215, "cagr": 0.084254, "vol": 0.042669, "mdd": -0.070077, "sharpe": 1.458986, "calmar": 1.202299, "final_nv": 6.4622}, "85% RP": {"cum_return": 4.35267, "cagr": 0.075435, "vol": 0.037307, "mdd": -0.058941, "sharpe": 1.432309, "calmar": 1.279842, "final_nv": 5.3527}, "70% RP": {"cum_return": 3.426438, "cagr": 0.066614, "vol": 0.031702, "mdd": -0.049205, "sharpe": 1.407289, "calmar": 1.35381, "final_nv": 4.4264}, "动态": {"cum_return": 4.696878, "cagr": 0.078345, "vol": 0.038394, "mdd": -0.059037, "sharpe": 1.467526, "calmar": 1.32704, "final_nv": 5.6969}}, "V3-B 风险平价(20d)": {"100% RP": {"cum_return": 8.307544, "cagr": 0.10154, "vol": 0.056822, "mdd": -0.09247, "sharpe": 1.399808, "calmar": 1.098079, "final_nv": 9.3075}, "85% RP": {"cum_return": 6.221777, "cagr": 0.08949, "vol": 0.048298, "mdd": -0.078788, "sharpe": 1.397349, "calmar": 1.135825, "final_nv": 7.2218}, "70% RP": {"cum_return": 4.593973, "cagr": 0.077493, "vol": 0.039775, "mdd": -0.06494, "sharpe": 1.395169, "calmar": 1.193295, "final_nv": 5.594}, "动态": {"cum_return": 6.587144, "cagr": 0.091823, "vol": 0.050567, "mdd": -0.070124, "sharpe": 1.380803, "calmar": 1.309446, "final_nv": 7.5871}}, "V3-B 保守增强(20d)": {"100% RP": {"cum_return": 3.906371, "cagr": 0.071384, "vol": 0.034256, "mdd": -0.053463, "sharpe": 1.44162, "calmar": 1.33521, "final_nv": 4.9064}, "85% RP": {"cum_return": 3.221481, "cagr": 0.064424, "vol": 0.029473, "mdd": -0.044537, "sharpe": 1.439417, "calmar": 1.44653, "final_nv": 4.2215}, "70% RP": {"cum_return": 2.619627, "cagr": 0.05735, "vol": 0.024461, "mdd": -0.035546, "sharpe": 1.445129, "calmar": 1.613392, "final_nv": 3.6196}, "动态": {"cum_return": 3.463209, "cagr": 0.066996, "vol": 0.030994, "mdd": -0.050527, "sharpe": 1.451785, "calmar": 1.325949, "final_nv": 4.4632}}};
@@ -1897,8 +1923,118 @@ if (T) {
 }());
 
 console.log('data.json sync: '+Object.keys(D).length+' strategies loaded');
+window._ALLWEATHER_DATA = D;
 })();
 </script><!-- ALLWEATHER_SYNC_END -->
+
+<script>
+/* 实时信号与建仓仪表盘 — 从 _ALLWEATHER_DATA 读取渲染 */
+(function(){
+var rt = document.getElementById('rt-dashboard');
+if (!rt) return;
+var D = window._ALLWEATHER_DATA;
+if (!D) { rt.innerHTML = '<p style="color:#888;font-size:13px;">数据加载中，请刷新页面...</p>'; return; }
+var sig = D.signals, pr = D.latest_prices, ws = D.weights_snapshot;
+if (!sig || !pr) { rt.innerHTML = ''; return; }
+
+var STRAT_KEYS = ['V3c 多元', 'V3-B 风险平价(20d)', 'V3-B 保守增强(20d)'];
+var ASSET_NAMES = {"hs300":"沪深300","us_sp500":"标普500","credit":"城投债","bond_10y":"10Y国债","bond_30y":"30Y国债","gold":"黄金","nonferr":"有色","wti":"原油"};
+var ETF_CODES = {"hs300":"510300","us_sp500":"513500","credit":"511220","bond_10y":"511260","bond_30y":"511130","gold":"518880","nonferr":"159980","wti":"501018"};
+
+/* 信号卡片 */
+var cards = [
+	{label:'nonferr趋势', ok:!sig.nonferr_below_sma75, val:sig.nonferr_below_sma75?'跌破SMA75':'正常'},
+	{label:'gold趋势', ok:!sig.gold_below_sma75, val:sig.gold_below_sma75?'跌破SMA75':'正常'},
+	{label:'SP500趋势', ok:!sig.sp500_below_sma120, val:sig.sp500_below_sma120?'跌破SMA120':'正常'},
+	{label:'Gold回撤', ok:!sig.gold_dip_active, val:(sig.gold_dd_pct*100).toFixed(1)+'%', sub:sig.gold_dip_active?'抄底区':'安全', cls:sig.gold_dip_active?'warn':'ok'},
+	{label:'HS300回撤', ok:!(sig.hs300_dd_pct <= -0.25), val:(sig.hs300_dd_pct*100).toFixed(1)+'%'},
+	{label:'PB分位', ok:sig.pb_entry_ok, val:(sig.pb_pctile||0).toFixed(0)+'%ile', sub:sig.pb_entry_ok?'便宜可入':'偏贵', cls:sig.pb_entry_ok?'ok':'warn'},
+	{label:'PE分位', ok:(sig.pe_pctile||100)<70, val:(sig.pe_pctile||0).toFixed(0)+'%ile'},
+	{label:'HS300 AND抄底', ok:sig.hs300_dip_ready, val:sig.hs300_dip_ready?'已就绪':'等待条件', cls:sig.hs300_dip_ready?'danger':''},
+];
+var html = '<div class="signal-grid">';
+for (var i=0;i<cards.length;i++) {
+	var c = cards[i];
+	var cls = 'signal-card';
+	if (c.cls) cls += ' '+c.cls;
+	else if (c.ok) cls += ' ok';
+	else cls += ' warn';
+	html += '<div class="'+cls+'"><div class="lbl">'+c.label+'</div><div class="val">'+(c.ok?'✓':'')+' '+c.val+'</div><div class="sub">'+(c.sub||'')+'</div></div>';
+}
+html += '</div>';
+
+/* 策略权重与建仓 */
+function buildStratTable(idx, amt) {
+	var key = STRAT_KEYS[idx];
+	var w = ws ? ws[key] : null;
+	if (!w) return '';
+	var has10y = key.indexOf('保守增强') !== -1;
+	var tbl = '<div class="tbl-wrap"><table><thead><tr><th>资产</th><th>代码</th><th>权重</th><th>现价</th><th>买入金额</th><th>股数</th><th>预估花费</th></tr></thead><tbody>';
+	var total = 0;
+	for (var a in w) {
+		if (!w.hasOwnProperty(a)) continue;
+		var pct = w[a];
+		if (pct <= 0.005) continue;
+		var price = pr[a] || 0;
+		var amt2 = amt * pct;
+		var shares = price>0 ? Math.floor(amt2/price/100)*100 : 0;
+		var actual = shares * price;
+		total += actual;
+		tbl += '<tr><td>'+(ASSET_NAMES[a]||a)+'</td><td>'+(ETF_CODES[a]||'')+'</td><td>'+(pct*100).toFixed(1)+'%</td><td>'+(price>0?price.toFixed(3):'-')+'</td><td>'+Math.round(amt2).toLocaleString()+'</td><td>'+shares+'</td><td>'+Math.round(actual).toLocaleString()+'</td></tr>';
+	}
+	var cashLeft = amt - total;
+	tbl += '<tr class="tot"><td>剩余现金</td><td></td><td></td><td></td><td></td><td></td><td>'+Math.round(cashLeft).toLocaleString()+'</td></tr>';
+	tbl += '</tbody></table></div>';
+	return tbl;
+}
+
+function renderTabs(activeIdx) {
+	var t = '';
+	for (var k=0;k<STRAT_KEYS.length;k++) {
+		var label = {'V3c 多元':'V3c','V3-B 风险平价(20d)':'B-RP','V3-B 保守增强(20d)':'B-Con'}[STRAT_KEYS[k]];
+		t += '<span class="strat-tab'+(k===activeIdx?' active':'')+'" data-idx="'+k+'">'+label+'</span>';
+	}
+	return t;
+}
+
+var currentIdx = 0;
+html += '<div class="dashboard-section"><h3>当前目标权重与建仓参考</h3>';
+html += '<div style="margin:4px 0;">'+renderTabs(0)+'</div>';
+html += '<div id="rt-weights-table">'+buildStratTable(0, 500000)+'</div></div>';
+
+/* 建仓计算器 */
+html += '<div class="dashboard-section"><h3>建仓计算器</h3>';
+html += '<div class="build-row"><label>总金额:</label><input class="build-input" id="rt-amount" type="number" value="500000" step="10000" min="1000">';
+html += '<button class="build-btn" id="rt-calc-btn">计算买入清单</button></div>';
+html += '<div id="rt-result"></div></div>';
+
+rt.innerHTML = html;
+
+/* 事件绑定 */
+rt.addEventListener('click', function(e) {
+	var tab = e.target.closest('.strat-tab');
+	if (tab) {
+		var idx = parseInt(tab.getAttribute('data-idx'));
+		currentIdx = idx;
+		var tabs = rt.querySelectorAll('.strat-tab');
+		for (var i=0;i<tabs.length;i++) tabs[i].className = 'strat-tab'+(i===idx?' active':'');
+		document.getElementById('rt-weights-table').innerHTML = buildStratTable(idx, 500000);
+		/* update calculator result if exists */
+		var res = document.getElementById('rt-result');
+		if (res.innerHTML) calcBuild();
+	}
+	var btn = e.target.closest('#rt-calc-btn');
+	if (btn) calcBuild();
+});
+
+function calcBuild() {
+	var amt = parseFloat(document.getElementById('rt-amount').value) || 500000;
+	if (amt < 1000) return;
+	document.getElementById('rt-result').innerHTML = buildStratTable(currentIdx, amt);
+}
+})();
+</script>
+
 
 
 

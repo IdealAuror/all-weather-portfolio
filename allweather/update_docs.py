@@ -21,6 +21,8 @@ class _NpEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        if isinstance(obj, (bool, np.bool_)):
+            return bool(obj)
         return super().default(obj)
 
 
@@ -43,7 +45,7 @@ def _num(v, d=2):
 
 def save_docs_json(perf_results, yearly_results, event_results,
                    regime_results, rolling_results, boot_results,
-                   weight_history):
+                   weight_history, signals=None, latest_prices=None):
     """把 pipeline 指标写入 docs/data.json，供 index.html 的 JS 读取。"""
 
     data = {"generated_at": pd.Timestamp.now().isoformat(), "strategies": {}}
@@ -124,6 +126,28 @@ def save_docs_json(perf_results, yearly_results, event_results,
         last = wh_df.iloc[-1]
         data["weights_snapshot"][name] = {
             str(k): round(float(v), 6) for k, v in last.items()
+        }
+
+    # --- 当前信号状态 ---
+    if signals:
+        cleaned = {}
+        for k, v in signals.items():
+            if isinstance(v, (np.integer,)):
+                cleaned[k] = int(v)
+            elif isinstance(v, (np.floating,)):
+                cleaned[k] = float(v)
+            elif isinstance(v, (bool, np.bool_)):
+                cleaned[k] = bool(v)
+            elif v is None:
+                cleaned[k] = None
+            else:
+                cleaned[k] = v
+        data["signals"] = cleaned
+
+    # --- 最新价格 ---
+    if latest_prices is not None:
+        data["latest_prices"] = {
+            str(k): round(float(v), 6) for k, v in latest_prices.items()
         }
 
     json_path = DOCS_DIR / "data.json"
@@ -607,6 +631,7 @@ if (T) {{
 }}());
 
 console.log('data.json sync: '+Object.keys(D).length+' strategies loaded');
+window._ALLWEATHER_DATA = D;
 }})();
 </script>""".lstrip()
 

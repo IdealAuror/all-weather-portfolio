@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-01T15:54:52.143555",
+  "generated_at": "2026-06-01T16:33:33.702774",
   "strategies": {
     "V3c 多元": {
       "100% RP": {
@@ -365,5 +365,30 @@
       "nonferr": 0.049527,
       "wti": 0.031501
     }
+  },
+  "signals": {
+    "nonferr_below_sma75": false,
+    "gold_below_sma75": true,
+    "sp500_below_sma120": false,
+    "gold_dd_pct": -0.20931114482020163,
+    "gold_dip_active": true,
+    "hs300_dd_pct": -0.017371428571428482,
+    "hs300_above_sma120": true,
+    "pb_pctile": 73.04246201791975,
+    "pb_entry_ok": false,
+    "pe_pctile": 60.9271523178808,
+    "pe_exit_ok": true,
+    "hs300_dip_ready": false,
+    "hs300_dip_exit": false
+  },
+  "latest_prices": {
+    "hs300": 2.1495,
+    "us_sp500": 4.8842,
+    "credit": 145.48,
+    "bond_10y": 1.389,
+    "bond_30y": 11.197757,
+    "gold": 3.5445,
+    "nonferr": 2.1529,
+    "wti": 474.855066
   }
 }
