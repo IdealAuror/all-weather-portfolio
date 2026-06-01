@@ -169,7 +169,8 @@
       "Bash(/e/Tools/uv/uv run *)",
       "Bash(py main.py --no-excel)",
       "Bash(which python *)",
-      "Bash(which python3 *)"
+      "Bash(which python3 *)",
+      "Bash(py *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio"

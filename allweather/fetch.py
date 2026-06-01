@@ -10,7 +10,7 @@ RETRY_TIMES = 3
 RETRY_DELAY = 5  # 秒
 
 DEFAULT_START = "20050101"
-DEFAULT_END   = "20260430"
+DEFAULT_END   = "20260530"
 
 # 资产清单：name -> (kind, symbol)
 TARGETS = {
