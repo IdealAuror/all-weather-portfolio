@@ -457,7 +457,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	<tr><td class="td-first">通胀↑</td><td class="td-num">黄金 / 有色</td><td class="td-num">逆波动率动态</td><td class="td-num">黄金核心通胀对冲，有色补充（nonferr趋势过滤60d）</td></tr>
 	</tbody></table>
 <h3 class="sec-h3">📊 持仓清单（按 100 万本金）</h3>
-<p class="para" style="font-size:13px; color:#888;">⚠ 逆波动率动态加权，权重每月变化。以下为 2025年12月末权重快照，实际调仓时参考当时计算结果。</p>
+<p class="para" style="font-size:13px; color:#888;">权重随市场波动每月更新，以最新 pipeline 回测结果为准。</p>
 <table class="data-tbl" style="--header-color: #C0392B;">
 <thead><tr>
 <th>资产</th>
@@ -661,8 +661,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr><td class="td-first">增长↓</td><td class="td-num">30年国债</td><td class="td-num">独占 25%（久期~18年）</td></tr>
 <tr><td class="td-first">通胀↑</td><td class="td-num">黄金 / 有色</td><td class="td-num">桶内逆波动率加权</td></tr>
 </tbody></table>
-<h3 class="sec-h3">📊 典型持仓清单（按 100 万本金，2025年末快照）</h3>
-<p class="para" style="font-size:13px; color:#888;">⚠ 权重每月根据波动率自动调整，以下为 2025年12月末的典型权重快照，仅供参考。</p>
+<h3 class="sec-h3">📊 典型持仓清单（按 100 万本金）</h3>
+<p class="para" style="font-size:13px; color:#888;">⚠ 权重每月根据波动率自动调整，以下为最近一期典型权重快照，仅供参考。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>桶</th>
@@ -746,8 +746,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para"><strong>nonferr 趋势过滤：</strong>有色金属跌破 75d SMA → 清仓转投信用债。最关键的风控增强。</p>
 <p class="para"><strong>Gold dip-buying 已关闭：</strong>2013 年金价单边下跌时持续接飞刀放大了亏损，关闭后 Sharpe 从 1.64 升至 1.74，21 年全部正收益。</p>
 <p class="para"><strong>HS300 AND抄底：</strong>价格回撤 ≥25% AND PE<30%ile（双重确认）→ 1.8x；退出：恢复至 -15% AND PE>70%ile。</p>
-<h3 class="sec-h3">📊 典型持仓清单（按 100 万本金，2025年末快照）</h3>
-<p class="para" style="font-size:13px; color:#888;">⚠ 权重每月根据波动率自动调整，以下为 2025年12月末的典型权重快照，仅供参考。逆波动率策略下债券因低波动自然获得高权重。</p>
+<h3 class="sec-h3">📊 典型持仓清单（按 100 万本金）</h3>
+<p class="para" style="font-size:13px; color:#888;">⚠ 权重每月根据波动率自动调整，以下为最近一期典型权重快照，仅供参考。逆波动率策略下债券因低波动自然获得高权重。</p>
 <table class="data-tbl" style="--header-color: #1F4E79;">
 <thead><tr>
 <th>桶</th>
@@ -1022,9 +1022,28 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h3 class="step-h">🛒 Step 1：开户准备（半天，一次性）</h3>
 <ul class="bullet-list"><li class="bullet">券商账户：佣金谈到 万 0.85（含规费）以下，ETF 免印花税；</li>
 <li class="bullet">开通基金账户（场外不收佣金，QDII 限购时备用）；</li>
-<li class="bullet">把 10 个 ETF 的代码加入自选股一次看清（见下方建仓清单）；</li>
+<li class="bullet">把下方 ETF 清单中的代码加入自选股，一次看清所有持仓；</li>
 <li class="bullet">第一笔操作前，把目标权重表打印或截图存好。</li>
-</ul><h3 class="step-h">🏗 Step 2：分批建仓（3-4 个月，重点章节）</h3>
+</ul>
+<h3 class="sec-h3">ETF 清单与当前权重</h3>
+<p class="para">以下为各策略当前的目标权重（最近一期数据，每月调仓日重新计算）。带 <strong>bold</strong> 标记的资产在该策略中权重 > 5%，是主要持仓。</p>
+<table class="data-tbl" style="--header-color: #595959; font-size: 13px;">
+<thead><tr>
+<th>资产</th><th>代码</th><th>V3c 多元</th><th>V3-B 风险平价</th><th>V3-B 保守增强</th>
+</tr></thead>
+<tbody>
+<tr><td class="td-first">沪深300</td><td class="td-num">510300</td><td class="td-num">10.7%</td><td class="td-num">23.5%</td><td class="td-num">5.7%</td></tr>
+<tr><td class="td-first">标普500</td><td class="td-num">513500</td><td class="td-num">5.9%</td><td class="td-num">14.7%</td><td class="td-num">3.6%</td></tr>
+<tr><td class="td-first">城投债</td><td class="td-num">511220</td><td class="td-num">40.7%</td><td class="td-num">20.7%</td><td class="td-num">29.0%</td></tr>
+<tr><td class="td-first">10Y国债</td><td class="td-num">511260</td><td class="td-num">—</td><td class="td-num">—</td><td class="td-num">34.5%</td></tr>
+<tr><td class="td-first">30Y国债</td><td class="td-num">511130</td><td class="td-num">16.7%</td><td class="td-num">22.2%</td><td class="td-num">8.1%</td></tr>
+<tr><td class="td-first">黄金</td><td class="td-num">518880</td><td class="td-num">20.0%</td><td class="td-num">0.0%</td><td class="td-num">11.0%</td></tr>
+<tr><td class="td-first">有色</td><td class="td-num">159980</td><td class="td-num">5.9%</td><td class="td-num">18.8%</td><td class="td-num">5.0%</td></tr>
+<tr><td class="td-first">原油</td><td class="td-num">501018</td><td class="td-num">—</td><td class="td-num">—</td><td class="td-num">3.2%</td></tr>
+</tbody></table>
+<p class="para" style="font-size:13px; color:#888;">注：原油 QDII 限购，实际不可执行。Gold 在 V3-B RP 中当前权重为 0（trend filter 触发），恢复后自动回升。</p>
+
+<h3 class="step-h">🏗 Step 2：分批建仓（3-4 个月，重点章节）</h3>
 <p class="warning">⚠ 不要一次性买齐！理由：黄金/长债/标普 500 在不同高位，分批降低择时风险。</p>
 <p class="para-bold">建仓优先级（先建底仓、再补卫星）：</p>
 <table class="data-tbl" style="--header-color: #2E75B6;">
@@ -1229,11 +1248,32 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 
 <h3 class="sec-h3">（六）每月操作流程（5 步、30 分钟）</h3>
 
-<p class="para-bold">推荐方式：运行自动脚本</p>
+<p class="para-bold">推荐方式：运行自动脚本（30 分钟 → 5 分钟）</p>
 <p class="para" style="font-family: monospace; background: #f5f5f5; padding: 8px 12px; border-radius: 4px;">
   python -m allweather.rebalance
 </p>
-<p class="para">按提示选择策略（V3c / B-RP / B-Con）和现金档位（100/85/70），输入每只 ETF 的当前持仓金额，脚本自动输出该买卖多少。非程序员也可以用——装好 Python 后把命令粘贴进终端就行。</p>
+<p class="para">运行后，工具会依次：</p>
+<ul class="bullet-list">
+<li class="bullet">显示当前市场信号（趋势过滤状态、HS300 抄底是否就绪）</li>
+<li class="bullet">让选策略（V3c / V3-B RP / V3-B Con）和现金档位（100%/85%/70%）</li>
+<li class="bullet">提示输入每只 ETF 的当前持仓市值（有就输入，建仓直接回车跳过）</li>
+<li class="bullet">输出目标权重表 + 每只 ETF 该买/卖多少金额和股数（整手 100 份）</li>
+<li class="bullet">建仓场景：输入总金额（或加 <code>-a 金额</code> 参数）直接出买入清单</li>
+</ul>
+<p class="para">非程序员安装指引：<a href="https://www.python.org/downloads/" target="_blank">下载 Python</a> → 安装时勾选「Add to PATH」 → 打开终端（Win: cmd / Mac: 终端）→ 粘贴上方命令回车即可。</p>
+
+<p class="para-bold">示例输出（V3c 100% RP，建仓 50 万）：</p>
+<pre style="background:#f5f5f5; padding:12px 16px; border-radius:4px; font-size:13px; line-height:1.7; overflow-x:auto;">
+资产        代码     权重    现价     买入金额    股数   预估花费
+沪深300     510300  10.7%   2.150    53500     2400   51600
+城投债      511220  40.7%   145.480  203500    1400   203672
+30Y国债     511130  16.7%   11.198   83500     7400   82865
+黄金        518880  20.0%   3.545    100000    28200  99969
+标普500     513500  5.9%    4.884    29500     6000   29304
+有色        159980  5.9%    2.153    29500     13600  29281
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+剩余现金: 3309 建议放入货币 ETF (511880)
+</pre>
 
 <p class="para-bold">手动方式（如果不用脚本）：</p>
 
@@ -1248,9 +1288,9 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <table class="data-tbl" style="--header-color: #2E75B6;">
 <thead><tr><th>ETF</th><th>当前市值</th><th>当前占比</th><th>目标占比</th><th>偏离</th><th>操作</th></tr></thead>
 <tbody>
-<tr><td class="td-first">hs300</td><td class="td-num">¥64,000</td><td class="td-num">6.4%</td><td class="td-num">13.3%</td><td class="td-num td-pos">+6.9%</td><td class="td-num">买入 ¥69,000</td></tr>
-<tr><td class="td-first">credit</td><td class="td-num">¥644,000</td><td class="td-num">64.4%</td><td class="td-num">22.2%</td><td class="td-num td-neg">−42.2%</td><td class="td-num">卖出 ¥422,000</td></tr>
-<tr><td class="td-first">gold</td><td class="td-num">¥64,000</td><td class="td-num">6.4%</td><td class="td-num">14.7%</td><td class="td-num td-pos">+8.3%</td><td class="td-num">买入 ¥83,000</td></tr>
+<tr><td class="td-first">hs300</td><td class="td-num">RMB64,000</td><td class="td-num">6.4%</td><td class="td-num">13.3%</td><td class="td-num td-pos">+6.9%</td><td class="td-num">买入 RMB69,000</td></tr>
+<tr><td class="td-first">credit</td><td class="td-num">RMB644,000</td><td class="td-num">64.4%</td><td class="td-num">22.2%</td><td class="td-num td-neg">−42.2%</td><td class="td-num">卖出 RMB422,000</td></tr>
+<tr><td class="td-first">gold</td><td class="td-num">RMB64,000</td><td class="td-num">6.4%</td><td class="td-num">14.7%</td><td class="td-num td-pos">+8.3%</td><td class="td-num">买入 RMB83,000</td></tr>
 </tbody></table>
 <p class="para" style="font-size:13px; color:#888;">偏离绝对值 < 0.5% 不动——省手续费比精确对齐重要。</p>
 
@@ -1466,9 +1506,10 @@ function downloadHTML() {
 
 
 
+
 <!-- ALLWEATHER_SYNC_START --><script>
 (function(){
-const D = {"V3c 多元": {"100% RP": {"cum_return": 5.462215, "cagr": 0.084254, "vol": 0.042669, "mdd": -0.070077, "sharpe": 1.458986, "calmar": 1.202299, "final_nv": 6.4622}, "85% RP": {"cum_return": 4.35267, "cagr": 0.075435, "vol": 0.037307, "mdd": -0.058941, "sharpe": 1.432309, "calmar": 1.279842, "final_nv": 5.3527}, "70% RP": {"cum_return": 3.426438, "cagr": 0.066614, "vol": 0.031702, "mdd": -0.049205, "sharpe": 1.407289, "calmar": 1.35381, "final_nv": 4.4264}, "动态": {"cum_return": 4.696878, "cagr": 0.078345, "vol": 0.038394, "mdd": -0.059037, "sharpe": 1.467526, "calmar": 1.32704, "final_nv": 5.6969}}, "V3-B 风险平价(20d)": {"100% RP": {"cum_return": 8.307544, "cagr": 0.10154, "vol": 0.056822, "mdd": -0.09247, "sharpe": 1.399808, "calmar": 1.098079, "final_nv": 9.3075}, "85% RP": {"cum_return": 6.221777, "cagr": 0.08949, "vol": 0.048298, "mdd": -0.078788, "sharpe": 1.397349, "calmar": 1.135825, "final_nv": 7.2218}, "70% RP": {"cum_return": 4.593973, "cagr": 0.077493, "vol": 0.039775, "mdd": -0.06494, "sharpe": 1.395169, "calmar": 1.193295, "final_nv": 5.594}, "动态": {"cum_return": 6.587144, "cagr": 0.091823, "vol": 0.050567, "mdd": -0.070124, "sharpe": 1.380803, "calmar": 1.309446, "final_nv": 7.5871}}, "V3-B 保守增强(20d)": {"100% RP": {"cum_return": 3.906371, "cagr": 0.071384, "vol": 0.034256, "mdd": -0.053463, "sharpe": 1.44162, "calmar": 1.33521, "final_nv": 4.9064}, "85% RP": {"cum_return": 3.221481, "cagr": 0.064424, "vol": 0.029473, "mdd": -0.044537, "sharpe": 1.439417, "calmar": 1.44653, "final_nv": 4.2215}, "70% RP": {"cum_return": 2.619627, "cagr": 0.05735, "vol": 0.024461, "mdd": -0.035546, "sharpe": 1.445129, "calmar": 1.613392, "final_nv": 3.6196}, "动态": {"cum_return": 3.463209, "cagr": 0.066996, "vol": 0.030994, "mdd": -0.050527, "sharpe": 1.451785, "calmar": 1.325949, "final_nv": 4.4632}}};
+const D = {"V3c 多元": {"100% RP": {"cum_return": 4.004466, "cagr": 0.076457, "vol": 0.043137, "mdd": -0.070077, "sharpe": 1.262427, "calmar": 1.091042, "final_nv": 5.0045}, "85% RP": {"cum_return": 3.289699, "cagr": 0.068894, "vol": 0.03775, "mdd": -0.058941, "sharpe": 1.242211, "calmar": 1.168857, "final_nv": 4.2897}, "70% RP": {"cum_return": 2.67117, "cagr": 0.061306, "vol": 0.032109, "mdd": -0.049205, "sharpe": 1.224158, "calmar": 1.245945, "final_nv": 3.6712}, "动态": {"cum_return": 3.525511, "cagr": 0.071514, "vol": 0.039015, "mdd": -0.059037, "sharpe": 1.269108, "calmar": 1.211336, "final_nv": 4.5255}}, "V3-B 风险平价(20d)": {"100% RP": {"cum_return": 5.761769, "cagr": 0.091382, "vol": 0.055856, "mdd": -0.075673, "sharpe": 1.242149, "calmar": 1.207593, "final_nv": 6.7618}, "85% RP": {"cum_return": 4.479915, "cagr": 0.080936, "vol": 0.047478, "mdd": -0.063584, "sharpe": 1.241349, "calmar": 1.272896, "final_nv": 5.4799}, "70% RP": {"cum_return": 3.434217, "cagr": 0.070515, "vol": 0.039099, "mdd": -0.052004, "sharpe": 1.240828, "calmar": 1.355949, "final_nv": 4.4342}, "动态": {"cum_return": 4.823803, "cagr": 0.083951, "vol": 0.0506, "mdd": -0.070124, "sharpe": 1.224327, "calmar": 1.197176, "final_nv": 5.8238}}, "V3-B 保守增强(20d)": {"100% RP": {"cum_return": 3.012502, "cagr": 0.065632, "vol": 0.034633, "mdd": -0.053463, "sharpe": 1.259834, "calmar": 1.227617, "final_nv": 4.0125}, "85% RP": {"cum_return": 2.543741, "cagr": 0.059592, "vol": 0.029809, "mdd": -0.044537, "sharpe": 1.261094, "calmar": 1.338046, "final_nv": 3.5437}, "70% RP": {"cum_return": 2.118976, "cagr": 0.053421, "vol": 0.024747, "mdd": -0.035546, "sharpe": 1.269688, "calmar": 1.502857, "final_nv": 3.119}, "动态": {"cum_return": 2.724876, "cagr": 0.062012, "vol": 0.031468, "mdd": -0.050527, "sharpe": 1.271484, "calmar": 1.227296, "final_nv": 3.7249}}};
 
 function pct(v, d) { return (v*100).toFixed(d||2)+'%'; }
 function ps(v, d) { var s=(v*100).toFixed(d||2)+'%'; return (v>=0?'+':'')+s; }
@@ -1904,6 +1945,7 @@ if (T) {
 console.log('data.json sync: '+Object.keys(D).length+' strategies loaded');
 })();
 </script><!-- ALLWEATHER_SYNC_END -->
+
 
 
 
