@@ -222,10 +222,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 .signal-card .sub { font-size: 12px; color: #666; margin-top: 2px; }
 .dashboard-section { margin: 16px 0; }
 .dashboard-section h3 { font-size: 16px; color: #1f4e79; margin: 12px 0 8px; }
-.build-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-.build-input { padding: 8px 12px; font-size: 16px; border: 2px solid #2e75b6; border-radius: 6px; width: 200px; }
-.build-btn { padding: 8px 20px; font-size: 16px; background: #2e75b6; color: white; border: none; border-radius: 6px; cursor: pointer; }
-.build-btn:hover { background: #1f4e79; }
+
 .tbl-wrap { overflow-x: auto; }
 .tbl-wrap table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 13px; }
 .tbl-wrap th { background: #f0f6fc; padding: 6px 8px; border-bottom: 2px solid #ddd; font-size: 12px; white-space: nowrap; }
@@ -1963,27 +1960,19 @@ for (var i=0;i<cards.length;i++) {
 }
 html += '</div>';
 
-/* 策略权重与建仓 */
-function buildStratTable(idx, amt) {
+/* 策略权重参考 */
+function buildStratTable(idx) {
 	var key = STRAT_KEYS[idx];
 	var w = ws ? ws[key] : null;
 	if (!w) return '';
-	var has10y = key.indexOf('保守增强') !== -1;
-	var tbl = '<div class="tbl-wrap"><table><thead><tr><th>资产</th><th>代码</th><th>权重</th><th>现价</th><th>买入金额</th><th>股数</th><th>预估花费</th></tr></thead><tbody>';
-	var total = 0;
+	var tbl = '<div class="tbl-wrap"><table><thead><tr><th>资产</th><th>代码</th><th>权重</th><th>现价</th></tr></thead><tbody>';
 	for (var a in w) {
 		if (!w.hasOwnProperty(a)) continue;
 		var pct = w[a];
 		if (pct <= 0.005) continue;
 		var price = pr[a] || 0;
-		var amt2 = amt * pct;
-		var shares = price>0 ? Math.floor(amt2/price/100)*100 : 0;
-		var actual = shares * price;
-		total += actual;
-		tbl += '<tr><td>'+(ASSET_NAMES[a]||a)+'</td><td>'+(ETF_CODES[a]||'')+'</td><td>'+(pct*100).toFixed(1)+'%</td><td>'+(price>0?price.toFixed(3):'-')+'</td><td>'+Math.round(amt2).toLocaleString()+'</td><td>'+shares+'</td><td>'+Math.round(actual).toLocaleString()+'</td></tr>';
+		tbl += '<tr><td>'+(ASSET_NAMES[a]||a)+'</td><td>'+(ETF_CODES[a]||'')+'</td><td>'+(pct*100).toFixed(1)+'%</td><td>'+(price>0?price.toFixed(3):'-')+'</td></tr>';
 	}
-	var cashLeft = amt - total;
-	tbl += '<tr class="tot"><td>剩余现金</td><td></td><td></td><td></td><td></td><td></td><td>'+Math.round(cashLeft).toLocaleString()+'</td></tr>';
 	tbl += '</tbody></table></div>';
 	return tbl;
 }
@@ -1998,15 +1987,17 @@ function renderTabs(activeIdx) {
 }
 
 var currentIdx = 0;
-html += '<div class="dashboard-section"><h3>当前目标权重与建仓参考</h3>';
+html += '<div class="dashboard-section"><h3>当前目标权重</h3>';
 html += '<div style="margin:4px 0;">'+renderTabs(0)+'</div>';
-html += '<div id="rt-weights-table">'+buildStratTable(0, 500000)+'</div></div>';
+html += '<div id="rt-weights-table">'+buildStratTable(0)+'</div></div>';
 
-/* 建仓计算器 */
-html += '<div class="dashboard-section"><h3>建仓计算器</h3>';
-html += '<div class="build-row"><label>总金额:</label><input class="build-input" id="rt-amount" type="number" value="500000" step="10000" min="1000">';
-html += '<button class="build-btn" id="rt-calc-btn">计算买入清单</button></div>';
-html += '<div id="rt-result"></div></div>';
+/* 实盘调仓 */
+html += '<div class="dashboard-section"><h3 style="margin-bottom:6px;">实盘调仓</h3>';
+html += '<div style="font-size:14px;line-height:2;padding:2px 0;"><p style="margin:6px 0;">每月末执行一次再平衡：运行调仓工具，自动读取最新行情、对比当前持仓与目标权重，生成买入/卖出清单。</p>';
+html += '<div style="background:#f5f7fa;border-radius:6px;padding:12px 16px;margin:12px 0;font-family:monospace;">';
+html += '<span style="font-size:15px;font-weight:bold;color:#1f4e79;">python -m allweather.rebalance</span><br>';
+html += '<span style="font-size:13px;color:#666;">支持 --strat V3c 只看单策略 · --signals 仅看信号 · -a 500000 直接出建仓清单</span></div>';
+html += '<p style="margin:6px 0;font-size:13px;color:#666;">信号面板反映当前市场状态，调仓工具需要你输入持仓数据才能计算买卖量。详见 <a href="#ch5" style="color:#1f4e79;">第五章: 调仓规则</a> 和 <a href="#ch6" style="color:#1f4e79;">第六章: 实盘指南</a>。</p></div></div>';
 
 rt.innerHTML = html;
 
@@ -2018,20 +2009,9 @@ rt.addEventListener('click', function(e) {
 		currentIdx = idx;
 		var tabs = rt.querySelectorAll('.strat-tab');
 		for (var i=0;i<tabs.length;i++) tabs[i].className = 'strat-tab'+(i===idx?' active':'');
-		document.getElementById('rt-weights-table').innerHTML = buildStratTable(idx, 500000);
-		/* update calculator result if exists */
-		var res = document.getElementById('rt-result');
-		if (res.innerHTML) calcBuild();
+		document.getElementById('rt-weights-table').innerHTML = buildStratTable(idx);
 	}
-	var btn = e.target.closest('#rt-calc-btn');
-	if (btn) calcBuild();
 });
-
-function calcBuild() {
-	var amt = parseFloat(document.getElementById('rt-amount').value) || 500000;
-	if (amt < 1000) return;
-	document.getElementById('rt-result').innerHTML = buildStratTable(currentIdx, amt);
-}
 })();
 </script>
 
