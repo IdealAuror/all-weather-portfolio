@@ -4,8 +4,7 @@ import json
 from pathlib import Path
 import pandas as pd
 from .config import (
-    BUCKET_GROUPS, ETF_META, CASH_TIERS, ASSETS, OUTPUT_DIR,
-    STRESS_EVENTS,
+    OUTPUT_DIR,
 )
 
 LINE = "=" * 100
@@ -100,14 +99,118 @@ def print_yearly_table(yearly_results: dict, years=None):
 def print_risk_contribution(rc_results: dict):
     if not rc_results:
         return
-    print_header("【3】桶级风险贡献分解（协方差视角）")
-    ports = list(rc_results.keys())
-    buckets = list(rc_results[ports[0]].keys())
-    print(f"  {'桶':<22}" + "".join(f"{p:>14}" for p in ports))
-    for b in buckets:
-        line = f"  {b:<22}"
+    # 判断是静态快照还是时变结果
+    sample = next(iter(rc_results.values()))
+    # 时变格式：值嵌套 {"mean": ..., "std": ...}
+    is_tv = isinstance(sample, dict) and any(
+        isinstance(v, dict) and "mean" in v for v in sample.values()
+    )
+    if is_tv:
+        print_header("【3】桶级风险贡献归因（时变 · 日均值 ± 1σ）")
+        ports = list(rc_results.keys())
+        buckets = [k for k in list(rc_results[ports[0]].keys()) if not k.startswith("_")]
+        print(f"  {'桶':<22}" + "".join(f"{p:>22}" for p in ports))
+        for b in buckets:
+            line = f"  {b:<22}"
+            for p in ports:
+                v = rc_results[p][b]
+                line += f"{_fmt_pct(v['mean'], w=8)}±{_fmt_pct(v['std'], w=8)}"
+            print(line)
+        # 风险集中度：max/min 非零桶均值
         for p in ports:
-            line += _fmt_pct(rc_results[p][b], w=14)
+            vals = [rc_results[p][b]["mean"] for b in buckets]
+            positive_vals = [v for v in vals if v > 0.001]
+            if positive_vals:
+                ratio = max(positive_vals) / min(positive_vals)
+            else:
+                ratio = float("nan")
+            print(f"    {p} 风险集中度(max/min): {ratio:.2f}x" if not pd.isna(ratio)
+                  else f"    {p} 风险集中度: n/a")
+    else:
+        print_header("【3】桶级风险贡献分解（协方差视角）")
+        ports = list(rc_results.keys())
+        buckets = list(rc_results[ports[0]].keys())
+        print(f"  {'桶':<22}" + "".join(f"{p:>14}" for p in ports))
+        for b in buckets:
+            line = f"  {b:<22}"
+            for p in ports:
+                line += _fmt_pct(rc_results[p][b], w=14)
+            print(line)
+
+
+def print_weight_stability_table(ws_results: dict):
+    """权重稳定性表。ws_results: {port: weight_stability dict}"""
+    if not ws_results:
+        return
+    print_header("【3b】权重稳定性分析（假设单边成本 10bp）")
+    print(f"  {'方案':<22}{'月均换手':>10}{'月最大换手':>10}{'年化换手':>10}"
+          f"{'有效资产N':>12}{'有效N-min':>10}{'年成本拖累':>12}")
+    for port, s in ws_results.items():
+        print(f"  {port:<22}"
+              f"{_fmt_pct(s['monthly_turnover_mean'], w=10)}"
+              f"{_fmt_pct(s['monthly_turnover_max'], w=10)}"
+              f"{_fmt_num(s['annual_churn'], w=10)}"
+              f"{_fmt_num(s['effective_n_mean'], w=12, d=2)}"
+              f"{_fmt_num(s['effective_n_min'], w=10, d=2)}"
+              f"{_fmt_pct(s['cost_drag_annual'], w=12)}")
+
+
+def print_signal_summary(signal_logs: dict):
+    """信号触发频率汇总。signal_logs: {label: pd.DataFrame}"""
+    if not signal_logs:
+        return
+    print_header("【3c】风控信号触发频率汇总（年均次数）")
+
+    # 定义各策略关心的信号列
+    signal_cols = {
+        "nonferr_filtered":     "有色趋势过滤",
+        "gold_filtered":        "黄金趋势过滤",
+        "us_sp500_filtered":    "SP500趋势过滤",
+        "gold_dip_active":      "黄金抄底",
+        "active":               "HS300抄底",
+    }
+
+    for label, sl in signal_logs.items():
+        if sl.empty:
+            continue
+        sl = sl.copy()
+        if "date" in sl.columns:
+            sl["year"] = pd.to_datetime(sl["date"]).dt.year
+        else:
+            continue
+
+        print_subheader(f"{label}")
+        # 只取该策略实际存在的信号列
+        avail = {k: v for k, v in signal_cols.items() if k in sl.columns}
+        if not avail:
+            print("    （无信号列）")
+            continue
+
+        yearly = sl.groupby("year")
+        years_list = sorted(sl["year"].unique())
+        print(f"  {'年度':<8}" + "".join(f"{v:>14}" for v in avail.values()))
+        for y in years_list:
+            ydata = yearly.get_group(y)
+            line = f"  {y:<8}"
+            for k in avail:
+                if k in sl.columns:
+                    if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all():
+                        count = ydata[k].sum()
+                    else:
+                        count = (ydata[k] > 0).sum()
+                    line += f"{int(count):>14}"
+                else:
+                    line += f"{'n/a':>14}"
+            print(line)
+
+        # 合计行
+        line = f"  {'合计':<8}"
+        for k in avail:
+            if k in sl.columns:
+                total = int(sl[k].sum()) if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all() else int((sl[k] > 0).sum())
+                line += f"{total:>14}"
+            else:
+                line += f"{'n/a':>14}"
         print(line)
 
 
@@ -165,27 +268,6 @@ def print_bootstrap_table(boot_results: dict):
               f"{_fmt_pct(b['loss_prob'], w=10)}")
 
 
-def print_holdings(weights_dict: dict, principal: float = 1_000_000):
-    print_header(f"【8】持仓清单（按 {principal:,.0f} 本金，100% RP 档）")
-    ports = list(weights_dict.keys())
-    print(f"  {'桶':<8}{'资产':<22}{'代码':<10}" +
-          "".join(f"{p:>14}" for p in ports))
-    for bk, lst in BUCKET_GROUPS.items():
-        for asset in lst:
-            meta = ETF_META[asset]
-            line = f"  {bk:<8}{meta['name']:<22}{meta['code']:<10}"
-            for p in ports:
-                w = weights_dict[p].get(asset, 0)
-                amt = w * principal
-                line += f"{amt:>13,.0f}"
-            print(line)
-    # 合计
-    line = f"  {'合计':<8}{'':<22}{'':<10}"
-    for p in ports:
-        line += f"{principal:>13,.0f}"
-    print(line)
-
-
 def print_summary_recommendation():
     print_header("【9】策略评估与推荐", char="*", width=100)
     print()
@@ -200,12 +282,21 @@ def print_summary_recommendation():
          "适合：初入全天候、不想研究桶逻辑、追求简单透明"),
 
         ("V3-B 风险平价(20d)", "★★★", "学院派", "4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300 AND抄底",
-         ["+ 长期回报最高 CAGR 10.97%，累计 841%",
+         ["+ 长期回报最高 CAGR 10.03%，累计 799%",
           "+ 四桶真正等权(25%x4)，全天候理念最纯正",
           "+ 桶级分散 + 资产级分散 + 三趋势过滤三重风控",
-          "- 回撤(-9.48%)，最差年份 2011 -5.01%",
+          "- 回撤(-9.48%)，最差年份 2011 -1.22%",
           "- 4桶逻辑比另外两个策略复杂"],
          "适合：长期持有者(5年+)、认同正统全天候理念、能承受短期波动"),
+
+        ("V3-B 风险平价桶(20d)", "★★★", "预算派", "4桶逆波动率 HRP + 同三趋势过滤 + HS300 AND抄底",
+         ["+ 桶风险最均衡(max/min 3.85x)，实际落地风险平价",
+          "+ Sharpe 最高(1.66)，风险调整后效率最优",
+          "+ 所有年份正收益，波动率最低(3.71%)",
+          "+ Bootstrap 5年亏损概率 0.00%",
+          "- CAGR 8.38% 低于等权版(10.03%)",
+          "- 无杠杆，债券风险贡献仍低于权益"],
+         "适合：追求风险均衡、Sharpe优先、无法接受负收益年份"),
 
         ("V3-B 保守增强(20d)", "★★★", "保守增强", "逆波动率 20d + nonferr趋势(75d) + HS300 AND抄底，max_w=0.25",
          ["+ 回撤最低(-6.40%)，Sharpe 最高(1.75)",
@@ -225,7 +316,7 @@ def print_summary_recommendation():
         print()
 
     print("  ── 一句话选策略 ──")
-    print("  要简单 → V3c   要高回报 → V3-B RP   要不亏钱 → V3-B 保守增强")
+    print("  要简单 → V3c   要高回报 → V3-B RP   要均衡 → V3-B 风险平价桶   要不亏钱 → V3-B 保守增强")
     print()
 
 
@@ -255,10 +346,3 @@ def save_summary_json(perf_results: dict, filename: str = "summary.json"):
                     encoding="utf-8")
     return path
 
-
-def save_weights_csv(weights_dict: dict, filename: str = "weights.csv"):
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame(weights_dict)
-    path = OUTPUT_DIR / filename
-    df.to_csv(path, encoding="utf-8-sig")
-    return path

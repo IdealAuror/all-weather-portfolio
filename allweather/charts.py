@@ -2,6 +2,7 @@
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
@@ -41,13 +42,24 @@ def _ensure_dir():
 # Priority 1: NAV curves + Drawdown curves
 # ═══════════════════════════════════════════════════════════
 
-def plot_nav_and_dd(nv_results: dict, tier: str = "100% RP"):
-    """净值曲线（上）+ 回撤曲线（下）双面板图。"""
+def plot_nav_and_dd(nv_results: dict, tier: str = "100% RP",
+                     benchmark_nv: pd.Series = None):
+    """净值曲线（上）+ 回撤曲线（下）双面板图。
+
+    benchmark_nv: 可选，沪深300等基准净值曲线（灰色虚线叠加）。
+    """
     _ensure_dir()
     ports = ["V3c 多元", "V3-B 风险平价(20d)", "V3-B 保守增强(20d)"]
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), sharex=True,
                                     gridspec_kw={"height_ratios": [3, 2], "hspace": 0.05})
+
+    # ─── 基准（灰色虚线，画在最底层）───
+    if benchmark_nv is not None:
+        ax1.plot(benchmark_nv.index, benchmark_nv.values,
+                color="#d35400", ls="--", lw=0.9, alpha=0.7, label="沪深300")
+        bm_dd = benchmark_nv / benchmark_nv.cummax() - 1
+        ax2.plot(bm_dd.index, bm_dd.values, color="#d35400", ls="--", lw=0.7, alpha=0.5)
 
     for p in ports:
         key = (p, tier)
@@ -75,8 +87,10 @@ def plot_nav_and_dd(nv_results: dict, tier: str = "100% RP"):
 
     _draw_events([ax1, ax2], ax1)
 
-    fig.autofmt_xdate()
-    path = CHART_DIR / f"nav_drawdown_{tier.replace(' ', '_')}.png"
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax2.tick_params(axis="x", labelsize=9)
+    suffix = "_with_benchmark" if benchmark_nv is not None else ""
+    path = CHART_DIR / f"nav_drawdown_{tier.replace(' ', '_')}{suffix}.png"
     fig.savefig(path)
     plt.close(fig)
     return path
@@ -104,7 +118,9 @@ def plot_all_tiers_nv(nv_results: dict):
         ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.1f"))
         ax.grid(True, alpha=0.3)
 
-    fig.autofmt_xdate()
+    for ax in axes:
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+        ax.tick_params(axis="x", labelsize=9)
     fig.suptitle("净值曲线 — 三档现金对比", fontsize=13, fontweight="bold", y=1.01)
     path = CHART_DIR / "nav_all_tiers.png"
     fig.savefig(path)
@@ -148,7 +164,8 @@ def plot_rolling_returns(metrics: dict):
 
     _draw_events([ax1, ax2], ax1, label_y=0.78)
 
-    fig.autofmt_xdate()
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax2.tick_params(axis="x", labelsize=9)
     path = CHART_DIR / "rolling_returns.png"
     fig.savefig(path)
     plt.close(fig)
@@ -211,7 +228,8 @@ def plot_monthly_returns_comparison(nv_results: dict):
 
     _draw_events([ax1], ax1)
 
-    fig.autofmt_xdate()
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax1.tick_params(axis="x", labelsize=9)
     path = CHART_DIR / "monthly_returns_comparison.png"
     fig.savefig(path)
     plt.close(fig)
@@ -367,8 +385,182 @@ def plot_weight_stack(weight_history: dict):
 
         _draw_events([ax1, ax2], ax1)
 
-        fig.autofmt_xdate()
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+        ax2.tick_params(axis="x", labelsize=9)
         fname = port.replace(" ", "_").replace("(", "").replace(")", "")
         path = CHART_DIR / f"weights_{fname}.png"
         fig.savefig(path)
         plt.close(fig)
+
+
+# ═══════════════════════════════════════════════════════════
+# Priority 6: Bootstrap distribution histogram
+# ═══════════════════════════════════════════════════════════
+
+def _gaussian_kde(data, x_grid):
+    """简单高斯核密度估计（纯 numpy，不依赖 scipy）。"""
+    n = len(data)
+    bw = 1.06 * np.std(data) * n ** (-0.2)  # Silverman's rule of thumb
+    diff = (data[:, None] - x_grid[None, :]) / bw
+    density = np.mean(np.exp(-0.5 * diff ** 2), axis=0) / (bw * np.sqrt(2 * np.pi))
+    return density, bw
+
+
+def plot_bootstrap_distribution(boot_results: dict, perf_results: dict = None):
+    """Bootstrap 5年累计收益分布 — 上排 KDE 叠加 + 下排箱线图风格 CI。
+
+    布局/画法完全对齐 monthly_returns_comparison：
+    - 上排：纯线图（无 fill），各策略 PORT_COLORS + PORT_LINESTYLES
+    - 下排：箱线图风格 — 彩色 box (alpha 0.4) + 黑色中位线 + 须线
+
+    boot_results: {策略名: {p50, p05, p95, p25, q75, samples, ...}}
+    """
+    _ensure_dir()
+    ports = ["V3c 多元", "V3-B 风险平价(20d)", "V3-B 保守增强(20d)"]
+
+    # --- 1. X 轴范围（三策略 p1-p99）---
+    all_s = np.concatenate([
+        np.array(boot_results[p]["samples"]) * 100
+        for p in ports if p in boot_results and "samples" in boot_results[p]
+    ])
+    x_min, x_max = np.percentile(all_s, [1, 99])
+    x_pad = (x_max - x_min) * 0.10
+    x_lim = (x_min - x_pad, x_max + x_pad)
+    x_grid = np.linspace(x_lim[0], x_lim[1], 500)
+
+    # --- 2. 预计算 KDE ---
+    kdes = {}
+    for p in ports:
+        samples = np.array(boot_results[p]["samples"]) * 100
+        kdes[p], _ = _gaussian_kde(samples, x_grid)
+
+    # --- 3. 上下子图（仿 monthly_returns_comparison）---
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 9),
+                                    gridspec_kw={"height_ratios": [3, 2], "hspace": 0.15})
+
+    # ─── 上排：三策略 KDE 叠加（纯线图，无 fill）───
+    for p in ports:
+        kde = kdes[p]
+        color = PORT_COLORS[p]
+        ls = PORT_LINESTYLES[p]
+        ax1.plot(x_grid, kde, color=color, ls=ls, lw=1.5, alpha=0.9, label=p)
+
+        # 中位数竖线
+        p50 = boot_results[p]["p50"] * 100
+        median_y = np.interp(p50, x_grid, kde)
+        ax1.plot([p50, p50], [0, median_y], color=color, ls="--", lw=0.8, alpha=0.4)
+
+    ax1.set_xlim(x_lim)
+    ax1.set_ylabel("概率密度", fontsize=11)
+    ax1.set_xlabel("5年累计收益 (%)", fontsize=11)
+    ax1.set_title("Bootstrap 5年累计收益分布（100%仓位, 1000次 Block重采样）",
+                  fontsize=13, fontweight="bold")
+    ax1.legend(loc="upper left", frameon=False, fontsize=9)
+    ax1.grid(True, alpha=0.25)
+
+    # ─── 下排：箱线图风格 CI 水平条 ───
+    box_height = 0.35
+    for i, p in enumerate(ports):
+        r = boot_results[p]
+        color = PORT_COLORS[p]
+        y = i
+        cap_dy = 0.12
+        p05, q25, med, q75, p95 = [r[q] * 100 for q in ["p05", "p25", "p50", "p75", "p95"]]
+
+        # 箱体（IQR）— 仿 boxplot patch_artist + alpha 0.4
+        ax2.barh(y, width=q75 - q25, left=q25, height=box_height,
+                 color=color, alpha=0.4, edgecolor="none")
+
+        # 须线（whiskers）
+        ax2.plot([p05, q25], [y, y], color=color, lw=1.0, alpha=0.6)
+        ax2.plot([q75, p95], [y, y], color=color, lw=1.0, alpha=0.6)
+        ax2.plot([p05, p05], [y - cap_dy, y + cap_dy], color=color, lw=0.9, alpha=0.6)
+        ax2.plot([p95, p95], [y - cap_dy, y + cap_dy], color=color, lw=0.9, alpha=0.6)
+
+        # 中位线（仿 boxplot medianprops: 黑色）
+        ax2.plot([med, med], [y - box_height / 2, y + box_height / 2],
+                color="black", lw=1.2)
+
+        # 标注：只标中位数数值
+        ax2.text(med, y + box_height / 2 + 0.08, f"{med:+.1f}%",
+                fontsize=7.5, color="black", va="bottom", ha="center")
+
+    ax2.set_xlim(x_lim)
+    ax2.set_ylim(-0.5, len(ports) - 0.5)
+    ax2.set_yticks(range(len(ports)))
+    ax2.set_yticklabels(ports, fontsize=9)
+    ax2.axvline(0, color="black", lw=0.5)
+    ax2.set_xlabel("5年累计收益 (%)", fontsize=11)
+    ax2.grid(True, alpha=0.25, axis="x")
+
+    path = CHART_DIR / "bootstrap_distribution.png"
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
+# ═══════════════════════════════════════════════════════════
+# Priority 7: Yearly returns grouped bar chart
+# ═══════════════════════════════════════════════════════════
+
+def plot_yearly_bar(metrics: dict, nv_results: dict = None):
+    """年度收益分组柱状图 — 上排年收益柱状 + 下排累计净值。
+
+    metrics: {yearly: {策略名: pd.Series(year→return)}, ...}
+    nv_results: {(策略名, "100% RP"): pd.Series(nav)}
+    """
+    _ensure_dir()
+    ports = ["V3c 多元", "V3-B 风险平价(20d)", "V3-B 保守增强(20d)"]
+    yearly = metrics.get("yearly", {})
+    if not yearly:
+        return
+
+    all_years = sorted(set().union(*(s.index for s in yearly.values())))
+    if not all_years:
+        return
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10),
+                                    gridspec_kw={"height_ratios": [3, 2], "hspace": 0.15})
+
+    # ─── 上排：分组柱状图 ───
+    x = np.arange(len(all_years))
+    width = 0.25
+    for i, p in enumerate(ports):
+        if p not in yearly:
+            continue
+        vals = [yearly[p].get(y, 0) * 100 for y in all_years]
+        ax1.bar(x + i * width, vals, width, color=PORT_COLORS[p], alpha=0.8, label=p)
+
+    ax1.axhline(0, color="black", lw=0.5)
+    ax1.set_ylabel("年化收益 (%)", fontsize=11)
+    ax1.set_title("分年化收益（100% RP）", fontsize=13, fontweight="bold")
+    ax1.legend(loc="upper left", frameon=False, fontsize=8)
+    ax1.grid(True, alpha=0.3, axis="y")
+
+    # ─── 下排：累计净值曲线 ───
+    if nv_results:
+        for p in ports:
+            key = (p, "100% RP")
+            if key not in nv_results:
+                continue
+            nv = nv_results[key]
+            ax2.plot(nv.index, nv.values, color=PORT_COLORS[p],
+                     ls=PORT_LINESTYLES[p], lw=1.0, alpha=0.9, label=p)
+
+    ax2.set_ylabel("累计净值", fontsize=11)
+    ax2.legend(loc="upper left", frameon=False, fontsize=8)
+    ax2.grid(True, alpha=0.3)
+
+    # 各自子图独立控制 x 轴，不使用 autofmt_xdate（避免跨轴干扰）
+    ax1.set_xticks(x + width)
+    ax1.set_xticklabels([str(y) for y in all_years], fontsize=8)
+    ax1.tick_params(axis="x", labelsize=9, labelbottom=True)
+
+    ax2.xaxis.set_major_locator(mdates.YearLocator())
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax2.tick_params(axis="x", labelsize=9)
+
+    path = CHART_DIR / "yearly_bar.png"
+    fig.savefig(path)
+    plt.close(fig)
+    return path

@@ -1,170 +1,116 @@
+<div align="center">
+
 # 桥水全天候策略 · 中国版
 
-
 [![Pages](https://img.shields.io/badge/docs-online-blue)](https://idealauror.github.io/all-weather-portfolio/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![Backtest](https://img.shields.io/badge/backtest-2005--2026-green)]()
+</div>
 
-基于真实 A 股 / 债 / 商品 ETF 数据的全天候风险平价（Risk Parity）回测工程。回测期 2005-2026，覆盖 ~21 年完整牛熊周期。
+基于真实 A 股 / 债 / 商品 ETF 数据的全天候风险平价（Risk Parity）回测工程，覆盖 **2005–2026 年（~21 年完整牛熊周期）**，提供 3 套可落地策略，每套支持 4 档现金管理（100% / 85% / 70% / 动态），共 12 个回测。
 
-📖 **在线阅读完整方案**：https://idealauror.github.io/all-weather-portfolio/
+在线文档：[https://idealauror.github.io/all-weather-portfolio/](https://idealauror.github.io/all-weather-portfolio/)
 
----
 
 ## 策略速查
 
 | 方案 | 风格 | CAGR | 最大回撤 | Sharpe | 一句话 |
-|---|---|---|---|---|---|
-| **V3c 多元** | 简约派 | 8.93% | -7.01% | 1.62 | 6资产逆波动率 60d + HS300 AND抄底 — 零负收益年份 |
-| **V3-B 风险平价(20d)** | 学院派 | **10.97%** | -9.48% | 1.40 | 4桶等权 RP + 三趋势过滤 + Gold/HS300抄底 — 回报最高 |
-| **V3-B 保守增强(20d)** | 保守增强 | 7.43% | **-6.40%** | **1.75** | 逆波动率 + HS300 AND抄底 — 零负收益年份 |
+|------|:----:|:----:|:--------:|:-----:|--------|
+| **V3c 多元** | 简约派 | 7.90% | -7.01% | 1.43 | 6 资产逆波动率 60d + nonferr 趋势 + HS300 AND 抄底 |
+| **V3-B 风险平价(20d)** | 学院派 | **10.03%** | -9.48% | 1.39 | 4 桶等权 RP + nonferr/gold/sp500 趋势 + Gold/HS300 抄底 |
+| **V3-B 保守增强(20d)** | 保守增强 | 6.76% | **-5.35%** | 1.36 | 逆波动率 20d + nonferr 趋势 + HS300 AND 抄底 |
 
-> V3-B RP 含 nonferr trend filter (75d) + gold trend filter (75d) + sp500 trend filter (120d) + Gold/HS300 抄底，月度调仓。
-> V3c 和 B-Con 含 nonferr trend filter（75d）+ HS300 AND抄底（价格回撤≥25% AND PE<30%ile AND price>SMA120 → 1.8x; 退出同理: 恢复至-15% AND PE>70%ile）。
-> V3c：6 资产；B-RP：6 资产 4 桶（无 bond_10y）；B-Con：7 资产 5 桶。
+> V3-B RP 使用 nonferr(75d) + gold(75d) + sp500(120d) 三重趋势过滤。V3c 和 V3-B Con 使用 nonferr(75d) 趋势过滤 + HS300 AND 抄底。V3-B RP 不含 bond_10y（CAGR +1.43pp, Sharpe -0.02）。
 
-### 策略评估
+**V3c 多元 (简约派)** — 6 资产逆波动率加权（60d 回看，max_w=0.30）+ nonferr 趋势过滤（75d SMA）+ Gold 抄底 + HS300 AND 抄底（PB 入场 / PE 出场）。月度调仓，最简执行。适合初入全天候、不想研究桶逻辑、追求简单透明。
 
-**V3c 多元 (简约派)**
-- 资产最少(6个)，执行最简单；21年零负收益年份（滚动1年负收益率 4.81%）
-- 逆波动率 60d + nonferr 趋势过滤(75d) + HS300 抄底（PE+价格回撤+SMA120 三信号）
-- 适合：初入全天候、不想研究桶逻辑、追求简单透明
+**V3-B 风险平价(20d) (学院派)** — 4 桶（增长↑ / 收益垫 / 增长↓ / 通胀↑）等权分层风险平价（HRP, 20d）+ nonferr(75d) + gold(75d) + sp500(120d) 三重趋势过滤 + Gold 抄底 + HS300 AND 抄底。CAGR 最高（年化 1.68x 换手率）。适合长期持有者(5 年+)、认同正统全天候理念、能承受短期波动。
 
-**V3-B 风险平价(20d) (学院派)**
-- 长期回报最高 CAGR 10.97%，累计 841%；四桶真正等权(25%×4)，三层趋势过滤+Gold/HS300抄底
-- 回撤(-9.48%)，最差年份 2011 -5.01%；桶逻辑比另外两个策略复杂
-- 适合：长期持有者(5年+)、认同正统全天候理念、能承受短期波动
+**V3-B 保守增强(20d) (保守增强)** — 逆波动率加权（20d 回看，max_w=0.25）+ nonferr 趋势过滤 + HS300 AND 抄底。含 bond_10y（7 资产）。回撤最低(-5.35%)，熊市表现最好，年化成本拖累仅 0.21%。适合保守资金、退休金、无法忍受大幅回撤。
 
-**V3-B 保守增强(20d) (保守增强)**
-- 回撤最低(-6.40%)，Sharpe 最高(1.75)，熊市表现最好（2008 +14.95%）
-- 牛市可能跑输(2019仅+7.58%，2017仅+2.67%)；长期累计回报最低(369%)
-- 适合：保守型资金、退休/教育金、无法承受大幅回撤
+**多档现金管理** — 每策略支持四档: 100% RP（满仓）、85% RP（15% 货币基金）、70% RP（30% 货币基金）、动态（根据 HS300 回撤自动调节）。现金档 Sharpe 基本不衰减，适合不同风险偏好的投资者。
 
-**一句话选策略：要简单 → V3c / 要高回报 → V3-B RP / 要不亏钱 → V3-B 保守增强**
+
+## 资产宇宙
+
+基于桥水原版全天候的**四象限宏观暴露**框架，在 A 股可投范围内选择 ETF：
+
+| 桶 | 资产 | ETF 代码 | V3c | V3-B RP | V3-B Con |
+|----|------|:--------:|:---:|:-------:|:--------:|
+| **增长↑** | 沪深 300 | 510300 | ✓ | ✓ | ✓ |
+| | 标普 500 | 513500 | ✓ | ✓ | ✓ |
+| **收益垫** | 城投债 | 511220 | ✓ | ✓ | ✓ |
+| **增长↓ 10Y** | 10 年国债 | 511260 | — | — | ✓ |
+| **增长↓ 30Y** | 30 年国债 | 511130 | ✓ | ✓ | ✓ |
+| **通胀↑** | 黄金 | 518880 | ✓ | ✓ | ✓ |
+| | 有色金属 | 159980 | ✓ | ✓ | ✓ |
+| **通胀↑ 备选** | ~~原油(QDII)~~ | ~~501018~~ | — | — | — |
+
+> 原油（南方原油 LOF 501018）数据管道已接入，因 QDII 限购+溢价异常，暂不可执行。
+
+> 30 年国债 ETF（511130）2024 年 3 月才上市。回测覆盖 2005–2024 年数据缺口采用三阶段合成法：**2005–2020** 用 10Y 国债指数 × 久期放大系数(×3.0)近似；**2020–2024** 用利差法（10Y + 期限利差）；**2024+** 使用真实 ETF 数据。合成段年化扣减 0.3% 作为期权费率差。
 
 ---
 
-## 一键运行
+## 项目目录
 
-```bash
-# 用 uv（推荐，自动管理依赖）
-uv run --with numpy --with pandas --with openpyxl python -X utf8 main.py
-
-# 或者用本地 Python（需先 pip install）
-pip install numpy pandas openpyxl
-python main.py
+```
+├── main.py                  # 入口：全量回测
+├── pyproject.toml
+├── allweather/              # 核心模块
+│   ├── config.py            常量（参数阈值、回测区间）
+│   ├── data.py              数据加载 + 30Y 国债三阶段合成
+│   ├── fetch.py             通过 akshare 拉取实时数据
+│   ├── backtest.py          V3c 引擎（逆波动率加权）
+│   ├── strategy_b.py        V3-B 引擎（分层风险平价 + 保守增强）
+│   ├── risk.py              逆波动率 / 风险平价 / 趋势过滤算法
+│   ├── stats.py             绩效指标 / Bootstrap / D_excess 尾部诊断
+│   ├── reports.py           控制台输出
+│   ├── charts.py            15 张分析图表生成
+│   ├── rebalance.py         实盘再平衡（信号仪表盘）
+│   └── pipeline.py          6 步流水线编排
+├── data/                    # 历史数据 CSV
+├── docs/                    # GitHub Pages 文档
+│   ├── index.html           交互式报告
+│   ├── data.json            结构化指标
+│   ├── strategy-paper.md    策略设计论文
+│   └── charts/              分析图表 PNG
+└── output/                  # 自动生成（回测报告/Excel/权重日志）
 ```
 
-跑完在控制台输出 9 张报表，同时写 `output/`：
+---
+
+## 快速开始
+
+```bash
+pip install -r requirements.txt
+python main.py                        # 全量回测（6 步流水线）
+python main.py --fetch                # 拉数据 + 回测
+python main.py --no-excel             # 跳过 Excel 报告
+python main.py --no-markdown          # 跳过 Markdown 报告
+
+python -m allweather.rebalance        # 实盘再平衡（三策略对比 + 信号仪表盘）
+python -m allweather.rebalance --strat V3c   # 只看 V3c 详情
+python -m allweather.rebalance --signals     # 只看当前市场信号状态
+```
+
+**输出文件说明**:
 
 | 文件 | 说明 |
-|---|---|
-| `report.xlsx` | Excel 多 sheet 综合报告（11 sheet，带格式/高亮/负数标红）|
-| `report.md` | Markdown 综合报告（GitHub / IDE 直接渲染）|
-| `nv_curves.csv` | 9 条净值曲线（3 策略 × 3 档现金）|
-| `summary.json` | 核心指标（CI sanity check 读这个）|
-| `weights.csv` | 三策略权重快照 |
+|------|------|
+| `output/report.xlsx` | 11-sheet Excel 综合报告 |
+| `output/nv_curves.csv` | 全部回测净值曲线宽表 |
+| `output/weight_history_*.csv` | 三策略权重历史 |
+| `output/signal_log.csv` | 风控信号触发日志 |
+| `docs/charts/*.png` | 分析图表 |
+| `docs/data.json` | 结构化指标（前端展示用） |
 
-## 命令行选项
 
-```bash
-python main.py                跑回测（默认输出全部报告）
-python main.py --fetch        先补拉缺失数据再回测
-python main.py --fetch-only   只拉数据不回测
-python main.py --force-fetch  强制重拉所有数据（覆盖）
-python main.py --no-excel     跳过 Excel 综合报告
-python main.py --no-markdown  跳过 Markdown 综合报告
-python main.py --help         查看完整帮助
-```
+## 回测局限
 
-> 数据已预先拉好放在 `data/`，正常直接 `python main.py`。
+- **30 年国债数据合成**：2024 年 3 月前无真实 ETF 数据，采用三阶段合成法（久期乘数 → 利差法 → 真实数据），合成段年化扣减 0.3%
+- **QDII 限购**：标普 500（513500）和原油（501018）受 QDII 额度限制，极端行情可能出现溢价或暂停申购
+- **费用假设**：回测以价格收益率为准，未扣除管理费、托管费（ETF 层面约 0.5%/年），通过无风险利率修正 Sharpe
+- **不可执行风险**：回测假设每月调仓日以收盘价成交，实盘存在滑点和流动性差异
 
-## 目录结构
-
-```
-全季节策略/
-├── main.py                    主入口
-├── pyproject.toml              依赖声明
-├── README.md                   本文件
-├── CLAUDE.md                   AI 协作指引 + 策略说明
-│
-├── allweather/                 核心包
-│   ├── config.py               常量：ETF代码 / 桶定义 / 调仓参数
-│   ├── data.py                 数据加载 + 30Y国债合成
-│   ├── fetch.py                数据拉取（akshare）
-│   ├── portfolios.py           策略标签与权重定义
-│   ├── backtest.py             回测引擎（V3c 逆波动率 + 双触发再平衡）
-│   ├── strategy_b.py           V3-B 分层风险平价/逆波动率回测
-│   ├── risk.py                 风险原语：逆波动率权重 / 分层RP / 风险控制库函数
-│   ├── stats.py                收益统计 + block bootstrap 蒙特卡洛
-│   ├── reports.py              控制台输出（9 张表 + 策略评估）
-│   ├── excel_export.py         Excel 11-sheet 格式化报告
-│   ├── markdown_report.py      GitHub Markdown 综合报告
-│   └── pipeline.py             6 步流水线编排
-│
-├── data/                       历史 CSV（已拉取）
-├── results/                    早期回测中间结果
-└── output/                     本次跑的输出（自动生成）
-```
-
-## 回测设计
-
-### 资产与桶
-
-| | V3c 多元 | V3-B 风险平价 | V3-B 保守增强 |
-|---|---|---|---|
-| 资产数 | 6 | 6 | 7 |
-| 桶结构 | 无 | 4 桶 × 25% | 5 桶 × 20%（仅分组标签） |
-| 资产列表 | hs300, us_sp500, credit, bond_30y, gold, nonferr | 同左 | + bond_10y |
-
-**B-RP 4 桶：** 增长↑(hs300/us_sp500) / 收益垫(credit) / 增长↓(bond_30y) / 通胀↑(gold/nonferr) — 各 25%。
-**B-Con 5 桶：** 同上 + 增长↓10Y(bond_10y) — 桶仅用于资产分组，权重由逆波动率直接计算。
-
-### 三条策略的核心差异
-
-| | V3c 多元 | V3-B 风险平价 | V3-B 保守增强 |
-|---|---|---|---|
-| 权重方法 | 逆波动率 60d | 4桶等权 + 桶内IV | 逆波动率 20d |
-| 桶结构 | 无 | 4 桶 × 25% | 无 |
-| 资产数 | 6 (无 bond_10y) | 6 (无 bond_10y) | 7 |
-| max_w | 0.30 | 0.20 | 0.25 |
-| 现金档位 | 100%/85%/70% | 100%/85%/70% | 100%/85%/70% |
-
-### 关键参数
-
-| 参数 | 值 | 说明 |
-|---|---|---|
-| 回测区间 | 2005-04 ~ 2026-04 | ~21 年 |
-| 调仓频率 | 月度 | 每月初重算权重 |
-| nonferr 趋势过滤 | 75d SMA（三策略统一） | 跌破 SMA 则权重转入 credit |
-| Gold trend filter | B-RP only, 75d SMA, full clear | 跌破 SMA 则清仓黄金转入 credit |
-| SP500 trend filter | B-RP only, 120d SMA, full clear | 跌破 SMA 则清仓标普500转入 credit |
-| HS300 AND抄底 | 价格回撤≥25% AND PE<30%ile AND price>SMA120 → 1.8x | 退出: 恢复至-15% AND PE>70%ile |
-| 无风险利率 | 2.2% 年化 | 用于 Sharpe 修正 |
-
-## 自定义
-
-修改权重或参数直接改 `allweather/config.py` 后重跑。
-
-跑单步而非全流程：
-
-```python
-from allweather.pipeline import (
-    step_1_load_data, step_2_run_backtests,
-    step_3_compute_metrics, step_4_bootstrap,
-    step_5_print_reports, step_6_save_outputs,
-)
-
-panel, rets = step_1_load_data()
-weights, nv = step_2_run_backtests(rets)
-# ...
-```
-
-## 分支规范
-
-- `main` — 生产分支，直接 push（单人项目）
-
-## 文档
-
-详细策略论证、回测过程、风险提示、落地手册见：
-- 在线文档：https://idealauror.github.io/all-weather-portfolio/

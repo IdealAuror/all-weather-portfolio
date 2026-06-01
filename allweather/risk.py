@@ -47,10 +47,12 @@ def hierarchical_rp_weights(
 
     if bucket_method == "equal":
         bucket_alloc = {k: 1.0 / n_buckets for k in bucket_w}
-    else:
+    elif bucket_method in ("risk_parity", "inverse_vol"):
         inv_vols = {k: 1.0 / v for k, v in bucket_vol.items() if v > 0.001}
         total = sum(inv_vols.values())
         bucket_alloc = {k: v / total for k, v in inv_vols.items()}
+    else:
+        raise ValueError(f"未知 bucket_method: {bucket_method}")
 
     raw = pd.Series(0.0, index=returns.columns)
     for bname, bw in bucket_alloc.items():

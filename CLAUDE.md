@@ -79,6 +79,17 @@ This file provides guidance to Claude Code when working with code in this reposi
 - Commit message 禁止 Co-Authored-By 署名
 - 大改动可开 feature 分支，最终合 main
 
+## 模型选择
+
+日常分析用当前模型（Flash）。以下场景**必须**用 Agent + `model: "opus"` 启动子任务，子任务完成后将结论带回主会话：
+
+- **复杂策略分析** — 多变量对比、参数响应面解读、敏感度网格的统计推断
+- **统计诊断** — D_excess 尾部风险分析、Bootstrap 分布解读、过拟合检验
+- **回测异常排查** — 归因分析、事件期解剖、多因子分离
+- **新机制设计** — 优化闭环中"问题定义→假设→设计"前三个阶段
+
+简单任务（改常量、更新文档、常规 commit）不走 Agent，直接在当前会话处理。
+
 ## 项目信息
 
 Bridgewater All Weather × 中国 A 股 ETF 回测研究。输出：控制台 + `output/report.xlsx` + `output/report.md` + `docs/index.html` (GitHub Pages)。
@@ -92,8 +103,9 @@ py main.py --no-markdown           # 跳过 Markdown
 py main.py --fetch                 # 拉数据 + 回测
 py main.py --fetch-only            # 仅拉数据
 py main.py --force-fetch           # 强制重拉
-python -m allweather.rebalance              # 实盘再平衡（交互式）
-python -m allweather.rebalance --strat V3c  # 仅看 V3c 目标权重
+python -m allweather.rebalance              # 实盘再平衡（三策略对比 + 信号仪表盘）
+python -m allweather.rebalance --strat V3c  # 只看 V3c 详情
+python -m allweather.rebalance --signals    # 只看当前市场信号状态
 ```
 
 CI：`.github/workflows/backtest.yml` 跑 `py main.py`，检查 Sharpe/MDD 边界。
@@ -118,7 +130,7 @@ allweather/
 
 ### 6 步流水线
 
-1. 加载 9 资产面板 → 2. 跑 3 策略 × 3 现金档 = 9 回测 → 3. 算衍生指标 + D_excess 显著性 → 4. Block Bootstrap (1000×5yr, 21d block) → 5. 打印控制台 → 6. 保存 CSV/JSON/Excel/Markdown/图表
+1. 加载 8 资产面板 → 2. 跑 3 策略 × 3 现金档 = 9 回测（+3 动态现金 = 12）→ 3. 算衍生指标 + D_excess 显著性 → 4. Block Bootstrap (1000×5yr, 21d block) → 5. 打印控制台 → 6. 保存 CSV/JSON/Excel/Markdown/图表
 
 ### 三策略
 
@@ -126,9 +138,10 @@ allweather/
 |------|------|----------|--------|------|
 | V3c 多元 | `backtest.py::backtest_iv` | 逆波动率 60d (max 0.30) + nonferr 75d + HS300 AND抄底 | 6 | 最简，每月调仓 |
 | V3-B 风险平价(20d) | `strategy_b.py::backtest_b` | 4 桶等权 HRP + nonferr 75d + gold 75d + sp500 120d + Gold dip + HS300 AND抄底 | 6 (无 bond_10y) | CAGR 最高，三重风控 |
-| V3-B 保守增强(20d) | `strategy_b.py::backtest_b` | 逆波动率 20d (max 0.25) + nonferr 75d + HS300 AND抄底 | 7 | 回撤最低，Sharpe 最高 |
+| V3-B 保守增强(20d) | `strategy_b.py::backtest_b` | 逆波动率 20d (max 0.25) + nonferr 75d + HS300 AND抄底 | 7 (含 bond_10y) | 回撤最低 |
 
-× 3 现金档：100% RP / 85% RP / 70% RP。div_idx 和 soymeal 已于 2026-05-27 移除。
+× 3 现金档（含动态）：100% RP / 85% RP / 70% RP / 动态。div_idx 和 soymeal 已于 2026-05-27 移除。
+wti（原油 501018）已集成数据管道和引擎，因 QDII 限购暂不可执行。
 
 ### 资产与桶
 
@@ -139,6 +152,7 @@ allweather/
 | 增长↓10Y | bond_10y | — | — | ✓ |
 | 增长↓30Y | bond_30y | ✓ | ✓ | ✓ |
 | 通胀↑ | gold, nonferr | ✓ | ✓ | ✓ |
+| 通胀↑备选 | ~~wti~~ *(QDII限购)* | — | — | — |
 
 V3-B RP 去掉了 bond_10y：CAGR +1.43pp，Sharpe 仅 -0.02。
 
@@ -163,6 +177,7 @@ V3-B RP 去掉了 bond_10y：CAGR +1.43pp，Sharpe 仅 -0.02。
 | `HS300_DIP_BOOST` | 1.8 | HS300 抄底倍数 |
 | `HS300_PB_ENTRY` / `HS300_PE_EXIT` | 30 / 70 | AND 逻辑 入场PB / 出场PE 分位阈值 |
 | `SP500_TREND_WINDOW` | 120 | SP500 SMA 回看 |
+| `WTI_TREND_WINDOW` | 75 | 原油 SMA 回看（同 nonferr） |
 | `BOOTSTRAP_N_SIM` | 1000 | 蒙特卡洛次数 |
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5 年 |
 | `BOOTSTRAP_BLOCK_DAYS` | 21 | ~1 个月块 |

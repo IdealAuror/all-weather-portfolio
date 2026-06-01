@@ -38,7 +38,6 @@ def backtest_b(
     min_w: float = RISK_PARITY_MIN_WEIGHT,
     rp_buckets: dict | None = None,
     nonferr_control: str | None = None,
-    nonferr_dd_threshold: float = -0.10,
     nonferr_trend_window: int = 90,
     weighting_method: str = "hierarchical_rp",
     gold_dip_threshold: float | None = GOLD_DIP_THRESHOLD,
@@ -51,10 +50,9 @@ def backtest_b(
     gold_trend_filter: bool = False,
     gold_trend_window: int = 75,
     track_weights: bool = False,
-    vol_target: float | None = None,
-    vol_target_window: int = 60,
     equity_trend_assets: list | None = None,
     equity_trend_window: int = 120,
+    equity_trend_windows: dict | None = None,
     hs300_value_dip: bool = False,
     hs300_pb_entry: float = HS300_PB_ENTRY,
     hs300_pe_exit: float = HS300_PE_EXIT,
@@ -67,8 +65,7 @@ def backtest_b(
     Args:
         weighting_method: "hierarchical_rp" (default) or "inverse_vol"
         rp_buckets: 自定义桶结构（None=默认 BUCKET_GROUPS）
-        nonferr_control: None, "dd_stop" (回撤刹车), or "trend_filter" (趋势过滤)
-        nonferr_dd_threshold: dd_stop 模式的回撤触发阈值
+        nonferr_control: None or "trend_filter" (趋势过滤)
         nonferr_trend_window: trend_filter 模式的 SMA 窗口（交易日）
         gold_dip_threshold: 黄金回撤阈值（None=禁用抄底）
         gold_dip_boost: 触发后黄金权重增幅倍数（1.5=增加50%）
@@ -100,11 +97,8 @@ def backtest_b(
 
     # --- Nonferr risk control state ---
     prices = None
-    nferr_peak = 1.0
-    nferr_stopped = False
     if nonferr_control is not None and "nonferr" in cols:
         prices = (1 + rets_rp).cumprod()
-        nferr_peak = prices.iloc[0]["nonferr"]
 
     # --- Gold dip-buying state ---
     gold_peak = 1.0
@@ -136,13 +130,6 @@ def backtest_b(
         s = h.sum()
         if s > 0:
             h = h / s * (1 - eff_cash)
-
-        # --- Update nonferr peak ---
-        if prices is not None and "nonferr" in prices.columns:
-            curr_nf = prices.iloc[i]["nonferr"]
-            if curr_nf > nferr_peak:
-                nferr_peak = curr_nf
-                nferr_stopped = False
 
         # --- Update gold peak ---
         if gold_dip_threshold is not None and prices is not None and "gold" in prices.columns:
@@ -177,15 +164,7 @@ def backtest_b(
             w = pd.Series(new_w.values * (1 - eff_cr), index=cols)
 
             # --- Apply nonferr risk control ---
-            if nonferr_control == "dd_stop" and prices is not None:
-                nf_dd = (prices.iloc[i]["nonferr"] / nferr_peak) - 1
-                if nf_dd <= nonferr_dd_threshold:
-                    nferr_stopped = True
-                if nferr_stopped and w.get("nonferr", 0) > 0:
-                    w["credit"] = w.get("credit", 0) + w["nonferr"]
-                    w["nonferr"] = 0.0
-
-            elif nonferr_control == "trend_filter" and prices is not None:
+            if nonferr_control == "trend_filter" and prices is not None:
                 curr_nf = prices.iloc[i]["nonferr"]
                 nf_sma = prices["nonferr"].iloc[max(0, i - nonferr_trend_window):i].mean()
                 if curr_nf < nf_sma and w.get("nonferr", 0) > 0:
@@ -200,15 +179,17 @@ def backtest_b(
                     w["credit"] = w.get("credit", 0) + w["gold"]
                     w["gold"] = 0.0
 
-            # --- Equity trend filter: 权益跌破SMA → 清仓转入 credit ---
-            if equity_trend_assets and prices is not None and i > equity_trend_window:
+            # --- Equity trend filter: 资产跌破SMA → 清仓转入 credit（支持 per-asset window）---
+            if equity_trend_assets and prices is not None:
                 for eq in equity_trend_assets:
                     if eq in w.index and w.get(eq, 0) > 0:
                         curr = prices.iloc[i][eq]
-                        sma = prices[eq].iloc[max(0, i - equity_trend_window):i].mean()
-                        if curr < sma:
-                            w["credit"] = w.get("credit", 0) + w[eq]
-                            w[eq] = 0.0
+                        wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
+                        if i > wdw:
+                            sma = prices[eq].iloc[max(0, i - wdw):i].mean()
+                            if curr < sma:
+                                w["credit"] = w.get("credit", 0) + w[eq]
+                                w[eq] = 0.0
 
             # --- Gold dip-buying: 回撤超阈值 → 翻倍增持，从 credit 提取 ---
             if gold_dip_threshold is not None and prices is not None and w.get("gold", 0) > 0:
@@ -236,21 +217,39 @@ def backtest_b(
                         w["hs300"] += boost
                         w["credit"] -= boost
 
-            # --- 信号触发日志 ---
-            if track_signals and "hs300" in cols:
-                snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
-                signal_log.append({
-                    'date': d,
-                    'label': signal_label,
-                    **snap,
-                })
+            # --- 信号触发日志（每月调仓日记录全部风控状态）---
+            if track_signals:
+                entry = {'date': d, 'label': signal_label}
+                # Nonferr 趋势过滤
+                if nonferr_control == "trend_filter" and prices is not None and "nonferr" in prices.columns:
+                    nf_sma = prices["nonferr"].iloc[max(0, i - nonferr_trend_window):i].mean()
+                    entry['nonferr_below_sma'] = bool(prices.iloc[i]["nonferr"] < nf_sma)
+                    entry['nonferr_filtered'] = w.get("nonferr", 0) == 0
+                # Gold 趋势过滤
+                if gold_trend_filter and prices is not None and "gold" in prices.columns:
+                    au_sma = prices["gold"].iloc[max(0, i - gold_trend_window):i].mean()
+                    entry['gold_below_sma'] = bool(prices.iloc[i]["gold"] < au_sma)
+                    entry['gold_filtered'] = w.get("gold", 0) == 0
+                # SP500 / WTI 趋势过滤
+                if equity_trend_assets and prices is not None:
+                    for eq in equity_trend_assets:
+                        if eq in prices.columns:
+                            wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
+                            if i > wdw:
+                                eq_sma = prices[eq].iloc[max(0, i - wdw):i].mean()
+                                entry[f'{eq}_below_sma'] = bool(prices.iloc[i][eq] < eq_sma)
+                            entry[f'{eq}_filtered'] = w.get(eq, 0) == 0
+                # Gold 抄底
+                if gold_dip_threshold is not None and prices is not None and "gold" in prices.columns:
+                    gold_dd = float(prices.iloc[i]["gold"] / gold_peak - 1)
+                    entry['gold_dd_pct'] = round(gold_dd, 4)
+                    entry['gold_dip_active'] = gold_dd <= -gold_dip_threshold and w.get("gold", 0) > 0
+                # HS300 AND 抄底
+                if "hs300" in cols:
+                    snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
+                    entry.update(snap)
+                signal_log.append(entry)
 
-            if vol_target is not None and i > max(rp_window, vol_target_window):
-                past = rets_rp.iloc[max(0, i - vol_target_window):i]
-                port_ret = past @ w.values
-                port_vol = port_ret.std() * np.sqrt(252)
-                if port_vol > 0.001 and port_vol > vol_target:
-                    w = w * (vol_target / port_vol)
             eff_cash = 1.0 - w.sum()
 
             h = w
