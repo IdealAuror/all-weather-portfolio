@@ -1538,9 +1538,12 @@ function downloadHTML() {
 
 
 
+
+
+
 <!-- ALLWEATHER_SYNC_START --><script>
 (function(){
-const D = {"V3c 多元": {"100% RP": {"cum_return": 5.369998, "cagr": 0.083578, "vol": 0.038899, "mdd": -0.070077, "sharpe": 1.583034, "calmar": 1.192662, "final_nv": 6.37}, "85% RP": {"cum_return": 4.21857, "cagr": 0.074253, "vol": 0.033064, "mdd": -0.058941, "sharpe": 1.580359, "calmar": 1.259784, "final_nv": 5.2186}, "70% RP": {"cum_return": 3.271886, "cagr": 0.064972, "vol": 0.027229, "mdd": -0.047698, "sharpe": 1.578143, "calmar": 1.36216, "final_nv": 4.2719}, "动态": {"cum_return": 4.60655, "cagr": 0.077598, "vol": 0.034334, "mdd": -0.053044, "sharpe": 1.619343, "calmar": 1.462903, "final_nv": 5.6066}}, "V3-B 风险平价(20d)": {"100% RP": {"cum_return": 8.307544, "cagr": 0.10154, "vol": 0.056822, "mdd": -0.09247, "sharpe": 1.399808, "calmar": 1.098079, "final_nv": 9.3075}, "85% RP": {"cum_return": 6.221777, "cagr": 0.08949, "vol": 0.048298, "mdd": -0.078788, "sharpe": 1.397349, "calmar": 1.135825, "final_nv": 7.2218}, "70% RP": {"cum_return": 4.593973, "cagr": 0.077493, "vol": 0.039775, "mdd": -0.06494, "sharpe": 1.395169, "calmar": 1.193295, "final_nv": 5.594}, "动态": {"cum_return": 6.587144, "cagr": 0.091823, "vol": 0.050567, "mdd": -0.070124, "sharpe": 1.380803, "calmar": 1.309446, "final_nv": 7.5871}}, "V3-B 保守增强(20d)": {"100% RP": {"cum_return": 3.657666, "cagr": 0.068971, "vol": 0.028339, "mdd": -0.064036, "sharpe": 1.657439, "calmar": 1.07707, "final_nv": 4.6577}, "85% RP": {"cum_return": 2.99502, "cagr": 0.061883, "vol": 0.024088, "mdd": -0.052648, "sharpe": 1.655672, "calmar": 1.175403, "final_nv": 3.995}, "70% RP": {"cum_return": 2.425207, "cagr": 0.054822, "vol": 0.019838, "mdd": -0.041155, "sharpe": 1.654548, "calmar": 1.332093, "final_nv": 3.4252}, "动态": {"cum_return": 3.233325, "cagr": 0.064553, "vol": 0.025142, "mdd": -0.047474, "sharpe": 1.692542, "calmar": 1.359772, "final_nv": 4.2333}}};
+const D = {"V3c 多元": {"100% RP": {"cum_return": 4.881875, "cagr": 0.085493, "vol": 0.03812, "mdd": -0.070077, "sharpe": 1.594281, "calmar": 1.219984, "final_nv": 5.8819}, "85% RP": {"cum_return": 3.851988, "cagr": 0.075862, "vol": 0.032402, "mdd": -0.058941, "sharpe": 1.594281, "calmar": 1.287085, "final_nv": 4.852}, "70% RP": {"cum_return": 2.999577, "cagr": 0.066282, "vol": 0.026684, "mdd": -0.047698, "sharpe": 1.594281, "calmar": 1.38963, "final_nv": 3.9996}, "动态": {"cum_return": 4.254276, "cagr": 0.079837, "vol": 0.034016, "mdd": -0.053044, "sharpe": 1.628639, "calmar": 1.505117, "final_nv": 5.2543}}, "V3-B 风险平价(20d)": {"100% RP": {"cum_return": 7.324864, "cagr": 0.103092, "vol": 0.055059, "mdd": -0.09247, "sharpe": 1.410337, "calmar": 1.114865, "final_nv": 8.3249}, "85% RP": {"cum_return": 5.532822, "cagr": 0.090781, "vol": 0.0468, "mdd": -0.078788, "sharpe": 1.410337, "calmar": 1.152212, "final_nv": 6.5328}, "70% RP": {"cum_return": 4.11894, "cagr": 0.078533, "vol": 0.038541, "mdd": -0.06494, "sharpe": 1.410337, "calmar": 1.209314, "final_nv": 5.1189}, "动态": {"cum_return": 5.891494, "cagr": 0.093483, "vol": 0.049362, "mdd": -0.070124, "sharpe": 1.389789, "calmar": 1.333121, "final_nv": 6.8915}}, "V3-B 保守增强(20d)": {"100% RP": {"cum_return": 3.429703, "cagr": 0.071336, "vol": 0.02808, "mdd": -0.064036, "sharpe": 1.684848, "calmar": 1.114012, "final_nv": 4.4297}, "85% RP": {"cum_return": 2.809332, "cagr": 0.063879, "vol": 0.023868, "mdd": -0.052648, "sharpe": 1.684848, "calmar": 1.213318, "final_nv": 3.8093}, "70% RP": {"cum_return": 2.274574, "cagr": 0.056454, "vol": 0.019656, "mdd": -0.041155, "sharpe": 1.684848, "calmar": 1.371745, "final_nv": 3.2746}, "动态": {"cum_return": 3.060585, "cagr": 0.06703, "vol": 0.025126, "mdd": -0.047474, "sharpe": 1.719459, "calmar": 1.411935, "final_nv": 4.0606}}};
 
 function pct(v, d) { return (v*100).toFixed(d||2)+'%'; }
 function ps(v, d) { var s=(v*100).toFixed(d||2)+'%'; return (v>=0?'+':'')+s; }
@@ -1976,6 +1979,9 @@ if (T) {
 console.log('data.json sync: '+Object.keys(D).length+' strategies loaded');
 })();
 </script><!-- ALLWEATHER_SYNC_END -->
+
+
+
 
 
 

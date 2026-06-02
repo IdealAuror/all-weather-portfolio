@@ -51,7 +51,6 @@ for label, alpha in configs:
         equity_trend_assets=["us_sp500"], equity_trend_window=120,
         hs300_value_dip=True,
         track_weights=True, track_signals=True, signal_label=label,
-        target_weight_smoothing=alpha if alpha < 1.0 else None,
     )
     results[label] = {"nv": nv, "n": n, "wh": wh}
 

@@ -59,11 +59,12 @@ def _write_headers(ws, row, headers):
         c.border = BORDER
 
 
-def _autofit(ws, min_width=10, max_width=40):
-    """根据内容长度估列宽（中文 1 字 ≈ 2 单位）。"""
+def _autofit(ws, min_width=10, max_width=40, max_scan_rows=100):
+    """根据内容长度估列宽（中文 1 字 ≈ 2 单位），最多扫描 max_scan_rows 行。"""
+    end_row = min(ws.max_row, max_scan_rows)
     for col_idx in range(1, ws.max_column + 1):
         max_len = min_width
-        for row in range(1, ws.max_row + 1):
+        for row in range(1, end_row + 1):
             v = ws.cell(row=row, column=col_idx).value
             if v is None:
                 continue

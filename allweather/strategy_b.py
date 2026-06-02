@@ -59,6 +59,7 @@ def backtest_b(
     track_signals: bool = False,
     signal_label: str = "",
     dynamic_cash: bool = False,
+    post_process_max_w: float | None = None,
 ) -> tuple:
     """Plan B backtest — 分层风险平价 / 逆波动率 + 可选 nonferr 风控 + gold 抄底 + hs300 抄底。
 
@@ -102,6 +103,7 @@ def backtest_b(
 
     # --- Gold dip-buying state ---
     gold_peak = 1.0
+    gold_boosted = False
     if gold_dip_threshold is not None and "gold" in cols:
         if prices is None:
             prices = (1 + rets_rp).cumprod()
@@ -187,14 +189,18 @@ def backtest_b(
             if gold_dip_threshold is not None and prices is not None and w.get("gold", 0) > 0:
                 gold_dd = prices.iloc[i]["gold"] / gold_peak - 1
                 if gold_dd <= -gold_dip_threshold:
-                    boost = w["gold"] * gold_dip_boost
-                    if w.get("credit", 0) >= boost:
-                        w["gold"] += boost
-                        w["credit"] = w["credit"] - boost
-                        if gold_dip_cap is not None and w["gold"] > gold_dip_cap:
-                            excess = w["gold"] - gold_dip_cap
-                            w["gold"] = gold_dip_cap
-                            w["credit"] = w["credit"] + excess
+                    if not gold_boosted:
+                        boost = w["gold"] * gold_dip_boost
+                        if w.get("credit", 0) >= boost:
+                            w["gold"] += boost
+                            w["credit"] = w["credit"] - boost
+                            gold_boosted = True
+                            if gold_dip_cap is not None and w["gold"] > gold_dip_cap:
+                                excess = w["gold"] - gold_dip_cap
+                                w["gold"] = gold_dip_cap
+                                w["credit"] = w["credit"] + excess
+                else:
+                    gold_boosted = False
 
             # --- hs300 抄底：价格回撤 + 基本面确认 同时满足 ---
             if hs300_value_dip and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
@@ -208,6 +214,11 @@ def backtest_b(
                     if w.get("credit", 0) >= boost:
                         w["hs300"] += boost
                         w["credit"] -= boost
+
+            # --- 后处理截断：在 dip-buying/trend filter 全部执行后，再砍一刀 ---
+            if post_process_max_w is not None:
+                w = w.clip(upper=post_process_max_w)
+                w = w / w.sum()
 
             # --- 信号触发日志（每月调仓日记录全部风控状态）---
             if track_signals:

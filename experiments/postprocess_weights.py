@@ -33,7 +33,7 @@ rets = panel.pct_change().dropna()
 print(f"  数据: {panel.index.min().date()} ~ {panel.index.max().date()}, {len(panel)} 交易日\n")
 
 configs = [
-    ("基准 (无后处理)", dict(post_process_max_w=None)),
+    ("基准 (无后处理)", dict()),
     ("硬上限 max_w=0.20", dict(post_process_max_w=0.20)),
     ("软上限 max_w=0.25", dict(post_process_max_w=0.25)),
 ]

@@ -42,7 +42,7 @@ def hierarchical_rp_weights(
         inv = 1 / vols.replace(0, np.nan)
         w = inv / inv.sum()
         bucket_w[bname] = w
-        port_r = (brets * w.values).sum(axis=1)
+        port_r = (brets * w).sum(axis=1)
         bucket_vol[bname] = port_r.std() * np.sqrt(252)
 
     if bucket_method == "equal":
@@ -83,11 +83,8 @@ def hs300_dip_check(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
     if hs300_boosted:
         if hs300_dd > -exit_recovery and exit_fundamental:
             return False, None
-    elif (hs300_dd <= -threshold and fundamental_ok
-          and curr_hs > dip_sma):
-        hs300_boosted = True
-
-    if hs300_boosted:
+        return True, 1.0
+    if hs300_dd <= -threshold and fundamental_ok and curr_hs > dip_sma:
         return True, boost_mult
     return False, None
 

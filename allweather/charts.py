@@ -7,7 +7,7 @@ import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from .config import OUTPUT_DIR
+from .config import OUTPUT_DIR, STRESS_EVENTS, CHART_EVENT_NAMES
 
 plt.rcParams.update({
     "font.family": "sans-serif",
@@ -258,7 +258,7 @@ def plot_yearly_returns(metrics: dict, nv_results: dict = None):
             if d.year not in table:
                 table[d.year] = {}
             table[d.year][d.month] = r * 100
-            yearly_sum[d.year] = yearly_sum.get(d.year, 0) + r
+            yearly_sum[d.year] = (1 + yearly_sum.get(d.year, 0.0)) * (1 + r) - 1
 
         years = sorted(table.keys())
         months = list(range(1, 13))
@@ -317,19 +317,15 @@ ASSET_LABELS = {
 FIXED_INCOME = ["credit", "bond_10y", "bond_30y"]
 RISK_ASSETS = ["hs300", "us_sp500", "gold", "nonferr"]
 
-_CHART_EVENTS = [
-    ("2008 GFC",     "2008-09-15", "2009-03-09"),
-    ("2015 股灾",    "2015-06-12", "2015-08-26"),
-    ("2018 大熊市",  "2018-01-24", "2018-10-19"),
-    ("2020 疫情",    "2020-02-19", "2020-03-23"),
-    ("2022 股债双杀","2022-01-04", "2022-11-30"),
-    ("2024-924",     "2024-09-23", "2024-10-08"),
-]
+def _chart_events():
+    """从 STRESS_EVENTS 筛选图表标注事件。"""
+    names = set(CHART_EVENT_NAMES)
+    return [(n, s, e) for n, s, e in STRESS_EVENTS if n in names]
 
 
 def _draw_events(axes, top_ax, label_y=0.97):
     """在多个子图上绘制事件标注 — 灰底 + 虚线框 + 标签。"""
-    for label, start, end in _CHART_EVENTS:
+    for label, start, end in _chart_events():
         s = pd.Timestamp(start)
         e = pd.Timestamp(end)
         for ax in axes:

@@ -20,7 +20,7 @@ print(LINE)
 print("  V3c + 原油(WTI) 实验")
 print(LINE)
 
-panel = load_panel()
+panel = load_panel(include_wti=True)
 rets = panel.pct_change().dropna()
 print(f"  数据: {panel.index.min().date()} ~ {panel.index.max().date()}, {len(panel)} 交易日\n")
 

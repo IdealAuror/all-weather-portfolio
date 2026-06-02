@@ -40,6 +40,7 @@ def backtest_iv(
     equity_trend_assets: list | None = None,
     equity_trend_window: int = 120,
     equity_trend_windows: dict | None = None,
+    post_process_max_w: float | None = None,
 ):
     """逆波动率加权 + 月度再平衡 + nonferr 趋势过滤 + gold/hs300 抄底。
 
@@ -63,6 +64,7 @@ def backtest_iv(
     hs300_idx = cols.index("hs300") if "hs300" in cols else -1
 
     gold_peak = prices.iloc[0]["gold"] if gold_idx >= 0 else 1.0
+    gold_boosted = False
     hs300_peak = prices.iloc[0]["hs300"] if hs300_idx >= 0 else 1.0
 
     pb_data = load_hs300_pb() if hs300_value_dip else None
@@ -136,14 +138,18 @@ def backtest_iv(
             if gold_dip_threshold is not None and gold_idx >= 0 and w.get("gold", 0) > 0:
                 gold_dd = prices.iloc[i]["gold"] / gold_peak - 1
                 if gold_dd <= -gold_dip_threshold:
-                    boost = w["gold"] * gold_dip_boost
-                    if w.get("credit", 0) >= boost:
-                        w["gold"] += boost
-                        w["credit"] -= boost
-                        if gold_dip_cap is not None and w["gold"] > gold_dip_cap:
-                            excess = w["gold"] - gold_dip_cap
-                            w["gold"] = gold_dip_cap
-                            w["credit"] += excess
+                    if not gold_boosted:
+                        boost = w["gold"] * gold_dip_boost
+                        if w.get("credit", 0) >= boost:
+                            w["gold"] += boost
+                            w["credit"] -= boost
+                            gold_boosted = True
+                            if gold_dip_cap is not None and w["gold"] > gold_dip_cap:
+                                excess = w["gold"] - gold_dip_cap
+                                w["gold"] = gold_dip_cap
+                                w["credit"] += excess
+                else:
+                    gold_boosted = False
 
             # --- hs300 抄底：价格回撤 + 基本面确认 同时满足 ---
             if hs300_value_dip and hs300_idx >= 0 and w.get("hs300", 0) > 0 and i > hs300_dip_sma:
@@ -189,6 +195,10 @@ def backtest_iv(
                     snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost)
                     entry.update(snap)
                 signal_log.append(entry)
+
+            if post_process_max_w is not None:
+                w = w.clip(upper=post_process_max_w)
+                w = w / w.sum()
 
             eff_cash = 1.0 - w.sum()
 
