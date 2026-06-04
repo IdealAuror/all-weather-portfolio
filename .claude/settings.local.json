@@ -169,7 +169,18 @@
       "Bash(/e/Tools/uv/uv run *)",
       "Bash(py main.py --no-excel)",
       "Bash(which python *)",
-      "Bash(which python3 *)"
+      "Bash(which python3 *)",
+      "Bash(uv --version)",
+      "Bash(cat .python-version)",
+      "Bash(head -30 pyproject.toml)",
+      "Bash(ssh *)",
+      "Bash(timeout 15 gh api repos/IdealAuror/all-weather-portfolio/branches/main)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['commit']['sha'][:7], d['commit']['commit']['message'].split\\('\\\\n'\\)[0]\\)\")",
+      "Bash(timeout 10 gh auth *)",
+      "Bash(timeout 15 git ls-remote *)",
+      "Bash(git diff-tree *)",
+      "Bash(git ls-tree *)",
+      "Bash(git cherry-pick *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio"

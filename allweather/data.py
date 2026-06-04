@@ -124,9 +124,9 @@ def synthesize_bond_30y(s_10y: pd.Series, s_30y_etf: pd.Series) -> pd.Series:
     if not spread.empty and spread.index.min() <= spread_cutoff:
         cb10_aligned = cb10_ret[cb10_ret.index >= spread.index.min()]
         spread_aligned = spread.reindex(cb10_aligned.index).ffill()
-        spread_daily = spread_aligned.diff().fillna(0.0) / 252.0
+        spread_daily = spread_aligned.diff().fillna(0.0)
         dur = 18.0
-        spread_ret = cb10_aligned + dur * spread_daily
+        spread_ret = cb10_aligned * BOND_30Y_AMP - dur * spread_daily
         spread_nv = (1 + spread_ret).cumprod()
         spread_nv = spread_nv[spread_nv.index >= spread_cutoff]
     else:
@@ -278,7 +278,7 @@ def _load_with_index(etf_name: str, idx_name: str, annual_deduct: float = 0.0) -
     return stitch_series(etf, proxy, annual_deduct=annual_deduct)
 
 
-def load_panel() -> pd.DataFrame:
+def load_panel(include_wti: bool = False) -> pd.DataFrame:
     """加载 9 资产收盘价面板（含缝合，对齐到回测期间，前向填充）。
 
     2008+ 延长回测：ETF 上市前的期间用指数/期货/国际价格拼接。
@@ -318,7 +318,8 @@ def load_panel() -> pd.DataFrame:
         nonferr = nonferr_proxy
 
     # 原油 WTI (USD×USDCNY)
-    wti_cny = _load_wti_cny()
+    if include_wti:
+        wti_cny = _load_wti_cny()
 
     panel = pd.DataFrame({
         "hs300":    hs300,
@@ -328,8 +329,9 @@ def load_panel() -> pd.DataFrame:
         "bond_30y": bond_30y,
         "gold":     gold,
         "nonferr":  nonferr,
-        "wti":      wti_cny,
     })
+    if include_wti:
+        panel["wti"] = wti_cny
     panel.index = pd.to_datetime(panel.index)
     panel = panel.sort_index()
     panel = panel.loc[BACKTEST_START:BACKTEST_END].ffill().dropna()

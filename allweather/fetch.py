@@ -10,7 +10,7 @@ RETRY_TIMES = 3
 RETRY_DELAY = 5  # 秒
 
 DEFAULT_START = "20050101"
-DEFAULT_END   = "20260430"
+DEFAULT_END   = "20260530"
 
 # 资产清单：name -> (kind, symbol)
 TARGETS = {
@@ -69,6 +69,10 @@ def _fetch_etf_nav(code, start, end):
     df.columns = ["date", "unit_nav", "close", "daily_chg", "buy", "sell"]
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["close"] = pd.to_numeric(df["close"], errors="coerce")
+    # 验证 close 值是否合理（511130 净值约 100 元，其他 ETF 通常 1~200 元）
+    close_mid = df["close"].median()
+    if not (0.1 <= close_mid <= 5000):
+        raise ValueError(f"{code}: close 中位数={close_mid}，可能列顺序已变更")
     df = df.dropna(subset=["date", "close"])
     return df[["date", "close"]].sort_values("date")
 
@@ -179,6 +183,9 @@ def _fetch_fx_boc(start, end):
     df = df.rename(columns={"日期": "date", "央行中间价": "close"})
     df["date"] = pd.to_datetime(df["date"])
     df["close"] = pd.to_numeric(df["close"], errors="coerce") / 100.0  # 分→元
+    close_mid = df["close"].median()
+    if not (5 < close_mid < 10):
+        raise ValueError(f"USDCNY 中间价中位数={close_mid}，预期 ~7 元，可能单位已变更")
     df = df.dropna(subset=["date", "close"])
     return df[["date", "close"]].sort_values("date")
 

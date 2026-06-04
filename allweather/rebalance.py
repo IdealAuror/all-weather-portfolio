@@ -5,6 +5,7 @@
     python -m allweather.rebalance --strat V3c     # 看单个策略详情
     python -m allweather.rebalance --strat B-RP --tier 85
     python -m allweather.rebalance --signals       # 只看当前信号状态
+    python -m allweather.rebalance --strat V3c --amount 500000   # 建仓清单
 """
 
 import sys
@@ -175,8 +176,8 @@ def apply_signal_overrides(strat_key, w, signals):
             w["credit"] += w["nonferr"]
             w["nonferr"] = 0.0
 
-    # gold trend filter (only V3-B RP and V3c)
-    if strat_key != "B-Con":
+    # gold trend filter (only V3-B RP)
+    if strat_key == "B-RP":
         if signals.get("gold_below_sma75", False) and "gold" in w.index and "credit" in w.index:
             if w["gold"] > 0:
                 w["credit"] += w["gold"]
@@ -220,7 +221,7 @@ def _pct(v):
     return f"{v*100:>6.1f}%"
 
 
-def _fmt_bool(v, yes="⚡触发", no="正常"):
+def _fmt_bool(v, yes="触发", no="正常"):
     return yes if v else no
 
 
@@ -242,10 +243,10 @@ def display_signal_dashboard(signals):
     pb = signals.get("pb_pctile")
     pe = signals.get("pe_pctile")
     print(f"  PB 分位:           {f'{pb:.0f}%ile' if pb is not None else 'n/a'}  "
-          f"({_fmt_bool(signals.get('pb_entry_ok', False), '便宜 ✓', '偏贵 ✗')})")
+          f"({_fmt_bool(signals.get('pb_entry_ok', False), '便宜 [OK]', '偏贵')})")
     print(f"  PE 分位:           {f'{pe:.0f}%ile' if pe is not None else 'n/a'}  "
           f"({_fmt_bool(pe is not None and pe < 70, '正常', '偏贵需出场')})")
-    print(f"  HS300 AND 抄底:    {'🔴 已就绪' if signals['hs300_dip_ready'] else '⚪ 等待条件'}")
+    print(f"  HS300 AND 抄底:    {'[已就绪]' if signals['hs300_dip_ready'] else '[等待条件]'}")
 
 
 def display_weight_table(strat_key, w, signals):
@@ -329,7 +330,7 @@ def display_trade_list(strat_key, target_w, holdings_dict, total_value):
     """生成买卖清单。"""
     cfg = STRATEGIES[strat_key]
     print(f"\n{LINE}")
-    print(f"  调仓清单 — {cfg['name']}   组合总市值: ¥{total_value:,.0f}")
+    print(f"  调仓清单 --- {cfg['name']}   组合总市值: RMB {total_value:,.0f}")
     print(LINE)
     print(f"  {'资产':<22} {'代码':<8} {'当前':>10} {'目标':>10} {'差额':>10}  {'操作':<12}")
     print("  " + "-" * 72)
@@ -344,18 +345,55 @@ def display_trade_list(strat_key, target_w, holdings_dict, total_value):
         if abs(diff) < total_value * 0.005:
             action = "不动"
         elif diff > 0:
-            action = f"买入 ¥{diff:>8,.0f}"
+            action = f"买入 RMB {diff:>8,.0f}"
             any_trade = True
         else:
-            action = f"卖出 ¥{-diff:>8,.0f}"
+            action = f"卖出 RMB {-diff:>8,.0f}"
             any_trade = True
 
         print(f"  {meta['name']:<22} {meta['code']:<8} "
-              f"¥{current:>9,.0f} ¥{target:>9,.0f} "
-              f"{'+' if diff>=0 else '-'}¥{abs(diff):>8,.0f}  {action:<12}")
+              f"RMB {current:>8,.0f} RMB {target:>8,.0f} "
+              f"{'+' if diff>=0 else '-'}RMB {abs(diff):>8,.0f}  {action:<12}")
 
     if not any_trade:
-        print(f"\n  ✓ 所有资产偏离 < 0.5%，无需调仓")
+        print(f"\n  [OK] 所有资产偏离 < 0.5%，无需调仓")
+
+
+def display_build_plan(strat_key, w, prices, total_amount):
+    """建仓买入清单。从零开始，计算各 ETF 买入金额和股数。"""
+    cfg = STRATEGIES[strat_key]
+    latest = prices.iloc[-1]
+    lot_size = 100
+
+    print(f"\n{LINE}")
+    print(f"  建仓清单 --- {cfg['name']}    总投资: RMB {total_amount:,.0f}")
+    print(LINE)
+    print(f"  {'资产':<22} {'代码':<8} {'权重':>6} {'目标金额':>12} {'现价':>8} {'买入股数':>8} {'预估金额':>12}")
+    print("  " + "-" * 80)
+
+    total_used = 0
+    for a in cfg["assets"]:
+        meta = ETF_META.get(a, {"code": "", "name": a})
+        pct = w.get(a, 0)
+        if pct <= 0:
+            continue
+        amount = pct * total_amount
+        price = float(latest.get(a, np.nan))
+        if np.isnan(price) or price <= 0:
+            continue
+        shares = int(amount / price / lot_size) * lot_size
+        actual = shares * price
+        total_used += actual
+        print(f"  {meta['name']:<22} {meta['code']:<8} {_pct(pct):>6} "
+              f"RMB {amount:>8,.0f} {price:>8.3f} {shares:>8d} RMB {actual:>8,.0f}")
+
+    remainder = total_amount - total_used
+    if remainder > 0:
+        print(f"  {'剩余现金/货基':<22} {'':<8} {'':>6} {'':>12} {'':>8} {'':>8} RMB {remainder:>8,.0f}")
+    print(f"  {'':<22} {'合计':<8} {'100.0%':>6} RMB {total_amount:>8,.0f}")
+    print(f"  提示: 建仓后剩余现金放入货币基金或华宝添益(511990)")
+    if any(a == "us_sp500" for a in cfg["assets"]) and w.get("us_sp500", 0) > 0:
+        print(f"  提示: 标普500 QDII 经常限购，买不到用场外联接 050025 替代")
 
 
 def parse_holdings_input():
@@ -398,6 +436,7 @@ def main():
     strat_key = None
     tier = None
     show_signals_only = False
+    build_amount = None
 
     i = 0
     while i < len(args):
@@ -407,6 +446,8 @@ def main():
             tier = args[i + 1]; i += 2
         elif args[i] in ("--signals", "-s"):
             show_signals_only = True; i += 1
+        elif args[i] == "--amount" and i + 1 < len(args):
+            build_amount = float(args[i + 1]); i += 2
         elif args[i] in ("-h", "--help"):
             print(__doc__)
             return
@@ -450,35 +491,59 @@ def main():
         display_signal_dashboard(signals)
         display_weight_table(strat_key, w, signals)
 
-        has_holdings = input("\n有当前持仓数据吗？输入金额生成调仓清单 (y/n): ").strip().lower()
-        if has_holdings == "y":
-            holdings = parse_holdings_input()
-            if holdings:
-                total = sum(holdings.values())
-                if total > 0 and all(v >= 0 for v in holdings.values()):
-                    display_trade_list(strat_key, w, holdings, total)
+        if build_amount:
+            display_build_plan(strat_key, w, prices, build_amount)
+        else:
+            amt = input("\n建仓金额？(输入数字生成买入清单，直接回车跳过): ").strip()
+            if amt:
+                try:
+                    display_build_plan(strat_key, w, prices, float(amt))
+                except ValueError:
+                    pass
+            else:
+                has_holdings = input("\n有当前持仓数据吗？生成调仓清单 (y/n): ").strip().lower()
+                if has_holdings == "y":
+                    holdings = parse_holdings_input()
+                    if holdings:
+                        total = sum(holdings.values())
+                        if total > 0 and all(v >= 0 for v in holdings.values()):
+                            display_trade_list(strat_key, w, holdings, total)
 
     else:
         # 默认：三策略对比 + 信号仪表盘
         display_signal_dashboard(signals)
         display_all_strategies(prices, signals, tier)
 
-        # 选一个看详情
-        print(f"\n策略: {' / '.join(STRATEGIES.keys())}")
-        pick = input("看哪个策略详情? (直接回车跳过): ").strip()
-        if pick in STRATEGIES:
-            cash_ratio = 1 - int(tier) / 100
-            w0 = compute_target_weights(pick, prices, cash_ratio)
-            w = apply_signal_overrides(pick, w0, signals)
-            display_weight_table(pick, w, signals)
+        if build_amount:
+            for k in ["V3c", "B-RP", "B-Con"]:
+                cash_ratio = 1 - int(tier) / 100
+                w0 = compute_target_weights(k, prices, cash_ratio)
+                w = apply_signal_overrides(k, w0, signals)
+                display_build_plan(k, w, prices, build_amount)
+        else:
+            # 选一个看详情
+            print(f"\n策略: {' / '.join(STRATEGIES.keys())}")
+            pick = input("看哪个策略详情? (直接回车跳过): ").strip()
+            if pick in STRATEGIES:
+                cash_ratio = 1 - int(tier) / 100
+                w0 = compute_target_weights(pick, prices, cash_ratio)
+                w = apply_signal_overrides(pick, w0, signals)
+                display_weight_table(pick, w, signals)
 
-            has_holdings = input("\n有当前持仓数据吗？ (y/n): ").strip().lower()
-            if has_holdings == "y":
-                holdings = parse_holdings_input()
-                if holdings:
-                    total = sum(holdings.values())
-                    if total > 0 and all(v >= 0 for v in holdings.values()):
-                        display_trade_list(pick, w, holdings, total)
+                amt = input("\n建仓金额？(输入数字生成买入清单，直接回车跳过): ").strip()
+                if amt:
+                    try:
+                        display_build_plan(pick, w, prices, float(amt))
+                    except ValueError:
+                        pass
+                else:
+                    has_holdings = input("\n有当前持仓数据吗？生成调仓清单 (y/n): ").strip().lower()
+                    if has_holdings == "y":
+                        holdings = parse_holdings_input()
+                        if holdings:
+                            total = sum(holdings.values())
+                            if total > 0 and all(v >= 0 for v in holdings.values()):
+                                display_trade_list(pick, w, holdings, total)
 
     # 调仓提示
     print(f"\n{LINE}")

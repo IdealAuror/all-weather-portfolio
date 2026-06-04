@@ -17,7 +17,7 @@ from .config import (
     CASH_TIERS, STRESS_EVENTS, OUTPUT_DIR,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
     V3C_ASSETS, BUCKETS, BUCKET_GROUPS,
-    SP500_TREND_WINDOW, GOLD_DIP_THRESHOLD,
+    SP500_TREND_WINDOW,
 )
 
 V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
@@ -63,7 +63,7 @@ def step_2_run_backtests(rets):
         track = (tier_label == "100% RP")
         result = backtest_iv(rets, cash_ratio=c, iv_window=60, max_w=0.30, min_w=0.03,
                             nonferr_trend_window=75, assets=V3C_ASSETS,
-                            gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
+                            gold_dip_threshold=None, gold_dip_cap=0.20,
                             hs300_value_dip=True,
                             track_weights=track,
                             track_signals=track,
@@ -79,7 +79,7 @@ def step_2_run_backtests(rets):
 
     nv, n = backtest_iv(rets, cash_ratio=0.0, iv_window=60, max_w=0.30, min_w=0.03,
                         nonferr_trend_window=75, assets=V3C_ASSETS,
-                        gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
+                        gold_dip_threshold=None, gold_dip_cap=0.20,
                         hs300_value_dip=True,
                         dynamic_cash=True)
     nv_results[("V3c 多元", "动态")] = nv
@@ -131,7 +131,7 @@ def step_2_run_backtests(rets):
                             nonferr_control="trend_filter",
                             nonferr_trend_window=75,
                             weighting_method="inverse_vol",
-                            gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
+                            gold_dip_threshold=None, gold_dip_cap=0.20,
                             hs300_value_dip=True,
                             track_weights=track,
                             track_signals=track,
@@ -150,7 +150,7 @@ def step_2_run_backtests(rets):
                         nonferr_control="trend_filter",
                         nonferr_trend_window=75,
                         weighting_method="inverse_vol",
-                        gold_dip_threshold=GOLD_DIP_THRESHOLD, gold_dip_cap=0.20,
+                        gold_dip_threshold=None, gold_dip_cap=0.20,
                         hs300_value_dip=True,
                         dynamic_cash=True)
     nv_results[("V3-B 保守增强(20d)", "动态")] = nv
@@ -290,7 +290,8 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
                          excel: bool = True, markdown: bool = True,
                          weight_history: dict = None,
                          signal_logs: dict = None,
-                         benchmark_nv: pd.Series = None):
+                         benchmark_nv: pd.Series = None,
+                         panel: pd.DataFrame = None):
     """Step 6: 保存净值曲线 / 汇总 JSON / 权重 CSV / Excel / Markdown。
 
     excel 和 markdown 都需要 boot（蒙特卡洛结果）。如果只想跑基础三件套，
@@ -423,7 +424,8 @@ def run_full_pipeline(excel: bool = True, markdown: bool = True,
                          excel=excel, markdown=markdown,
                          weight_history=weight_history,
                          signal_logs=signal_logs,
-                         benchmark_nv=hs300_nv)
+                         benchmark_nv=hs300_nv,
+                         panel=panel)
 
     # 追加实验日志
     from .experiment_log import save_run

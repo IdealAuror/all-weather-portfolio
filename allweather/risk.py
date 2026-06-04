@@ -42,7 +42,7 @@ def hierarchical_rp_weights(
         inv = 1 / vols.replace(0, np.nan)
         w = inv / inv.sum()
         bucket_w[bname] = w
-        port_r = (brets * w.values).sum(axis=1)
+        port_r = (brets * w).sum(axis=1)
         bucket_vol[bname] = port_r.std() * np.sqrt(252)
 
     if bucket_method == "equal":
@@ -83,14 +83,27 @@ def hs300_dip_check(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
     if hs300_boosted:
         if hs300_dd > -exit_recovery and exit_fundamental:
             return False, None
-    elif (hs300_dd <= -threshold and fundamental_ok
-          and curr_hs > dip_sma):
-        hs300_boosted = True
-
-    if hs300_boosted:
+        return True, 1.0
+    if hs300_dd <= -threshold and fundamental_ok and curr_hs > dip_sma:
         return True, boost_mult
     return False, None
 
+
+
+def dynamic_cash_ratio(hs300_series: pd.Series, i: int) -> float:
+    """基于 HS300 3 年回撤的动态现金比例。
+
+    回撤 >20% → 满仓(0% 现金)
+    回撤 <5%  → 保守(30% 现金)
+    中间区间  → 温和(15% 现金)
+    """
+    peak_3y = hs300_series.iloc[max(0, i - 756):i + 1].max()
+    dd_3y = hs300_series.iloc[i] / peak_3y - 1
+    if dd_3y <= -0.20:
+        return 0.0
+    elif dd_3y >= -0.05:
+        return 0.30
+    return 0.15
 
 
 def hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, boost_mult):

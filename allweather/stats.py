@@ -17,12 +17,12 @@ def perf_metrics(nv: pd.Series) -> dict:
     vol = r.std() * np.sqrt(252)
     mdd = ((nv / nv.cummax()) - 1).min()
     sharpe_raw = cagr / vol if vol > 0 else float("nan")
-    sharpe = (cagr - RISK_FREE_ANNUAL) / vol if vol > 0 else float("nan")
-    calmar = cagr / abs(mdd) if mdd < 0 else float("nan")
     rf_daily = RISK_FREE_ANNUAL / 252
     excess = r - rf_daily
     arith_mean_excess = excess.mean() * 252
-    SR_true = arith_mean_excess / vol if vol > 0 else float("nan")
+    sharpe = arith_mean_excess / vol if vol > 0 else float("nan")
+    SR_true = sharpe
+    calmar = cagr / abs(mdd) if mdd < 0 else float("nan")
     G_real = cagr - RISK_FREE_ANNUAL
     G_theo = arith_mean_excess - vol**2 / 2
     geometric_excess_d = G_real - G_theo
@@ -225,8 +225,8 @@ def d_significance(nv: pd.Series, n_sim: int = 10000, seed: int = 42) -> dict:
     arith_actual = excess.mean() * 252
     d_actual = (cagr - RISK_FREE_ANNUAL) - (arith_actual - vol**2 / 2)
 
-    mu_log_daily = np.log(1 + cagr) / 252
     sigma_d = vol / np.sqrt(252)
+    mu_log_daily = np.log(1 + cagr) / 252 - sigma_d**2 / 2
     rf_daily = RISK_FREE_ANNUAL / 252
 
     rng = np.random.RandomState(seed)
