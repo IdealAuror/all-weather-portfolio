@@ -1,12 +1,14 @@
-"""实操再平衡工具 — 根据最新行情计算目标权重 + 全信号仪表盘 + 三策略对比。
+"""实操再平衡工具 — 信号仪表盘 + 目标权重 + 建仓/调仓清单。
+
+自动拉取最新行情数据（检查 7 个资产），自动显示风控信号和目标权重，
+引导完成建仓（从零分配资金）或调仓（输入现有持仓生成买卖清单）。
 
 用法：
-    python -m allweather.rebalance                 # 交互式，三策略对比
-    python -m allweather.rebalance --strat V3c     # 看单个策略详情
-    python -m allweather.rebalance --strat B-RP --tier 85
-    python -m allweather.rebalance --signals       # 只看当前信号状态
-    python -m allweather.rebalance --strat V3c --amount 500000   # 建仓清单
-    python -m allweather.rebalance --no-auto-fetch # 跳过自动拉取数据
+    python -m allweather.rebalance                          # 交互引导
+    python -m allweather.rebalance --strat V3c              # 指定策略
+    python -m allweather.rebalance --strat V3c --amount 50万 # 直接建仓
+    python -m allweather.rebalance --signals                # 只看信号
+    python -m allweather.rebalance --no-auto-fetch          # 跳过数据更新
 """
 
 import sys
@@ -14,7 +16,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from .config import (
-    ROOT, ASSETS, ETF_META,
+    ROOT, DATA_DIR, ASSETS, ETF_META,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
     GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
     HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
@@ -397,13 +399,16 @@ def display_build_plan(strat_key, w, prices, total_amount):
         print(f"  提示: 标普500 QDII 经常限购，买不到用场外联接 050025 替代")
 
 
-def parse_holdings_input():
-    """交互式输入当前持仓。"""
+def parse_holdings_input(strat_key=None):
+    """交互式输入当前持仓（只问当前策略涉及的资产）。"""
+    cfg = STRATEGIES.get(strat_key) if strat_key else None
+    asset_keys = cfg["assets"] if cfg else list(ETF_META.keys())
     print("\n输入当前持仓金额（元），直接回车跳过该项：")
     holdings = {}
-    for key, (code, name) in ETF_META.items():
+    for key in asset_keys:
+        meta = ETF_META.get(key, {"code": "", "name": key})
         try:
-            inp = input(f"  {name} ({code}): ").strip()
+            inp = input(f"  {meta['name']} ({meta['code']}): ").strip()
             if inp:
                 holdings[key] = float(inp.replace(",", "").replace("万", "0000"))
         except (ValueError, KeyboardInterrupt):
@@ -433,26 +438,116 @@ def load_prices():
 # ============================================================
 
 def _auto_fetch_if_stale(max_calendar_days=7):
-    """检查本地数据是否陈旧，自动拉取最新行情。"""
-    hs300_path = DATA_DIR / "hs300.csv"
-    if not hs300_path.exists():
-        print("数据文件不存在，自动拉取...")
+    """检查 7 个策略用到的 ETF 数据是否陈旧，是则自动拉取。"""
+    check_assets = [
+        "hs300", "us_sp500", "bond_credit",
+        "bond_10y_etf", "bond_30y_etf", "gold", "nonferr",
+    ]
+
+    missing = [a for a in check_assets if not (DATA_DIR / f"{a}.csv").exists()]
+    if missing:
+        print(f"数据文件缺失 ({', '.join(missing)})，自动拉取...")
         from .fetch import fetch_all
         fetch_all(force=True)
         return
 
     try:
-        hs300 = pd.read_csv(hs300_path, parse_dates=["date"])
-        last_date = hs300["date"].max()
-        days_old = (pd.Timestamp.now() - last_date).days
+        results = []
+        now = pd.Timestamp.now()
+        for name in check_assets:
+            df = pd.read_csv(DATA_DIR / f"{name}.csv", parse_dates=["date"])
+            results.append((name, df["date"].max()))
+
+        oldest_name, oldest_date = min(results, key=lambda x: x[1])
+        days_old = (now - oldest_date).days
+
         if days_old > max_calendar_days:
-            print(f"数据已 {days_old} 天未更新（最新: {last_date.date()}），自动拉取最新行情...")
+            stale = [(n, d) for n, d in results if (now - d).days > max_calendar_days]
+            if len(stale) == 1:
+                n, d = stale[0]
+                print(f"{n} 数据已 {(now-d).days} 天未更新（最新: {d.date()}），自动拉取最新行情...")
+            else:
+                detail = ", ".join(f"{n}={(now-d).days}d" for n, d in stale)
+                print(f"{len(stale)} 个资产数据过期 ({detail})，自动拉取最新行情...")
             from .fetch import fetch_all
             fetch_all(force=True)
         else:
-            print(f"数据较新（{days_old} 天前），直接使用")
+            print(f"数据较新（最旧: {oldest_name}, {days_old} 天前），直接使用")
     except Exception as e:
         print(f"检查数据状态失败: {e}，使用现有数据继续")
+
+
+# ============================================================
+# 三策略概要
+# ============================================================
+
+def display_strategy_summary():
+    """三策略概要对比（每策略一行）。"""
+    rows = [
+        ("V3c 多元", "逆波动率 60d", "7.95%", "1.59", "-7.01%", "最简执行"),
+        ("V3-B 风险平价(20d)", "HRP 4桶", "10.20%", "1.40", "-9.48%", "CAGR最高"),
+        ("V3-B 保守增强(20d)", "逆波动率 20d", "6.72%", "1.67", "-6.40%", "Sharpe最高"),
+    ]
+    print(f"\n{LINE}")
+    print("  三策略概要")
+    print(LINE)
+    print(f"  {'策略':<22} {'方法':<16} {'CAGR':>7} {'Sharpe':>7} {'MDD':>8}  {'说明'}")
+    print("  " + "-" * 72)
+    for name, method, cagr, sharpe, mdd, note in rows:
+        print(f"  {name:<22} {method:<16} {cagr:>7} {sharpe:>7} {mdd:>8}  {note}")
+
+
+# ============================================================
+# 交互流程
+# ============================================================
+
+def _print_trade_tips():
+    print(f"\n{LINE}")
+    print("  调仓规则:")
+    print("  1. 每月最后一个交易日执行一次")
+    print("  2. 先卖后买 — 卖出资金 T+0 可用后再买入")
+    print(f"  3. nonferr/gold/SP500 跌破 SMA → 清仓转 credit")
+    print("  4. 偏离 < 0.5% 不用动，省手续费")
+    print("  5. 标普 500 QDII 经常限购，买不到用场外联接 050025 替代")
+    print(f"{LINE}\n")
+
+
+def _single_strat_flow(strat_key, tier, prices, signals, build_amount):
+    """单策略交互：显示权重 → 选择调仓/建仓/只看。"""
+    cfg = STRATEGIES[strat_key]
+    missing = [a for a in cfg["assets"] if a not in prices.columns]
+    if missing:
+        print(f"缺少数据: {missing}")
+        return
+
+    cash_ratio = 1 - int(tier) / 100
+    w0 = compute_target_weights(strat_key, prices, cash_ratio)
+    w = apply_signal_overrides(strat_key, w0, signals)
+
+    display_signal_dashboard(signals)
+    display_weight_table(strat_key, w, signals)
+
+    # 有金额 → 直接建仓
+    if build_amount:
+        display_build_plan(strat_key, w, prices, build_amount)
+        return
+
+    choice = input(f"\n操作: [1] 调仓清单(默认)  [2] 建仓清单  [3] 只看权重\n选择 (回车=调仓): ").strip()
+    if choice == "2":
+        amt = input("建仓总金额？(回车取消): ").strip()
+        if amt:
+            try:
+                display_build_plan(strat_key, w, prices, float(amt))
+            except ValueError:
+                pass
+    elif choice == "3":
+        return
+    else:
+        # 默认：调仓
+        holdings = parse_holdings_input(strat_key)
+        if holdings and sum(holdings.values()) > 0:
+            display_trade_list(strat_key, w, holdings, sum(holdings.values()))
+            _print_trade_tips()
 
 
 # ============================================================
@@ -494,7 +589,6 @@ def main():
     if tier not in ("100", "85", "70"):
         tier = "100"
 
-    # 自动检查并拉取最新数据（可跳过）
     if not no_auto_fetch:
         _auto_fetch_if_stale()
 
@@ -505,90 +599,29 @@ def main():
 
     signals = compute_signal_states(prices)
 
-    # --signals: 只看信号
     if show_signals_only:
         display_signal_dashboard(signals)
         print()
         return
 
-    # 指定单一策略
+    # 指定策略 → 直接进策略流程
     if strat_key:
-        cfg = STRATEGIES[strat_key]
-        missing = [a for a in cfg["assets"] if a not in prices.columns]
-        if missing:
-            print(f"缺少数据: {missing}")
-            return
+        _single_strat_flow(strat_key, tier, prices, signals, build_amount)
+        return
 
-        cash_ratio = 1 - int(tier) / 100
-        w0 = compute_target_weights(strat_key, prices, cash_ratio)
-        w = apply_signal_overrides(strat_key, w0, signals)
+    # 有金额无策略 → 默认 V3c
+    if build_amount:
+        print("(默认使用 V3c 多元策略)")
+        _single_strat_flow("V3c", tier, prices, signals, build_amount)
+        return
 
-        display_signal_dashboard(signals)
-        display_weight_table(strat_key, w, signals)
+    # 无参数 → 信号 + 策略概要 + 选策略
+    display_signal_dashboard(signals)
+    display_strategy_summary()
 
-        if build_amount:
-            display_build_plan(strat_key, w, prices, build_amount)
-        else:
-            amt = input("\n建仓金额？(输入数字生成买入清单，直接回车跳过): ").strip()
-            if amt:
-                try:
-                    display_build_plan(strat_key, w, prices, float(amt))
-                except ValueError:
-                    pass
-            else:
-                has_holdings = input("\n有当前持仓数据吗？生成调仓清单 (y/n): ").strip().lower()
-                if has_holdings == "y":
-                    holdings = parse_holdings_input()
-                    if holdings:
-                        total = sum(holdings.values())
-                        if total > 0 and all(v >= 0 for v in holdings.values()):
-                            display_trade_list(strat_key, w, holdings, total)
-
-    else:
-        # 默认：三策略对比 + 信号仪表盘
-        display_signal_dashboard(signals)
-        display_all_strategies(prices, signals, tier)
-
-        if build_amount:
-            for k in ["V3c", "B-RP", "B-Con"]:
-                cash_ratio = 1 - int(tier) / 100
-                w0 = compute_target_weights(k, prices, cash_ratio)
-                w = apply_signal_overrides(k, w0, signals)
-                display_build_plan(k, w, prices, build_amount)
-        else:
-            # 选一个看详情
-            print(f"\n策略: {' / '.join(STRATEGIES.keys())}")
-            pick = input("看哪个策略详情? (直接回车跳过): ").strip()
-            if pick in STRATEGIES:
-                cash_ratio = 1 - int(tier) / 100
-                w0 = compute_target_weights(pick, prices, cash_ratio)
-                w = apply_signal_overrides(pick, w0, signals)
-                display_weight_table(pick, w, signals)
-
-                amt = input("\n建仓金额？(输入数字生成买入清单，直接回车跳过): ").strip()
-                if amt:
-                    try:
-                        display_build_plan(pick, w, prices, float(amt))
-                    except ValueError:
-                        pass
-                else:
-                    has_holdings = input("\n有当前持仓数据吗？生成调仓清单 (y/n): ").strip().lower()
-                    if has_holdings == "y":
-                        holdings = parse_holdings_input()
-                        if holdings:
-                            total = sum(holdings.values())
-                            if total > 0 and all(v >= 0 for v in holdings.values()):
-                                display_trade_list(pick, w, holdings, total)
-
-    # 调仓提示
-    print(f"\n{LINE}")
-    print("  调仓规则:")
-    print("  1. 每月最后一个交易日执行一次")
-    print("  2. 先卖后买 — 卖出资金 T+0 可用后再买入")
-    print(f"  3. nonferr/gold/SP500 跌破 SMA → 清仓转 credit")
-    print("  4. 偏离 < 0.5% 不用动，省手续费")
-    print("  5. 标普 500 QDII 经常限购，买不到用场外联接 050025 替代")
-    print(f"{LINE}\n")
+    pick = input(f"\n选择策略 (V3c/B-RP/B-Con，回车=退出): ").strip()
+    if pick in STRATEGIES:
+        _single_strat_flow(pick, tier, prices, signals, None)
 
 
 if __name__ == "__main__":
