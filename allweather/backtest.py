@@ -125,6 +125,8 @@ def backtest(
     hs300_pb_pct: pd.Series | None = None,
     hs300_pe_pct: pd.Series | None = None,
     track_dynamic_nav: bool = False,
+    leverage_factors: dict | None = None,
+    financing_spread: float = 0.0,
 ) -> tuple:
     """统一回测引擎 — 逆波动率/分层风险平价 + 趋势过滤 + 抄底。
 
@@ -145,6 +147,11 @@ def backtest(
     price_arr = prices.values
     col_idx = {c: i for i, c in enumerate(cols)}
     idx_cols = [col_idx[c] for c in cols]  # ordered list
+
+    # --- Leverage setup ---
+    l_arr = np.array([leverage_factors.get(c, 1.0) if leverage_factors else 1.0 for c in cols], dtype=float)
+    has_leverage = leverage_factors is not None
+    fs_daily = financing_spread / 252.0
 
     nv = pd.Series(index=rets_rp.index, dtype=float)
     n_rebal = 0
@@ -209,24 +216,36 @@ def backtest(
                 nv_dyn.loc[d] = 1.0
             continue
 
-        # --- Daily return via numpy dot ---
-        daily_ret = np.dot(h, rets_arr[i])
-        v *= 1 + daily_ret + eff_cash * rf_daily
+        # --- Daily return via numpy dot (with leverage) ---
+        notional_h = h * l_arr
+        daily_ret = np.dot(notional_h, rets_arr[i])
+        financing_cost = np.sum(h * (l_arr - 1.0).clip(0)) * fs_daily if has_leverage else 0.0
+        v *= 1 + daily_ret + eff_cash * rf_daily - financing_cost
         nv.loc[d] = v
 
         if track_dynamic_nav:
-            daily_ret_dyn = np.dot(h_dyn, rets_arr[i])
-            v_dyn *= 1 + daily_ret_dyn + eff_cash_dyn * rf_daily
+            notional_h_dyn = h_dyn * l_arr
+            daily_ret_dyn = np.dot(notional_h_dyn, rets_arr[i])
+            financing_cost_dyn = np.sum(h_dyn * (l_arr - 1.0).clip(0)) * fs_daily if has_leverage else 0.0
+            v_dyn *= 1 + daily_ret_dyn + eff_cash_dyn * rf_daily - financing_cost_dyn
             nv_dyn.loc[d] = v_dyn
 
         # --- Drift ---
-        h = h * (1 + rets_arr[i])
+        # ETFs (l_arr=1): position value drifts with returns
+        # Futures (l_arr>1): margin deposit constant, P&L goes to cash
+        if has_leverage:
+            h = np.where(l_arr <= 1.0 + 1e-10, h * (1 + rets_arr[i]), h)
+        else:
+            h = h * (1 + rets_arr[i])
         s = h.sum()
         if s > 0:
             h = h / s * (1 - eff_cash)
 
         if track_dynamic_nav:
-            h_dyn = h_dyn * (1 + rets_arr[i])
+            if has_leverage:
+                h_dyn = np.where(l_arr <= 1.0 + 1e-10, h_dyn * (1 + rets_arr[i]), h_dyn)
+            else:
+                h_dyn = h_dyn * (1 + rets_arr[i])
             s_dyn = h_dyn.sum()
             if s_dyn > 0:
                 h_dyn = h_dyn / s_dyn * (1 - eff_cash_dyn)
@@ -390,6 +409,7 @@ def backtest_iv(
     hs300_pb_pct: pd.Series | None = None,
     hs300_pe_pct: pd.Series | None = None,
     track_dynamic_nav: bool = False,
+    **kwargs,
 ):
     """逆波动率加权 — 委托给 backtest()。"""
     return backtest(
@@ -413,6 +433,7 @@ def backtest_iv(
         hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
         hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
         track_dynamic_nav=track_dynamic_nav,
+        **kwargs,
     )
 
 

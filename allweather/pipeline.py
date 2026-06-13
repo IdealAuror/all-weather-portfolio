@@ -19,6 +19,7 @@ from .config import (
     STRESS_EVENTS, OUTPUT_DIR,
     V3C_ASSETS, BUCKETS, BUCKET_GROUPS,
     SP500_TREND_WINDOW,
+    LEVERAGE_FACTORS, LEVERAGE_FINANCING_SPREAD, V4_ASSETS,
 )
 
 V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
@@ -133,6 +134,26 @@ def step_2_run_backtests(rets):
     for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
         nv_results[("V3-B 保守增强(20d)", tier_label)] = adjust_nav_for_cash(nv_base, c)
 
+    # --- V4 全天候杠杆: 9资产 + bond_10y 5x T.CFFEX ---
+    result_v4 = backtest_iv(rets, cash_ratio=0.0, iv_window=60, max_w=0.30, min_w=0.03,
+                            nonferr_trend_window=75, assets=V4_ASSETS,
+                            gold_dip_threshold=None, gold_dip_cap=0.20,
+                            hs300_value_dip=True,
+                            track_weights=True, track_signals=True,
+                            signal_label="V4 全天候杠杆",
+                            hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
+                            hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
+                            track_dynamic_nav=False,
+                            leverage_factors=LEVERAGE_FACTORS,
+                            financing_spread=LEVERAGE_FINANCING_SPREAD)
+    nv_base_v4, n_v4, wh_v4, sl_v4 = result_v4
+    nv_results[("V4 全天候杠杆", "100% RP")] = nv_base_v4
+    weight_history["V4 全天候杠杆"] = wh_v4
+    signal_logs["V4 全天候杠杆"] = sl_v4
+    n_rebal_total += n_v4
+    for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
+        nv_results[("V4 全天候杠杆", tier_label)] = adjust_nav_for_cash(nv_base_v4, c)
+
     total = len(nv_results)
     print(f"  ok 完成 {total} 个回测")
     print(f"  ok 总调仓次数: {n_rebal_total}")
@@ -169,7 +190,7 @@ def step_3_compute_metrics(nv_results, rets, weight_history=None, signal_logs=No
             regime_labels[d] = f"{s}+{b}"
 
     for (p, tier), nv_s in nv_results.items():
-        if ("V3-B" in p or "V3c" in p) and tier == "100% RP":
+        if ("V3-B" in p or "V3c" in p or "V4" in p) and tier == "100% RP":
             yearly[p] = yearly_returns(nv_s, rets=rets_by_nv[(p, tier)])
             regime[p] = regime_returns(nv_s, regime_labels=regime_labels)
             events[p] = event_returns(nv_s, STRESS_EVENTS)
@@ -211,7 +232,7 @@ def step_4_bootstrap(rets, nv_results=None, weight_history=None):
     rp_buckets_boot_rp = {k: list(v) for k, v in V3B_RP_BUCKETS.items()}
 
     for (portfolio, tier), _nv in (nv_results or {}).items():
-        if ("V3-B" in portfolio or "V3c" in portfolio) and tier == "100% RP":
+        if ("V3-B" in portfolio or "V3c" in portfolio or "V4" in portfolio) and tier == "100% RP":
             if weight_history is not None and portfolio in weight_history:
                 proxy_w = weight_history[portfolio].iloc[-1]
             else:
@@ -222,6 +243,9 @@ def step_4_bootstrap(rets, nv_results=None, weight_history=None):
                 elif "V3c" in portfolio:
                     proxy_w = inverse_vol_weights(
                         boot_rets[V3C_ASSETS].tail(60), window=60, max_w=0.30, min_w=0.03)
+                elif "V4" in portfolio:
+                    proxy_w = inverse_vol_weights(
+                        boot_rets[V4_ASSETS].tail(60), window=60, max_w=0.30, min_w=0.03)
                 else:
                     proxy_w = hierarchical_rp_weights(
                         boot_rets[V3B_RP_ASSETS].tail(20), rp_buckets_boot_rp, 20,

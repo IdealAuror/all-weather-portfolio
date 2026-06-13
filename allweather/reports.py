@@ -303,6 +303,14 @@ def print_summary_recommendation(perf_results=None):
           "- 牛市可能跑输(2019 +7.58%，2017 +2.67%)",
           f"- 长期累计回报最低({_pv('V3-B 保守增强(20d)','cum_return','pct','%')})"],
          "适合：保守型资金、退休/教育金、无法承受大幅回撤"),
+
+        ("V4 全天候杠杆", "★★★★", "杠杆全天候", "9资产逆波动率 60d + bond_10y T.CFFEX 杠杆5x",
+         [f"+ 国债期货杠杆释放资本给权益，风险贡献更平衡",
+          f"+ 预期提高CAGR(权益配置增加)而不显著增加MDD(杠杆债券分散化)",
+          "+ 国债期货保证金效率高，多余现金赚取货币基金收益",
+          "- 杠杆债券在加息周期放大回撤",
+          "- 需跟踪T.CFFEX期货展期，实盘略复杂"],
+         "适合：进阶全天候投资者、理解杠杆风险、追求更高长期回报"),
     ]
 
     for name, stars, tagline, desc, items, audience in cards:
@@ -314,7 +322,7 @@ def print_summary_recommendation(perf_results=None):
         print()
 
     print("  ── 一句话选策略 ──")
-    print("  要简单 → V3c   要高回报 → V3-B RP   要保守 → V3-B 保守增强")
+    print("  要简单 → V3c   要高回报 → V3-B RP   要保守 → V3-B 保守增强   要全天候 → V4")
     print()
 
 

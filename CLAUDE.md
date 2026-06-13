@@ -120,7 +120,7 @@ py main.py --no-markdown           # 跳过 Markdown
 py main.py --fetch                 # 拉数据 + 回测
 py main.py --fetch-only            # 仅拉数据
 py main.py --force-fetch           # 强制重拉
-python -m allweather.rebalance              # 实盘再平衡（三策略对比 + 信号仪表盘）
+python -m allweather.rebalance              # 实盘再平衡（四策略对比 + 信号仪表盘）
 python -m allweather.rebalance --strat V3c  # 只看 V3c 详情
 python -m allweather.rebalance --signals    # 只看当前市场信号状态
 ```
@@ -147,28 +147,29 @@ allweather/
 
 ### 6 步流水线
 
-1. 加载 9 资产面板 → 2. 跑 3 策略 × 3 现金档 = 9 回测（+3 动态现金 = 12）→ 3. 算衍生指标 + D_excess 显著性 → 4. Block Bootstrap (1000×5yr, 21d block) → 5. 打印控制台 → 6. 保存 CSV/JSON/Excel/Markdown/图表
+1. 加载 9 资产面板 → 2. 跑 4 策略 × 3 现金档 = 12 回测（+3 动态现金 = 15）→ 3. 算衍生指标 + D_excess 显著性 → 4. Block Bootstrap (1000×5yr, 21d block) → 5. 打印控制台 → 6. 保存 CSV/JSON/Excel/Markdown/图表
 
-### 三策略
+### 四策略
 
 | 策略 | 引擎 | 核心逻辑 | 资产数 | 特点 |
 |------|------|----------|--------|------|
 | V3c 多元 | `backtest.py::backtest_iv` → 统一`backtest()` | 逆波动率 60d (max 0.30) + nonferr 75d + HS300 AND抄底 | 8 (含 wti, copper) | 最简，每月调仓 |
-| V3-B 风险平价(20d) | `strategy_b.py::backtest_b` → 统一`backtest()` | 4 桶等权 HRP + nonferr 75d + gold 75d + sp500 120d + Gold dip + HS300 AND抄底 | 8 (无 bond_10y, 含 wti/copper) | CAGR 最高（9.48%），三重风控 |
-| V3-B 保守增强(20d) | `strategy_b.py::backtest_b` → 统一`backtest()` | 逆波动率 20d (max 0.25) + nonferr 75d + HS300 AND抄底 | 9 (含 bond_10y, wti, copper) | Sharpe 最高 |
+| V3-B 风险平价(20d) | `strategy_b.py::backtest_b` → 统一`backtest()` | 4 桶等权 HRP + nonferr 75d + gold 75d + sp500 120d + Gold dip + HS300 AND抄底 | 8 (无 bond_10y, 含 wti/copper) | CAGR 9.48%，三重风控 |
+| V3-B 保守增强(20d) | `strategy_b.py::backtest_b` → 统一`backtest()` | 逆波动率 20d (max 0.25) + nonferr 75d + HS300 AND抄底 | 9 (含 bond_10y, wti, copper) | Sharpe 1.32 最高 |
+| V4 全天候杠杆 | `backtest.py::backtest_iv` → 统一`backtest()` | 逆波动率 60d + **bond_10y T.CFFEX 5x杠杆** + nonferr 75d + HS300 AND抄底 | 9 | CAGR 11.44%最高, Sharpe 1.66, 真正风险平价 |
 
 × 3 现金档（含动态）：100% RP / 85% RP / 70% RP / 动态。div_idx 和 soymeal 已于 2026-05-27 移除。
 wti（SC原油期货 SC.INE）已集成数据管道和引擎，人民币计价，无 QDII 限制。copper（沪铜 CU.SHF）独立暴露。
 
 ### 资产与桶
 
-| 桶 | 资产 | V3c | V3-B RP | V3-B Con |
-|----|------|:---:|:-------:|:--------:|
-| 增长↑ | hs300, us_sp500 | ✓ | ✓ | ✓ |
-| 收益垫 | credit | ✓ | ✓ | ✓ |
-| 增长↓10Y | bond_10y | — | — | ✓ |
-| 增长↓30Y | bond_30y | ✓ | ✓ | ✓ |
-| 通胀↑ | gold, nonferr, wti, copper | ✓ | ✓ | ✓ |
+| 桶 | 资产 | V3c | V3-B RP | V3-B Con | V4 |
+|----|------|:---:|:-------:|:--------:|:--:|
+| 增长↑ | hs300, us_sp500 | ✓ | ✓ | ✓ | ✓ |
+| 收益垫 | credit | ✓ | ✓ | ✓ | ✓ |
+| 增长↓10Y | bond_10y | — | — | ✓ | ✓(5x杠杆) |
+| 增长↓30Y | bond_30y | ✓ | ✓ | ✓ | ✓ |
+| 通胀↑ | gold, nonferr, wti, copper | ✓ | ✓ | ✓ | ✓ |
 
 V3-B RP 去掉了 bond_10y：CAGR +1.43pp，Sharpe 仅 -0.02。
 
@@ -177,6 +178,7 @@ V3-B RP 去掉了 bond_10y：CAGR +1.43pp，Sharpe 仅 -0.02。
 - **30Y 国债合成** (`data.py::synthesize_bond_30y`)：三阶段 — 久期乘数法(05-20) → 利差法(20-24) → 真实 ETF(24+)
 - **Sharpe 修正**：`(CAGR - 2.2% risk-free) / vol`，原始版保留为 `sharpe_raw`
 - **V3-B Bootstrap 代理**：动态权重用最近窗口固定权重作近似
+- **V4 杠杆模型** (`backtest.py::backtest`)：`daily_ret = dot(h * leverage, rets_arr) + free_cash * rf - financing_cost`。杠杆资产（`leverage_factor>1`）的保证金存款不漂移，P&L 通过 notional return 计入。ETF（`leverage_factor=1`）行为不变。融资成本从杠杆部分（`notional - capital`）按年化利差扣除。
 
 ### 关键常量
 
@@ -193,6 +195,8 @@ V3-B RP 去掉了 bond_10y：CAGR +1.43pp，Sharpe 仅 -0.02。
 | `HS300_DIP_BOOST` | 1.8 | HS300 抄底倍数 |
 | `HS300_PB_ENTRY` / `HS300_PE_EXIT` | 30 / 70 | AND 逻辑 入场PB / 出场PE 分位阈值 |
 | `SP500_TREND_WINDOW` | 120 | SP500 SMA 回看 |
+| `LEVERAGE_FACTORS["bond_10y"]` | 5.0 | V4 T.CFFEX 10Y 国债期货杠杆倍数 |
+| `LEVERAGE_FINANCING_SPREAD` | 0.002 | 杠杆部分年化融资利差（20bp） |
 | `BOOTSTRAP_N_SIM` | 1000 | 蒙特卡洛次数 |
 | `BOOTSTRAP_HORIZON_DAYS` | 1260 | 5 年 |
 | `BOOTSTRAP_BLOCK_DAYS` | 21 | ~1 个月块 |

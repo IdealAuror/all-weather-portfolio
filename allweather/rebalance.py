@@ -61,6 +61,11 @@ STRATEGIES = {
         "method": "inverse_vol", "window": 20,
         "max_w": 0.25, "min_w": 0.02,
     },
+    "V4": {
+        "name": "V4 全天候杠杆", "assets": list(ETF_META.keys()),
+        "method": "inverse_vol", "window": 60,
+        "max_w": 0.30, "min_w": 0.03,
+    },
 }
 
 LINE = "=" * 72
@@ -487,6 +492,7 @@ def display_strategy_summary():
         ("V3c 多元", "逆波动率 60d", "8.96%", "1.21", "-9.17%", "+wti/copper"),
         ("V3-B 风险平价(20d)", "HRP 4桶", "9.48%", "1.21", "-10.04%", "CAGR最高"),
         ("V3-B 保守增强(20d)", "逆波动率 20d", "7.68%", "1.32", "-6.08%", "Sharpe最高"),
+        ("V4 全天候杠杆", "逆波动率 60d+T.CFFEX 5x", "—", "—", "—", "国债期货杠杆"),
     ]
     print(f"\n{LINE}")
     print("  三策略概要")
@@ -619,7 +625,7 @@ def main():
     display_signal_dashboard(signals)
     display_strategy_summary()
 
-    pick = input(f"\n选择策略 (V3c/B-RP/B-Con，回车=退出): ").strip()
+    pick = input(f"\n选择策略 (V3c/B-RP/B-Con/V4，回车=退出): ").strip()
     if pick in STRATEGIES:
         _single_strat_flow(pick, tier, prices, signals, None)
 

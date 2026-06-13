@@ -136,9 +136,22 @@ HS300_PE_EXIT = 70               # PE%ile 退出阈值（PE不再便宜才退出
 SP500_TREND_WINDOW = 120     # 标普500 SMA 回看窗口（交易日），跌破则清仓转入 credit
 
 
+# === 杠杆 / 保证金参数（V4 期货杠杆）===
+# 名义杠杆：1 单位资本可获得的资产名义敞口倍数
+LEVERAGE_FACTORS = {
+    "bond_10y": 5.0,     # T.CFFEX 10Y 国债期货名义敞口杠杆
+    "bond_30y": 1.0,     # 30Y 已在数据层有 3x 久期放大，引擎层不加杠杆
+}
+# 融资利差：杠杆部分的年化融资成本（T.CFFEX 隐含回购利率 - rf）
+LEVERAGE_FINANCING_SPREAD = 0.002  # 年化 20bp
+
+# V4 全天候杠杆策略资产列表（含 bond_10y 用于 T.CFFEX 杠杆）
+V4_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti", "copper"]
+
 # === 策略标签 ===
 PORTFOLIO_TAGS = {
     "V3c 多元":            {"stars": "★★★", "label": "简约派 — 8资产逆波动率 60d + nonferr(75d) + HS300 AND抄底"},
     "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300 AND抄底"},
     "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d + nonferr(75d) + SP500(120d) + HS300 AND抄底，max_w=0.25"},
+    "V4 全天候杠杆":       {"stars": "★★★★", "label": "全天候 — 9资产逆波动率60d + bond_10y T.CFFEX杠杆5x + 趋势过滤"},
 }
