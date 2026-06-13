@@ -394,11 +394,14 @@ def _sheet_nv_curves(wb, nv_results):
     headers = ["日期"] + list(df.columns)
     _write_title(ws, 1, "9 条净值曲线（V3b/V3c/V3d × 100/85/70% RP）", len(headers))
     _write_headers(ws, 3, headers)
-    # 数据量大，直接写
-    for i, (idx, row) in enumerate(df.iterrows(), start=4):
-        ws.cell(row=i, column=1, value=idx.strftime("%Y-%m-%d"))
-        for j, col in enumerate(df.columns, start=2):
-            cell = ws.cell(row=i, column=j, value=float(row[col]))
+    # 批量写入（ws.append 比逐格 cell 赋值快数倍）
+    for idx, row in df.iterrows():
+        ws.append([idx.strftime("%Y-%m-%d")] + [float(row[col]) for col in df.columns])
+    # 给数据列设置数字格式（跳过标题行，从第 4 行开始）
+    n_rows = ws.max_row
+    n_cols = ws.max_column
+    for row in ws.iter_rows(min_row=4, max_row=n_rows, min_col=2, max_col=n_cols):
+        for cell in row:
             cell.number_format = NUM_FMT
     _autofit(ws, max_width=14)
     ws.freeze_panes = "B4"

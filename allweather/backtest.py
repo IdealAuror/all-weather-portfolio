@@ -152,6 +152,27 @@ def backtest(
     gold_idx = col_idx.get("gold", -1)
     hs300_idx = col_idx.get("hs300", -1)
     credit_idx = col_idx.get("credit", -1)
+
+    # --- Precompute all SMAs for trend windows ---
+    sma_cache = {}
+    _needed_windows = set()
+    if nonferr_trend_window > 0:
+        _needed_windows.add(nonferr_trend_window)
+    if gold_trend_filter and gold_trend_window > 0:
+        _needed_windows.add(gold_trend_window)
+    if hs300_value_dip and hs300_idx >= 0 and hs300_dip_sma > 0:
+        _needed_windows.add(hs300_dip_sma)
+    if equity_trend_assets:
+        for eq in equity_trend_assets:
+            eq_idx = col_idx.get(eq)
+            if eq_idx is not None:
+                wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
+                if wdw > 0:
+                    _needed_windows.add(wdw)
+    for w in _needed_windows:
+        sma = prices.rolling(window=w, min_periods=1).mean().shift(1)
+        sma_cache[w] = sma.values  # (n_days, n_assets), NaN when i < w
+
     gold_peak = float(price_arr[0, gold_idx]) if gold_idx >= 0 else 1.0
     gold_boosted = False
     hs300_peak = float(price_arr[0, hs300_idx]) if hs300_idx >= 0 else 1.0
@@ -164,8 +185,8 @@ def backtest(
 
     lookback = rp_window if weighting_method == "hierarchical_rp" else iv_window
     if weighting_method == "hierarchical_rp":
-        buckets = {k: list(v) for k, v in (rp_buckets or BUCKET_GROUPS).items()}
-        initial_w = hierarchical_rp_weights(rets_rp.iloc[:lookback], buckets, rp_window, max_w, min_w, bucket_method=bucket_method)
+        rp_buckets_frozen = {k: list(v) for k, v in (rp_buckets or BUCKET_GROUPS).items()}
+        initial_w = hierarchical_rp_weights(rets_rp.iloc[:lookback], rp_buckets_frozen, rp_window, max_w, min_w, bucket_method=bucket_method)
     else:
         initial_w = inverse_vol_weights(rets_rp.iloc[:lookback], window=iv_window, max_w=max_w, min_w=min_w)
 
@@ -223,39 +244,39 @@ def backtest(
             window_df = rets_rp.iloc[max(0, i - lookback):i]
 
             if weighting_method == "hierarchical_rp":
-                buckets = {k: list(v) for k, v in (rp_buckets or BUCKET_GROUPS).items()}
-                new_w = hierarchical_rp_weights(window_df, buckets, rp_window, max_w, min_w, bucket_method=bucket_method)
+                new_w = hierarchical_rp_weights(window_df, rp_buckets_frozen, rp_window, max_w, min_w, bucket_method=bucket_method)
             else:
                 new_w = inverse_vol_weights(window_df, window=iv_window, max_w=max_w, min_w=min_w)
             new_w_arr = new_w.values  # sums to ~1 (normalized)
 
-            # --- Compute SMA conditions once (numpy) ---
+            # --- Lookup SMA conditions from precomputed cache ---
             nf_sma = None
             au_sma = None
             eq_smas = {}
             if nonferr_trend_window > 0 and nonferr_idx >= 0 and i > nonferr_trend_window:
-                nf_sma = float(price_arr[max(0, i - nonferr_trend_window):i, nonferr_idx].mean())
+                nf_sma = float(sma_cache[nonferr_trend_window][i, nonferr_idx])
             if gold_trend_filter and gold_idx >= 0 and i > gold_trend_window:
-                au_sma = float(price_arr[max(0, i - gold_trend_window):i, gold_idx].mean())
+                au_sma = float(sma_cache[gold_trend_window][i, gold_idx])
             if equity_trend_assets:
                 for eq in equity_trend_assets:
                     eq_idx = col_idx.get(eq)
                     if eq_idx is not None:
                         wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
                         if i > wdw:
-                            eq_smas[eq] = float(price_arr[max(0, i - wdw):i, eq_idx].mean())
+                            eq_smas[eq] = float(sma_cache[wdw][i, eq_idx])
 
             # --- Compute HS300 dip condition once ---
             hs300_boost = None
             if hs300_value_dip and hs300_idx >= 0 and i > hs300_dip_sma:
+                hs300_sma_v = float(sma_cache[hs300_dip_sma][i, hs300_idx])
+                hs300_px = float(price_arr[i, hs300_idx])
                 hs300_boosted, hs300_boost = hs300_dip_check(
-                    pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
-                    hs300_dip_threshold, hs300_dip_sma, hs300_dip_exit_recovery,
+                    pb_data, pe_data, hs300_peak, hs300_boosted,
+                    hs300_dip_threshold, hs300_dip_exit_recovery,
                     hs300_pb_entry, hs300_pe_exit, hs300_dip_boost,
                     pb_pct_series=hs300_pb_pct, pe_pct_series=hs300_pe_pct,
+                    hs300_sma_val=hs300_sma_v, hs300_price_val=hs300_px, date=d,
                 )
-
-            # --- Shared SMA/dip params for filter function ---
             sma_params = {"nf_window": nonferr_trend_window, "nf_sma": nf_sma,
                           "au_sma": au_sma, "eq_smas": eq_smas}
             _gb_before = gold_boosted
@@ -317,8 +338,10 @@ def backtest(
                     entry['gold_dd_pct'] = round(gold_dd, 4)
                     entry['gold_dip_active'] = gold_dd <= -gold_dip_threshold and w[gold_idx] > 0
                 if hs300_idx >= 0:
-                    snap = hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, hs300_dip_boost,
-                                                  pb_pct_series=hs300_pb_pct, pe_pct_series=hs300_pe_pct)
+                    hs300_px = float(price_arr[i, hs300_idx])
+                    snap = hs300_signal_snapshot(pb_data, pe_data, hs300_peak, hs300_boosted, hs300_dip_boost,
+                                                  pb_pct_series=hs300_pb_pct, pe_pct_series=hs300_pe_pct,
+                                                  hs300_price_val=hs300_px, date=d)
                     entry.update(snap)
                 signal_log.append(entry)
 

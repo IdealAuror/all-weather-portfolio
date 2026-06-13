@@ -221,7 +221,7 @@ def rolling_stats(nv: pd.Series, window: int = 252,
     }
 
 
-def d_significance(nv: pd.Series, n_sim: int = 10000, seed: int | None = None,
+def d_significance(nv: pd.Series, n_sim: int = 2000, seed: int | None = None,
                    rets: pd.Series | None = None) -> dict:
     """D_excess 统计显著性 — 正态参数 Bootstrap。
 
@@ -271,7 +271,7 @@ def d_significance(nv: pd.Series, n_sim: int = 10000, seed: int | None = None,
 def block_bootstrap(weights: pd.Series, rets: pd.DataFrame,
                     n_sim: int = None, horizon: int = None,
                     block: int = None, seed: int = None) -> dict:
-    """块自助法模拟 5 年期累计收益分布。"""
+    """块自助法模拟 5 年期累计收益分布（向量化）。"""
     n_sim = n_sim or BOOTSTRAP_N_SIM
     horizon = horizon or BOOTSTRAP_HORIZON_DAYS
     block = block or BOOTSTRAP_BLOCK_DAYS
@@ -288,22 +288,21 @@ def block_bootstrap(weights: pd.Series, rets: pd.DataFrame,
 
     w = weights.values
 
-    samples = []
-    for _ in range(n_sim):
-        n_blocks = horizon // block
-        starts = rng.randint(0, n_days - block, size=n_blocks)
-        block_idxs = np.concatenate(
-            [np.arange(s, s + block) for s in starts])[:horizon]
-        sim = arr[block_idxs]
-        cum = np.prod(1 + (sim * w).sum(axis=1)) - 1
-        samples.append(cum)
+    # 全向量化: 一次生成所有起始索引
+    n_blocks = horizon // block
+    starts_all = rng.randint(0, n_days - block, size=(n_sim, n_blocks))
+    offsets = np.arange(block)
+    all_idxs = starts_all[:, :, None] + offsets[None, None, :]
+    all_idxs = all_idxs.reshape(n_sim, -1)[:, :horizon]
+    sim_arr = arr[all_idxs]
+    port_rets = (sim_arr * w[None, None, :]).sum(axis=2)
+    samples_arr = np.prod(1 + port_rets, axis=1) - 1
 
-    s = pd.Series(samples)
-    qs = s.quantile([0.05, 0.25, 0.5, 0.75, 0.95])
+    qs = np.percentile(samples_arr, [5, 25, 50, 75, 95])
     return {
-        "p05": qs[0.05], "p25": qs[0.25], "p50": qs[0.5],
-        "p75": qs[0.75], "p95": qs[0.95],
-        "ann_median": (1 + qs[0.5]) ** (1 / 5) - 1,
-        "loss_prob": (s < 0).mean(),
-        "samples": samples,
+        "p05": qs[0], "p25": qs[1], "p50": qs[2],
+        "p75": qs[3], "p95": qs[4],
+        "ann_median": (1 + qs[2]) ** (1 / 5) - 1,
+        "loss_prob": (samples_arr < 0).mean(),
+        "samples": samples_arr.tolist(),
     }

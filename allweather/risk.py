@@ -109,27 +109,29 @@ def _pb_pe_percentile(data, date, min_obs=252, pct_data=None):
     return curr, pct
 
 
-def hs300_dip_check(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted,
-                    threshold, sma_window, exit_recovery,
+def hs300_dip_check(pb_data, pe_data, hs300_peak, hs300_boosted,
+                    threshold, exit_recovery,
                     pb_entry, pe_exit, boost_mult,
-                    pb_pct_series=None, pe_pct_series=None):
+                    pb_pct_series=None, pe_pct_series=None,
+                    hs300_sma_val=None, hs300_price_val=None,
+                    date=None):
     """HS300 AND抄底 — PB分位确认入场 + PE分位确认出场。
     pb_pct_series/pe_pct_series 为预计算分位，传参可 O(1) 查表。
+    hs300_sma_val/hs300_price_val 为预计算值，避免循环内重复计算。
     """
-    pb_curr, pb_pct = _pb_pe_percentile(pb_data, d, pct_data=pb_pct_series)
-    pe_curr, pe_pct = _pb_pe_percentile(pe_data, d, pct_data=pe_pct_series)
+    pb_curr, pb_pct = _pb_pe_percentile(pb_data, date, pct_data=pb_pct_series)
+    pe_curr, pe_pct = _pb_pe_percentile(pe_data, date, pct_data=pe_pct_series)
     fundamental_ok = pb_pct is not None and pb_pct < pb_entry
     exit_fundamental = pe_pct is not None and pe_pct > pe_exit
 
-    hs300_dd = prices.iloc[i]["hs300"] / hs300_peak - 1
-    curr_hs = prices.iloc[i]["hs300"]
-    dip_sma = prices["hs300"].iloc[max(0, i - sma_window):i].mean()
+    hs300_dd = hs300_price_val / hs300_peak - 1
+    dip_sma = hs300_sma_val
 
     if hs300_boosted:
         if hs300_dd > -exit_recovery and exit_fundamental:
             return False, None
         return True, None
-    if hs300_dd <= -threshold and fundamental_ok and curr_hs > dip_sma:
+    if hs300_dd <= -threshold and fundamental_ok and hs300_price_val > dip_sma:
         return True, boost_mult
     return False, None
 
@@ -151,11 +153,12 @@ def dynamic_cash_ratio(hs300_series: pd.Series, i: int) -> float:
     return 0.15
 
 
-def hs300_signal_snapshot(pb_data, pe_data, prices, d, i, hs300_peak, hs300_boosted, boost_mult,
-                          pb_pct_series=None, pe_pct_series=None):
-    sig_dd = round(float(prices.iloc[i]["hs300"] / hs300_peak - 1), 4)
-    sig_pb_val, sig_pb_pct = _pb_pe_percentile(pb_data, d, pct_data=pb_pct_series)
-    sig_pe_val, sig_pe_pct = _pb_pe_percentile(pe_data, d, pct_data=pe_pct_series)
+def hs300_signal_snapshot(pb_data, pe_data, hs300_peak, hs300_boosted, boost_mult,
+                          pb_pct_series=None, pe_pct_series=None,
+                          hs300_price_val=None, date=None):
+    sig_dd = round(float(hs300_price_val / hs300_peak - 1), 4) if hs300_price_val is not None else None
+    sig_pb_val, sig_pb_pct = _pb_pe_percentile(pb_data, date, pct_data=pb_pct_series)
+    sig_pe_val, sig_pe_pct = _pb_pe_percentile(pe_data, date, pct_data=pe_pct_series)
     sig_pb_pct = round(sig_pb_pct, 1) if sig_pb_pct is not None else None
     sig_pe_pct = round(sig_pe_pct, 1) if sig_pe_pct is not None else None
     return {

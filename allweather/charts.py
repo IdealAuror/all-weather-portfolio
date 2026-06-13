@@ -13,8 +13,8 @@ plt.rcParams.update({
     "font.family": "sans-serif",
     "font.sans-serif": ["SimHei", "Microsoft YaHei", "Noto Sans SC"],
     "axes.unicode_minus": False,
-    "figure.dpi": 100,
-    "savefig.dpi": 100,
+    "figure.dpi": 72,
+    "savefig.dpi": 72,
     "savefig.bbox": "tight",
     "savefig.facecolor": "white",
 })
@@ -214,7 +214,7 @@ def plot_monthly_returns_comparison(nv_results: dict):
 
     box_data = [monthly_data[p].values for p in ports if p in monthly_data]
     box_labels = [p for p in ports if p in monthly_data]
-    bp = ax2.boxplot(box_data, vert=False, patch_artist=True, labels=box_labels,
+    bp = ax2.boxplot(box_data, vert=False, patch_artist=True,
                      medianprops={"color": "black", "lw": 1.2},
                      flierprops={"marker": "o", "markersize": 3, "alpha": 0.5})
     for patch, p in zip(bp["boxes"], box_labels):
@@ -225,6 +225,8 @@ def plot_monthly_returns_comparison(nv_results: dict):
     ax2.set_xlabel("月收益 (%)")
     ax2.set_title("月度收益分布", fontsize=12)
     ax2.grid(True, alpha=0.3, axis="x")
+    ax2.set_yticks(range(1, len(box_labels) + 1))
+    ax2.set_yticklabels(box_labels, fontsize=9)
 
     _draw_events([ax1], ax1)
 
