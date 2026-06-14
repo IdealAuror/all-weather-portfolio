@@ -128,7 +128,14 @@ def step_2_run_backtests(rets):
                             hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
                             track_dynamic_nav=False,
                             leverage_factors=LEVERAGE_FACTORS,
-                            financing_spread=LEVERAGE_FINANCING_SPREAD)
+                            financing_spread=LEVERAGE_FINANCING_SPREAD,
+                            dynamic_leverage={
+                                "window": 120,
+                                "monitor_assets": ["bond_30y"],
+                                "threshold": 1,
+                                "normal": {"bond_10y": 3.0},
+                                "crisis": {"bond_10y": 1.5},
+                            })
     nv_base_v4, n_v4, wh_v4, sl_v4 = result_v4
     nv_results[("V4 全天候杠杆", "100% RP")] = nv_base_v4
     weight_history["V4 全天候杠杆"] = wh_v4
