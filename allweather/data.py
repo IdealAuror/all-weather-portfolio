@@ -293,33 +293,12 @@ def _load_with_index(etf_name: str, idx_name: str, annual_deduct: float = 0.0) -
     return stitch_series(etf, proxy, annual_deduct=annual_deduct)
 
 
-def _load_copper() -> pd.Series:
-    """沪铜连续（CU0）独立加载，用作策略独立资产。
-
-    扣减展期成本 0.3%/年（SAFETY_DEDUCT.copper）。
-    """
-    copper = load_series("copper")
-    if copper.empty:
-        # 回退：用 shfe_copper（与 nonferr 共享同一 CSV）
-        copper = load_series("shfe_copper")
-    if copper.empty:
-        raise FileNotFoundError("copper / shfe_copper 数据不可用")
-
-    annual_deduct = SAFETY_DEDUCT.get("copper", 0.0)
-    if annual_deduct > 0:
-        daily_deduct = annual_deduct / 252.0
-        ret = copper.pct_change().dropna() - daily_deduct
-        corr = (1 + ret).cumprod()
-        # 避免 concat 产生的重复索引
-        corr = pd.concat([pd.Series(1.0, index=[corr.index[0]]), corr.iloc[1:]])
-        copper = corr.sort_index()
-    return copper
 
 
 def load_panel(include_wti: bool = True) -> pd.DataFrame:
-    """加载 9 资产收盘价面板（含缝合，对齐到回测期间，前向填充）。
+    """加载 8 资产收盘价面板（含缝合，对齐到回测期间，前向填充）。
 
-    2008+ 延长回测：ETF 上市前的期间用指数/期货/国际价格拼接。
+    2008+ 延长回测：ETF 上市前的期间用指数/国际价格拼接。
     """
     # 权益：ETF + 指数 proxy
     hs300 = _load_with_index("hs300", "hs300_idx", annual_deduct=0.0)
@@ -359,10 +338,7 @@ def load_panel(include_wti: bool = True) -> pd.DataFrame:
             "nonferr 三级回退全部为空：需要 nonferr.csv（ETF）、"
             "nonferr_idx.csv（指数）或 shfe_copper.csv（沪铜）至少一个")
 
-    # 铜期货独立加载
-    copper = _load_copper()
-
-    # 原油（SC0 优先，WTI USD×USDCNY 拼接）
+    # 原油（501018 LOF 优先，WTI USD×USDCNY 拼接）
     if include_wti:
         wti_cny = _load_wti_cny()
 
@@ -374,7 +350,6 @@ def load_panel(include_wti: bool = True) -> pd.DataFrame:
         "bond_30y": bond_30y,
         "gold":     gold,
         "nonferr":  nonferr,
-        "copper":   copper,
     })
     if include_wti:
         panel["wti"] = wti_cny

@@ -29,7 +29,7 @@ V3B_RP_BUCKETS = {
     "增长↑":   ["hs300", "us_sp500"],
     "收益垫":  ["credit"],
     "增长↓":   ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr", "wti", "copper"],
+    "通胀↑":   ["gold", "nonferr", "wti"],
 }
 V3B_RP_ASSETS = [a for assets in V3B_RP_BUCKETS.values() for a in assets]
 from . import reports
@@ -39,7 +39,7 @@ from .strategy_b import backtest_b
 
 
 def step_1_load_data():
-    """Step 1: 加载历史数据（8 活跃资产 + wti 备选）。"""
+    """Step 1: 加载历史数据（7 活跃资产 + wti 备选）。"""
     print("\n" + "─" * 60)
     print("Step 1/6: 加载历史数据")
     print("─" * 60)

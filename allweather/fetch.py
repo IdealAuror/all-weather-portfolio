@@ -38,7 +38,6 @@ TARGETS = {
     "sp500_idx":    ("sp500", None),       # S&P500 指数 USD (2008+)
     "wti":          ("etf_nav", "501018"), # 南方原油 LOF (2016+), 普通账户可买
     "wti_usd":      ("foreign_fut", "CL"), # WTI 原油连续 USD (1996+) — SC0前历史proxy
-    "copper":       ("sina_fut", "CU0"),   # 沪铜连续 (2005+) — 独立于159980的纯铜暴露
 }
 
 

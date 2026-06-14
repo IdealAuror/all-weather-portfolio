@@ -21,7 +21,6 @@ BOND_30Y_DURATION = 18.0               # 利差法久期参数
 SAFETY_DEDUCT = {
     "nonferr":  0.005,   # 申万有色指数不含管理费、跟踪误差
     "bond_30y": 0.003,   # ×3.0 久期放大的期权费率差
-    "copper":   0.003,   # 沪铜期货展期成本
 }
 
 # === 调仓规则 ===
@@ -36,12 +35,12 @@ CASH_TIERS = [
     ("70% RP",  0.30),
 ]
 
-# === 9 资产 ETF 元信息 ===
+# === 8 资产元信息 ===
 # 顺序就是各个表的标准列序
 ASSETS = [
     "hs300", "us_sp500", "credit",
     "bond_10y", "bond_30y",
-    "gold", "nonferr", "wti", "copper",
+    "gold", "nonferr", "wti",
 ]
 
 ETF_META = {
@@ -53,7 +52,6 @@ ETF_META = {
     "gold":      {"code": "518880", "name": "黄金 ETF",            "bucket": "通胀↑", "role": "实物黄金"},
     "nonferr":   {"code": "159980", "name": "有色金属 ETF",        "bucket": "通胀↑", "role": "工业金属"},
     "wti":       {"code": "501018", "name": "南方原油 LOF",         "bucket": "通胀↑", "role": "原油LOF"},
-    "copper":    {"code": "CU.SHF", "name": "沪铜期货",            "bucket": "通胀↑", "role": "工业金属"},
 }
 
 # === 桶定义（用于风险贡献分析）===
@@ -66,7 +64,6 @@ BUCKETS = {
     "通胀↑黄金":      ["gold"],
     "通胀↑有色":      ["nonferr"],
     "通胀↑能源":      ["wti"],
-    "通胀↑铜":        ["copper"],
 }
 
 BUCKET_GROUPS = {
@@ -74,7 +71,7 @@ BUCKET_GROUPS = {
     "收益垫":  ["credit"],
     "增长↓10Y": ["bond_10y"],
     "增长↓30Y": ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr", "wti", "copper"],
+    "通胀↑":   ["gold", "nonferr", "wti"],
 }
 
 # === 关键事件压力测试 ===
@@ -111,8 +108,8 @@ BOOTSTRAP_SEED = 42
 # === 交易成本估计 ===
 
 # === V3c 精简资产 ===
-V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti", "copper"]
-# wti — 已集成但 QDII 限购+溢价异常，暂不可执行
+V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti"]
+# wti — 南方原油 LOF(501018)，目前申购暂停
 
 # === 方案 B 常量（分层风险平价）===
 RISK_PARITY_WINDOW = 20           # V3-B 波动率窗口（交易日）
@@ -167,12 +164,12 @@ LEVERAGE_FACTORS = {
 LEVERAGE_FINANCING_SPREAD = 0.002  # 年化 20bp
 
 # V4 已移除 — 保留 V4_ASSETS 定义以防外部引用
-V4_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti", "copper"]
+V4_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti"]
 
 # === 策略标签 ===
 PORTFOLIO_TAGS = {
     "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d + nonferr(75d) + HS300 AND抄底，max_w=0.25"},
     "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(75d) + HS300(30d) + HS300 AND抄底"},
-    "V3c 多元":            {"stars": "★★★", "label": "V3c 多元 — 8资产逆波动率60d + nonferr(75d) + SP500(75d) + HS300 AND抄底"},
+    "V3c 多元":            {"stars": "★★★", "label": "V3c 多元 — 7资产逆波动率60d + nonferr(75d) + SP500(75d) + HS300 AND抄底"},
 }
 

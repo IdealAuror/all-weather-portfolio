@@ -27,22 +27,22 @@ from .config import (
 from .risk import inverse_vol_weights, hierarchical_rp_weights, erc_weights
 
 # === 策略定义 ===
-V3B_RP_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti", "copper"]
-V3B_CON_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti", "copper"]
-V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti", "copper"]
+V3B_RP_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti"]
+V3B_CON_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti"]
+V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti"]
 
 V3B_RP_BUCKETS = {
     "增长↑": ["hs300", "us_sp500"],
     "收益垫": ["credit"],
     "增长↓": ["bond_30y"],
-    "通胀↑": ["gold", "nonferr", "wti", "copper"],
+    "通胀↑": ["gold", "nonferr", "wti"],
 }
 V3B_CON_BUCKETS = {
     "增长↑": ["hs300", "us_sp500"],
     "收益垫": ["credit"],
     "增长↓10Y": ["bond_10y"],
     "增长↓30Y": ["bond_30y"],
-    "通胀↑": ["gold", "nonferr", "wti", "copper"],
+    "通胀↑": ["gold", "nonferr", "wti"],
 }
 
 STRATEGIES = {
