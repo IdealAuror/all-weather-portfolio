@@ -135,7 +135,10 @@ HS300_PB_ENTRY = 30              # PB%ile 入场阈值（PB便宜才抄底）
 HS300_PE_EXIT = 70               # PE%ile 退出阈值（PE不再便宜才退出）
 
 # === 标普500 趋势过滤 ===
-SP500_TREND_WINDOW = 120     # 标普500 SMA 回看窗口（交易日），跌破则清仓转入 credit
+SP500_TREND_WINDOW = 75      # 标普500 SMA 回看窗口（交易日），跌破则清仓转入 credit
+# 120d→75d: 2020 COVID MDD -9.66%→-6.91%（+2.75pp），牺牲 CAGR -0.16pp
+# 75d 提前 1 个月触发（3 月 vs 4 月），正好在 COVID 抛售最急期提供保护
+# 见 project_sp500-trend-rp-75d.md
 
 # === 沪深300 趋势过滤 ===
 HS300_TREND_WINDOW = 30      # 沪深300 SMA 回看窗口（交易日），跌破则清仓转入 credit
@@ -169,7 +172,7 @@ V4_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "non
 # === 策略标签 ===
 PORTFOLIO_TAGS = {
     "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d + nonferr(75d) + HS300 AND抄底，max_w=0.25"},
-    "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300(30d) + HS300 AND抄底"},
+    "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(75d) + HS300(30d) + HS300 AND抄底"},
     "V3c 多元":            {"stars": "★★★", "label": "V3c 多元 — 8资产逆波动率60d + nonferr(75d) + HS300 AND抄底"},
 }
 
