@@ -8,7 +8,7 @@ from .config import (
     HS300_DIP_SMA, HS300_DIP_EXIT_RECOVERY,
     HS300_PB_ENTRY, HS300_PE_EXIT,
 )
-from .risk import inverse_vol_weights, hierarchical_rp_weights, hs300_dip_check, hs300_signal_snapshot, dynamic_cash_ratio
+from .risk import inverse_vol_weights, erc_weights, hierarchical_rp_weights, hs300_dip_check, hs300_signal_snapshot, dynamic_cash_ratio
 
 
 
@@ -115,6 +115,8 @@ def backtest(
     equity_trend_window: int = 120,
     equity_trend_windows: dict | None = None,
     target_vol: float | None = None,
+    vol_floor: float | None = None,
+    vol_floor_max_scale: float = 1.5,
     assets: list | None = None,
     dynamic_cash: bool = False,
     track_weights: bool = False,
@@ -194,10 +196,13 @@ def backtest(
     if track_dynamic_nav:
         nv_dyn = pd.Series(index=rets_rp.index, dtype=float)
 
-    lookback = rp_window if weighting_method == "hierarchical_rp" else iv_window
+    lookback = rp_window if weighting_method in ("hierarchical_rp", "erc") else iv_window
     if weighting_method == "hierarchical_rp":
         rp_buckets_frozen = {k: list(v) for k, v in (rp_buckets or BUCKET_GROUPS).items()}
         initial_w = hierarchical_rp_weights(rets_rp.iloc[:lookback], rp_buckets_frozen, rp_window, max_w, min_w, bucket_method=bucket_method)
+    elif weighting_method == "erc":
+        initial_w = erc_weights(rets_rp.iloc[:lookback], window=rp_window if rp_window else iv_window,
+                                max_w=max_w, min_w=min_w, leverage_factors=leverage_factors)
     else:
         initial_w = inverse_vol_weights(rets_rp.iloc[:lookback], window=iv_window, max_w=max_w, min_w=min_w)
 
@@ -268,11 +273,16 @@ def backtest(
 
             if weighting_method == "hierarchical_rp":
                 new_w = hierarchical_rp_weights(window_df, rp_buckets_frozen, rp_window, max_w, min_w, bucket_method=bucket_method)
+            elif weighting_method == "erc":
+                new_w = erc_weights(window_df, window=rp_window if rp_window else iv_window,
+                                    max_w=max_w, min_w=min_w, leverage_factors=leverage_factors)
             else:
                 new_w = inverse_vol_weights(window_df, window=iv_window, max_w=max_w, min_w=min_w)
             new_w_arr = new_w.values  # sums to ~1 (normalized)
 
-            # --- Target volatility: scale total exposure if estimated vol exceeds target ---
+            # --- Target volatility: bidirectional scaling ---
+            # If estimated vol > target → scale down
+            # If estimated vol < floor and floor set → scale up (capped at vol_floor_max_scale)
             if target_vol is not None and i > 60:
                 recent = rets_rp.iloc[i - 60:i]
                 cov = recent.cov().values * 252
@@ -280,6 +290,9 @@ def backtest(
                 port_vol = np.sqrt(max(port_var, 1e-10))
                 if port_vol > target_vol:
                     scale = target_vol / port_vol
+                    new_w_arr = new_w_arr * scale
+                elif vol_floor is not None and port_vol < vol_floor:
+                    scale = min(vol_floor / port_vol, vol_floor_max_scale)
                     new_w_arr = new_w_arr * scale
 
             # --- Lookup SMA conditions from precomputed cache ---

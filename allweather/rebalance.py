@@ -24,11 +24,13 @@ from .config import (
     HS300_PB_ENTRY, HS300_PE_EXIT, HS300_DIP_EXIT_RECOVERY,
     SP500_TREND_WINDOW,
 )
-from .risk import inverse_vol_weights, hierarchical_rp_weights
+from .risk import inverse_vol_weights, hierarchical_rp_weights, erc_weights
 
 # === 策略定义 ===
 V3B_RP_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti", "copper"]
 V3B_CON_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti", "copper"]
+V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti", "copper"]
+CI_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "copper", "wti"]
 
 V3B_RP_BUCKETS = {
     "增长↑": ["hs300", "us_sp500"],
@@ -56,10 +58,15 @@ STRATEGIES = {
         "method": "inverse_vol", "window": 20,
         "max_w": 0.25, "min_w": 0.02,
     },
-    "V4": {
-        "name": "V4 全天候杠杆", "assets": list(ETF_META.keys()),
+    "V3c": {
+        "name": "V3c 多元", "assets": V3C_ASSETS,
         "method": "inverse_vol", "window": 60,
-        "max_w": 0.30, "min_w": 0.03,
+        "max_w": 0.25, "min_w": 0.02,
+    },
+    "CI": {
+        "name": "CI011001 全天候", "assets": CI_ASSETS,
+        "method": "erc", "window": 60,
+        "max_w": 0.25, "min_w": 0.02,
     },
 }
 
@@ -163,6 +170,8 @@ def compute_target_weights(strat_key, prices, cash_ratio=0.0):
 
     if cfg["method"] == "inverse_vol":
         w = inverse_vol_weights(rets, cfg["window"], cfg["max_w"], cfg["min_w"])
+    elif cfg["method"] == "erc":
+        w = erc_weights(rets, cfg["window"], cfg["max_w"], cfg["min_w"])
     else:
         w = hierarchical_rp_weights(rets, cfg["buckets"], cfg["window"],
                                      cfg["max_w"], cfg["min_w"])
@@ -298,7 +307,7 @@ def display_all_strategies(prices, signals, tier="100"):
     """策略目标权重同屏对比。"""
     cash_ratio = 1 - int(tier) / 100
     results = {}
-    for k in ["B-RP", "B-Con", "V4"]:
+    for k in list(STRATEGIES.keys()):
         w0 = compute_target_weights(k, prices, cash_ratio)
         w1 = apply_signal_overrides(k, w0, signals)
         results[k] = w1
@@ -309,7 +318,7 @@ def display_all_strategies(prices, signals, tier="100"):
 
     # Header
     print(f"  {'资产':<22} {'代码':<8}", end="")
-    for k in ["B-RP", "B-Con", "V4"]:
+    for k in list(STRATEGIES.keys()):
         print(f"{STRATEGIES[k]['name']:>20}", end="")
     print()
 
@@ -318,13 +327,13 @@ def display_all_strategies(prices, signals, tier="100"):
     for a in ASSETS:
         meta = ETF_META.get(a, {"code": "", "name": a})
         print(f"  {meta['name']:<22} {meta['code']:<8}", end="")
-        for k in ["B-RP", "B-Con", "V4"]:
+        for k in list(STRATEGIES.keys()):
             pct = results[k].get(a, 0)
             print(f"{_pct(pct):>20}", end="")
         print()
 
     print(f"  {'':<22} {'合计':<8}", end="")
-    for k in ["B-RP", "B-Con", "V4"]:
+    for k in list(STRATEGIES.keys()):
         print(f"{_pct(results[k].sum()):>20}", end="")
     print()
 
@@ -482,11 +491,12 @@ def _auto_fetch_if_stale(max_calendar_days=7):
 # ============================================================
 
 def display_strategy_summary():
-    """三策略概要对比（每策略一行）。"""
+    """策略概要对比（每策略一行）。"""
     rows = [
         ("V3-B 保守增强(20d)", "逆波动率 20d", "7.68%", "1.32", "-6.08%", "Sharpe最高，回撤最浅"),
-        ("V3-B 风险平价(20d)", "HRP 4桶", "9.09%", "1.21", "-8.82%", "CAGR最高，正统全天候"),
-        ("V4 全天候杠杆", "逆波动率 60d+T.CFFEX 5x", "11.44%", "1.66", "-13.87%", "绝对收益最高"),
+        ("V3-B 风险平价(20d)", "HRP 4桶", "9.38%", "1.18", "-8.82%", "CAGR最高，正统全天候"),
+        ("V3c 多元", "逆波动率 60d + 多元商品", "8.96%", "1.21", "-9.17%", "中位回报，无杠杆"),
+        ("CI011001 全天候", "ERC+目标波动率5%", "5.92%", "0.68", "-9.12%", "机构级复刻"),
     ]
     print(f"\n{LINE}")
     print("  策略概要")
@@ -650,7 +660,7 @@ def main():
     display_signal_dashboard(signals)
     display_strategy_summary()
 
-    pick = input(f"\n选择策略 (B-RP/B-Con/V4，回车=退出): ").strip()
+    pick = input(f"\n选择策略 ({'/'.join(STRATEGIES.keys())}，回车=退出): ").strip()
     if pick in STRATEGIES:
         _single_strat_flow(pick, tier, prices, signals, None)
 

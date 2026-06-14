@@ -26,6 +26,93 @@ def inverse_vol_weights(returns: pd.DataFrame, window: int = 60,
     return _clip_normalize(raw, min_w, max_w)
 
 
+def erc_weights(
+    returns: pd.DataFrame,
+    window: int = 60,
+    max_w: float = 0.30,
+    min_w: float = 0.03,
+    max_iter: int = 50,
+    tol: float = 1e-4,
+    leverage_factors: dict | None = None,
+) -> pd.Series:
+    """等风险贡献（Equal Risk Contribution / 风险平价）权重。
+
+    使用迭代梯度下降法求解，使每项资产的边际风险贡献 × 权重相等。
+    收敛条件：max(|RC_i - target_RC| / target_RC) < tol。
+
+    参数
+    ----------
+    returns : pd.DataFrame
+        各资产日收益率（列 = 资产）。应为**无杠杆**现货收益率。
+    window : int
+        用于估计协方差矩阵的尾部窗口（交易日）。
+    max_w, min_w : float
+        单资产权重上下限。
+    max_iter : int
+        最大迭代次数。
+    tol : float
+        收敛阈值。
+    leverage_factors : dict | None
+        各资产名义杠杆倍数（如 bond_10y: 2.5）。
+        传入后协方差矩阵按 lev_i × lev_j 缩放，使 ERC 解得的是
+        **杠杆后**的等风险贡献权重（而不是在无杠杆协方差上求解后再
+        在引擎层施加杠杆，导致杠杆资产风险过度集中）。
+
+    返回
+    -------
+    pd.Series
+        归一化权重（和为 1）。
+    """
+    n_assets = returns.shape[1]
+    assets = returns.columns
+
+    if len(returns) < max(20, n_assets):
+        return pd.Series(1.0 / n_assets, index=assets)
+
+    recent = returns.tail(window)
+    # 年化协方差矩阵
+    cov = recent.cov().values * 252
+
+    # 杠杆感知：协方差按 lev_i × lev_j 缩放
+    if leverage_factors:
+        lev = np.array([leverage_factors.get(a, 1.0) for a in assets], dtype=float)
+        # Σ_lev[i,j] = Σ[i,j] × lev_i × lev_j
+        cov = cov * np.outer(lev, lev)
+
+    # 加小量对角正则化保证正定性
+    cov += np.eye(n_assets) * 1e-8
+
+    # 初始等权
+    w = np.full(n_assets, 1.0 / n_assets)
+    converged = False
+
+    for iteration in range(max_iter):
+        # 边际风险贡献 MR = Σw (协方差×权重向量的每个分量)
+        mr = cov @ w  # shape (n_assets,)
+        # 风险贡献 RC_i = w_i * MR_i
+        rc = w * mr
+        # 目标风险贡献 = 均值
+        target_rc = rc.mean()
+        if target_rc < 1e-12:
+            break
+        # 收敛检查
+        rel_diff = np.abs(rc - target_rc) / target_rc
+        if rel_diff.max() < tol:
+            converged = True
+            break
+        # 梯度下降更新：w_i *= target_RC / RC_i
+        w = w * target_rc / rc
+        # clip + normalize
+        w = np.clip(w, min_w, max_w)
+        w = w / w.sum()
+
+    # 最终 clip + normalize
+    w = np.clip(w, min_w, max_w)
+    w = w / w.sum()
+
+    return pd.Series(w, index=assets)
+
+
 def hierarchical_rp_weights(
     returns: pd.DataFrame,
     bucket_groups: dict,

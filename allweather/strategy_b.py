@@ -1,4 +1,4 @@
-"""方案 B 向后兼容包装 — 委托给 backtest.py 的统一引擎。"""
+"""方案 B 向后兼容包装 + CI011001 — 委托给 backtest.py 的统一引擎。"""
 from .backtest import backtest
 from .config import (
     RISK_PARITY_WINDOW,
@@ -7,6 +7,12 @@ from .config import (
     HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
     HS300_DIP_SMA, HS300_DIP_EXIT_RECOVERY,
     HS300_PB_ENTRY, HS300_PE_EXIT,
+    CI011001_ASSETS, CI011001_LEVERAGE, CI011001_DYN_LEV,
+    CI011001_ERC_WINDOW, CI011001_MAX_W, CI011001_MIN_W,
+    CI011001_TARGET_VOL, CI011001_VOL_FLOOR, CI011001_VOL_CEILING_SCALE,
+    CI011001_CASH_RATIO,
+    LEVERAGE_FINANCING_SPREAD,
+    SP500_TREND_WINDOW,
 )
 
 
@@ -84,4 +90,53 @@ def backtest_b(
         hs300_pe_pct=hs300_pe_pct,
         track_dynamic_nav=track_dynamic_nav,
         target_vol=target_vol,
+    )
+
+
+def backtest_ci011001(
+    rets,
+    cash_ratio=CI011001_CASH_RATIO,
+    track_weights=False,
+    track_signals=False,
+    track_dynamic_nav=False,
+    hs300_pb_data=None,
+    hs300_pe_data=None,
+    hs300_pb_pct=None,
+    hs300_pe_pct=None,
+):
+    """CI011001 复刻 — 全指数级 ERC 风险平价 + 双向目标波动率 5% + 动态杠杆。
+    
+    对标国泰海通全天候指数 (CI011001.WI)：
+    - 资产池：8 资产（hs300, us_sp500, credit, bond_10y, bond_30y, gold, copper, wti）
+    - 加权方式：ERC（等风险贡献/风险平价），窗口 60 交易日
+    - 目标波动率 5%：双向缩放（vol > 5% 缩仓位，vol < 2.5% 加杠杆至 1.5x 上限）
+    - 债券杠杆：bond_10y 2.5x T.CFFEX，市场危机时动态降至 1.5x
+    - 调仓频率：月频
+    """
+    return backtest(
+        rets,
+        assets=CI011001_ASSETS,
+        cash_ratio=cash_ratio,
+        weighting_method="erc",
+        iv_window=CI011001_ERC_WINDOW,
+        rp_window=CI011001_ERC_WINDOW,
+        max_w=CI011001_MAX_W,
+        min_w=CI011001_MIN_W,
+        target_vol=CI011001_TARGET_VOL,
+        vol_floor=CI011001_VOL_FLOOR,
+        vol_floor_max_scale=1.5,
+        leverage_factors=CI011001_LEVERAGE,
+        financing_spread=LEVERAGE_FINANCING_SPREAD,
+        dynamic_leverage=CI011001_DYN_LEV,
+        nonferr_trend_window=0,
+        gold_trend_filter=False,
+        hs300_value_dip=False,
+        track_weights=track_weights,
+        track_signals=track_signals,
+        signal_label="CI011001 全天候",
+        hs300_pb_data=hs300_pb_data,
+        hs300_pe_data=hs300_pe_data,
+        hs300_pb_pct=hs300_pb_pct,
+        hs300_pe_pct=hs300_pe_pct,
+        track_dynamic_nav=track_dynamic_nav,
     )

@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from allweather.risk import (
     inverse_vol_weights,
+    erc_weights,
     hierarchical_rp_weights,
     hs300_dip_check,
     _clip_normalize,
@@ -139,3 +140,37 @@ def test_dynamic_cash_ratio():
     assert dynamic_cash_ratio(hs300, 2) == 0.0
     # Small drawdown (950/1100 - 1 = -14%) → 15% cash
     assert dynamic_cash_ratio(hs300, 4) == 0.15
+
+
+def test_erc_weights_sums_to_one():
+    """ERC 权重应归一化。"""
+    np.random.seed(123)
+    n = 200
+    data = {f"a{i}": np.random.normal(0.001, 0.02, n) for i in range(5)}
+    rets = pd.DataFrame(data)
+    w = erc_weights(rets, window=120, max_w=0.50, min_w=0.01)
+    assert abs(w.sum() - 1.0) < 1e-10
+    assert w.max() <= 0.50
+    assert w.min() >= 0.01
+
+
+def test_erc_weights_low_vol_gets_more():
+    """低波动资产在 ERC 中获得更高权重（因其风险贡献需要更大仓位来匹配）。"""
+    np.random.seed(123)
+    n = 200
+    low_vol = np.random.normal(0.0005, 0.003, n)   # 年化 ≈ 5%
+    high_vol = np.random.normal(0.0008, 0.012, n)  # 年化 ≈ 19%
+    rets = pd.DataFrame({"bond": low_vol, "equity": high_vol})
+    w = erc_weights(rets, window=120, max_w=0.90, min_w=0.01)
+    # 低波动资产在 ERC 中应获得更大权重以匹配风险贡献
+    assert w["bond"] > w["equity"], f"ERC 应给低波动 bond 更高权重，现 bond={w['bond']:.3f} equity={w['equity']:.3f}"
+
+
+def test_erc_weights_short_history():
+    """数据不足时应等权。"""
+    rets = pd.DataFrame({"a": [0.01] * 5, "b": [0.02] * 5, "c": [0.005] * 5})
+    w = erc_weights(rets, window=60)
+    assert len(w) == 3
+    assert abs(w.sum() - 1.0) < 1e-10
+    # 历史太短，应近似等权
+    assert abs(w["a"] - 1/3) < 0.1

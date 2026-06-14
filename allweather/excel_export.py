@@ -98,7 +98,8 @@ def _sheet_recommendation(wb):
     notes = {
         "V3-B 保守增强(20d)": "逆波动率 20d + max_w=0.25，Sharpe 最高，回撤最浅",
         "V3-B 风险平价(20d)": "4桶等权HRP + Gold/SP500趋势过滤，CAGR 最高，攻守兼备",
-        "V4 全天候杠杆": "bond_10y T.CFFEX 杠杆5x，CAGR 最高，Sharpe 最高",
+        "V3c 多元": "8资产逆波动率 60d + 有色趋势 + HS300抄底，中位回报",
+        "CI011001 全天候": "ERC风险平价 + 双向目标波动率5% + 动态杠杆，对标国泰海通",
     }
     # PORTFOLIO_TAGS 的顺序不是推荐顺序，按 stars 数量重排
     items = sorted(PORTFOLIO_TAGS.items(), key=lambda kv: -len(kv[1]["stars"]))
@@ -114,7 +115,7 @@ def _sheet_recommendation(wb):
             ws.cell(row=i, column=c).border = BORDER
 
     # 注脚
-    ws.cell(row=8, column=1, value="📌 保守增强适合保守资金，风险平价为全天候正统方案，V4 为杠杆进阶方案。")
+    ws.cell(row=8, column=1, value="📌 保守增强适合保守资金，风险平价为全天候正统方案，V3c多元为简化多元方案，CI011001 为机构级复刻。")
     ws.merge_cells(start_row=8, start_column=1, end_row=8, end_column=4)
     ws.cell(row=8, column=1).alignment = LEFT
     _autofit(ws)
