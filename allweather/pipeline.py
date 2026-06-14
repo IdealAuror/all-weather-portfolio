@@ -116,10 +116,11 @@ def step_2_run_backtests(rets):
     for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
         nv_results[("V3-B 保守增强(20d)", tier_label)] = adjust_nav_for_cash(nv_base, c)
 
-    # --- V3c 多元: 8资产逆波动率60d + nonferr趋势75d + HS300 AND抄底 ---
+    # --- V3c 多元: 8资产逆波动率60d + nonferr趋势75d + SP500趋势75d + HS300 AND抄底 ---
     result_v3c = backtest_iv(rets, cash_ratio=0.0, iv_window=60, max_w=0.30, min_w=0.03,
                              nonferr_trend_window=75, assets=V3C_ASSETS,
                              gold_dip_threshold=None, gold_dip_cap=0.20,
+                             equity_trend_assets=["us_sp500"], equity_trend_window=75,
                              hs300_value_dip=True,
                              track_weights=True, track_signals=True,
                              signal_label="V3c 多元",
