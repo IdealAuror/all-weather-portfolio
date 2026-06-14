@@ -1512,9 +1512,12 @@ function downloadHTML() {
 
 
 
+
+
+
 <!-- ALLWEATHER_SYNC_START --><script>
 (function(){
-const D = {"V3-B 保守增强(20d)": {"100% RP": {"cum_return": 3.619098, "cagr": 0.073359, "vol": 0.036452, "mdd": -0.061236, "sharpe": 1.357055, "calmar": 1.197981, "final_nv": 4.6191}, "85% RP": {"cum_return": 2.950488, "cagr": 0.065623, "vol": 0.030984, "mdd": -0.050078, "sharpe": 1.357055, "calmar": 1.310412, "final_nv": 3.9505}, "70% RP": {"cum_return": 2.376463, "cagr": 0.05791, "vol": 0.025516, "mdd": -0.038825, "sharpe": 1.357055, "calmar": 1.491563, "final_nv": 3.3765}, "动态": {"cum_return": 3.183177, "cagr": 0.068448, "vol": 0.032796, "mdd": -0.044809, "sharpe": 1.364609, "calmar": 1.527534, "final_nv": 4.1832}}, "V3-B 风险平价(20d)": {"100% RP": {"cum_return": 5.943045, "cagr": 0.093789, "vol": 0.058811, "mdd": -0.0882, "sharpe": 1.179939, "calmar": 1.063366, "final_nv": 6.943}, "85% RP": {"cum_return": 4.60241, "cagr": 0.082986, "vol": 0.049989, "mdd": -0.07318, "sharpe": 1.179939, "calmar": 1.133997, "final_nv": 5.6024}, "70% RP": {"cum_return": 3.513001, "cagr": 0.072206, "vol": 0.041167, "mdd": -0.058189, "sharpe": 1.179939, "calmar": 1.240893, "final_nv": 4.513}, "动态": {"cum_return": 4.80609, "cagr": 0.084777, "vol": 0.052958, "mdd": -0.082907, "sharpe": 1.147873, "calmar": 1.022551, "final_nv": 5.8061}}, "V4 全天候杠杆": {"100% RP": {"cum_return": 9.39821, "cagr": 0.114419, "vol": 0.052971, "mdd": -0.13871, "sharpe": 1.656734, "calmar": 0.824878, "final_nv": 10.3982}, "85% RP": {"cum_return": 6.890161, "cagr": 0.100279, "vol": 0.045025, "mdd": -0.116959, "sharpe": 1.656734, "calmar": 0.857386, "final_nv": 7.8902}, "70% RP": {"cum_return": 4.97882, "cagr": 0.086249, "vol": 0.03708, "mdd": -0.094759, "sharpe": 1.656734, "calmar": 0.910192, "final_nv": 5.9788}}};
+const D = {"V3-B 保守增强(20d)": {"100% RP": {"cum_return": 3.945203, "cagr": 0.076752, "vol": 0.039936, "mdd": -0.060789, "sharpe": 1.321038, "calmar": 1.262589, "final_nv": 4.9452}, "85% RP": {"cum_return": 3.187874, "cagr": 0.068503, "vol": 0.033946, "mdd": -0.050485, "sharpe": 1.321038, "calmar": 1.356906, "final_nv": 4.1879}, "70% RP": {"cum_return": 2.543759, "cagr": 0.06028, "vol": 0.027955, "mdd": -0.04145, "sharpe": 1.321038, "calmar": 1.454278, "final_nv": 3.5438}, "动态": {"cum_return": 3.434025, "cagr": 0.07133, "vol": 0.035974, "mdd": -0.05433, "sharpe": 1.321999, "calmar": 1.312917, "final_nv": 4.434}}, "V3-B 风险平价(20d)": {"100% RP": {"cum_return": 5.943045, "cagr": 0.093789, "vol": 0.058811, "mdd": -0.0882, "sharpe": 1.179939, "calmar": 1.063366, "final_nv": 6.943}, "85% RP": {"cum_return": 4.60241, "cagr": 0.082986, "vol": 0.049989, "mdd": -0.07318, "sharpe": 1.179939, "calmar": 1.133997, "final_nv": 5.6024}, "70% RP": {"cum_return": 3.513001, "cagr": 0.072206, "vol": 0.041167, "mdd": -0.058189, "sharpe": 1.179939, "calmar": 1.240893, "final_nv": 4.513}, "动态": {"cum_return": 4.80609, "cagr": 0.084777, "vol": 0.052958, "mdd": -0.082907, "sharpe": 1.147873, "calmar": 1.022551, "final_nv": 5.8061}}, "V4 全天候杠杆": {"100% RP": {"cum_return": 5.701648, "cagr": 0.092, "vol": 0.043726, "mdd": -0.099098, "sharpe": 1.53183, "calmar": 0.928369, "final_nv": 6.7016}, "85% RP": {"cum_return": 4.424809, "cagr": 0.081373, "vol": 0.037167, "mdd": -0.082667, "sharpe": 1.53183, "calmar": 0.984346, "final_nv": 5.4248}, "70% RP": {"cum_return": 3.387128, "cagr": 0.070804, "vol": 0.030608, "mdd": -0.066001, "sharpe": 1.53183, "calmar": 1.072771, "final_nv": 4.3871}}};
 
 function pct(v, d) { return (v*100).toFixed(d||2)+'%'; }
 function ps(v, d) { var s=(v*100).toFixed(d||2)+'%'; return (v>=0?'+':'')+s; }
@@ -1950,6 +1953,9 @@ if (T) {
 console.log('data.json sync: '+Object.keys(D).length+' strategies loaded');
 })();
 </script><!-- ALLWEATHER_SYNC_END -->
+
+
+
 
 
 

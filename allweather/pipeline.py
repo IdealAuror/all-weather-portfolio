@@ -117,7 +117,7 @@ def step_2_run_backtests(rets):
     for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
         nv_results[("V3-B 保守增强(20d)", tier_label)] = adjust_nav_for_cash(nv_base, c)
 
-    # --- V4 全天候杠杆: 9资产 + bond_10y 5x T.CFFEX ---
+    # --- V4 全天候杠杆: 9资产 + bond_10y 3x T.CFFEX（5x→3x 降杠杆控制回撤） ---
     result_v4 = backtest_iv(rets, cash_ratio=0.0, iv_window=60, max_w=0.30, min_w=0.03,
                             nonferr_trend_window=75, assets=V4_ASSETS,
                             gold_dip_threshold=None, gold_dip_cap=0.20,

@@ -128,6 +128,7 @@ def backtest(
     track_dynamic_nav: bool = False,
     leverage_factors: dict | None = None,
     financing_spread: float = 0.0,
+    dynamic_leverage: dict | None = None,
 ) -> tuple:
     """统一回测引擎 — 逆波动率/分层风险平价 + 趋势过滤 + 抄底。
 
@@ -177,6 +178,8 @@ def backtest(
                 wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
                 if wdw > 0:
                     _needed_windows.add(wdw)
+    if dynamic_leverage is not None:
+        _needed_windows.add(dynamic_leverage.get("window", 120))
     for w in _needed_windows:
         sma = prices.rolling(window=w, min_periods=1).mean().shift(1)
         sma_cache[w] = sma.values  # (n_days, n_assets), NaN when i < w
@@ -294,6 +297,27 @@ def backtest(
                         wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
                         if i > wdw:
                             eq_smas[eq] = float(sma_cache[wdw][i, eq_idx])
+
+            # --- Dynamic leverage: reduce leverage when N risk assets breach trend ---
+            if dynamic_leverage is not None and has_leverage:
+                dl = dynamic_leverage
+                dl_wdw = dl.get("window", 120)
+                below = 0
+                for asset in dl.get("monitor_assets", []):
+                    a_idx = col_idx.get(asset)
+                    if a_idx is not None and i > dl_wdw:
+                        if price_arr[i, a_idx] < float(sma_cache[dl_wdw][i, a_idx]):
+                            below += 1
+                if below >= dl.get("threshold", 2):
+                    for target, lev in dl.get("crisis", {}).items():
+                        t_idx = col_idx.get(target)
+                        if t_idx is not None:
+                            l_arr[t_idx] = lev
+                else:
+                    for target, lev in dl.get("normal", {}).items():
+                        t_idx = col_idx.get(target)
+                        if t_idx is not None:
+                            l_arr[t_idx] = lev
 
             # --- Compute HS300 dip condition once ---
             hs300_boost = None
