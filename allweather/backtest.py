@@ -115,6 +115,7 @@ def backtest(
     equity_trend_window: int = 120,
     equity_trend_windows: dict | None = None,
     target_vol: float | None = None,
+    vol_target_window: int = 60,
     vol_floor: float | None = None,
     vol_floor_max_scale: float = 1.5,
     assets: list | None = None,
@@ -283,8 +284,8 @@ def backtest(
             # --- Target volatility: bidirectional scaling ---
             # If estimated vol > target → scale down
             # If estimated vol < floor and floor set → scale up (capped at vol_floor_max_scale)
-            if target_vol is not None and i > 60:
-                recent = rets_rp.iloc[i - 60:i]
+            if target_vol is not None and i > vol_target_window:
+                recent = rets_rp.iloc[i - vol_target_window:i]
                 cov = recent.cov().values * 252
                 port_var = new_w_arr @ cov @ new_w_arr
                 port_vol = np.sqrt(max(port_var, 1e-10))

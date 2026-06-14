@@ -18,8 +18,10 @@ from .stats import (
 from .config import (
     STRESS_EVENTS, OUTPUT_DIR,
     BUCKETS, BUCKET_GROUPS,
-    SP500_TREND_WINDOW,
+    SP500_TREND_WINDOW, HS300_TREND_WINDOW,
     V3C_ASSETS,
+    RISK_PARITY_TARGET_VOL,
+    RISK_PARITY_COV_WINDOW,
 )
 
 V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
@@ -75,15 +77,18 @@ def step_2_run_backtests(rets):
                         nonferr_trend_window=75,
                         gold_trend_filter=True,
                         gold_trend_window=75,
-                        equity_trend_assets=["us_sp500"],
+                        equity_trend_assets=["us_sp500", "hs300"],
                         equity_trend_window=SP500_TREND_WINDOW,
+                        equity_trend_windows={"us_sp500": SP500_TREND_WINDOW, "hs300": HS300_TREND_WINDOW},
                         hs300_value_dip=True,
                         track_weights=True, track_signals=True,
                         signal_label="V3-B 风险平价",
                         hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
                         hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
                         track_dynamic_nav=True,
-                        target_vol=0.09)
+                        target_vol=RISK_PARITY_TARGET_VOL,
+                        vol_target_window=RISK_PARITY_COV_WINDOW,
+                        gold_dip_threshold=None)
     nv_base, nv_dyn, n, wh, sl = result
     nv_results[("V3-B 风险平价(20d)", "100% RP")] = nv_base
     nv_results[("V3-B 风险平价(20d)", "动态")] = nv_dyn

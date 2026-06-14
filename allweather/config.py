@@ -118,6 +118,8 @@ V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti
 RISK_PARITY_WINDOW = 20           # V3-B 波动率窗口（交易日）
 RISK_PARITY_MAX_WEIGHT = 0.20    # 单资产权重上限（0.20 实现真正等桶风险平价，原 0.18 截断单资产桶）
 RISK_PARITY_MIN_WEIGHT = 0.02    # 单资产权重下限
+RISK_PARITY_TARGET_VOL = 0.09    # V3-B RP 目标波动率上限（超标等比降敞口）
+RISK_PARITY_COV_WINDOW = 60      # V3-B RP 协方差估计窗口（target_vol 用）
 
 # === Gold 抄底参数 ===
 GOLD_DIP_THRESHOLD = 0.15        # 黄金从高点回撤超过此阈值触发抄底
@@ -135,6 +137,11 @@ HS300_PE_EXIT = 70               # PE%ile 退出阈值（PE不再便宜才退出
 # === 标普500 趋势过滤 ===
 SP500_TREND_WINDOW = 120     # 标普500 SMA 回看窗口（交易日），跌破则清仓转入 credit
 
+# === 沪深300 趋势过滤 ===
+HS300_TREND_WINDOW = 30      # 沪深300 SMA 回看窗口（交易日），跌破则清仓转入 credit
+# 选择 30d 基于 HS300 走势分析：2015 股灾 -10% 触发（15d 延迟）、月频调仓下假信号可接受。
+# 详细分析见 _analyze_hs300_sma.py
+
 
 # === 杠杆 / 保证金参数 ===
 # 名义杠杆：1 单位资本可获得的资产名义敞口倍数
@@ -151,7 +158,7 @@ V4_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "non
 # === 策略标签 ===
 PORTFOLIO_TAGS = {
     "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d + nonferr(75d) + HS300 AND抄底，max_w=0.25"},
-    "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300 AND抄底"},
+    "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(120d) + HS300(30d) + HS300 AND抄底"},
     "V3c 多元":            {"stars": "★★★", "label": "V3c 多元 — 8资产逆波动率60d + nonferr(75d) + HS300 AND抄底"},
 }
 
