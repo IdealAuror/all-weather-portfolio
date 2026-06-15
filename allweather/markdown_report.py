@@ -7,6 +7,7 @@ import pandas as pd
 
 from .config import BUCKET_GROUPS, ETF_META, OUTPUT_DIR
 from .config import PORTFOLIO_TAGS
+from .reports import compute_signal_summary
 
 
 def _pct(v, d=2, sign=False):
@@ -196,57 +197,22 @@ def _section_weight_stability(ws_results):
 
 def _section_signal_summary(signal_logs: dict):
     """信号触发频率汇总（Markdown）。"""
-    if not signal_logs:
+    summary = compute_signal_summary(signal_logs)
+    if not summary:
         return []
-
-    signal_cols = {
-        "nonferr_filtered":     "有色趋势过滤",
-        "gold_filtered":        "黄金趋势过滤",
-        "us_sp500_filtered":    "SP500趋势过滤",
-        "gold_dip_active":      "黄金抄底",
-        "active":               "HS300抄底",
-    }
 
     parts = ["## 3c. 风控信号触发频率汇总（年均次数）", ""]
 
-    for label, sl in signal_logs.items():
-        if sl.empty:
-            continue
-        sl = sl.copy()
-        if "date" in sl.columns:
-            sl["year"] = pd.to_datetime(sl["date"]).dt.year
-        else:
-            continue
-
-        avail = {k: v for k, v in signal_cols.items() if k in sl.columns}
-        if not avail:
-            continue
-
+    for label, s in summary.items():
         parts.append(f"### {label}")
         parts.append("")
 
-        years_list = sorted(sl["year"].unique())
-        headers = ["年度"] + list(avail.values())
+        headers = ["年度"] + list(s["avail"].values())
         rows = []
-        for y in years_list:
-            ydata = sl[sl["year"] == y]
-            row = [str(y)]
-            for k in avail:
-                if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all():
-                    row.append(str(int(ydata[k].sum())))
-                else:
-                    row.append(str(int((ydata[k] > 0).sum())))
+        for y in s["years"]:
+            row = [str(y)] + [str(s["yearly"][y][k]) for k in s["avail"]]
             rows.append(row)
-
-        # 合计行
-        total_row = ["合计"]
-        for k in avail:
-            series = sl[k]
-            if series.dtype == bool or series.dropna().isin([0, 1]).all():
-                total_row.append(str(int(series.sum())))
-            else:
-                total_row.append(str(int((series > 0).sum())))
-        rows.append(total_row)
+        rows.append(["合计"] + [str(s["total"][k]) for k in s["avail"]])
 
         parts.append(_md_table(headers, rows))
         parts.append("")

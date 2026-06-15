@@ -81,154 +81,75 @@ def step_2_run_backtests(rets):
     from .backtest import adjust_nav_for_cash
 
     # ============================================================
-    # 第 1 轮：无原油（主展示版本）
+    # 公共参数（策略族参数，减少重复）
     # ============================================================
-    # --- V3-B RP: single call, base + dynamic nav ---
-    result = backtest_b(rets[V3B_RP_ASSETS_NOWTI], cash_ratio=0.0, rp_window=20,
-                        rp_buckets=V3B_RP_BUCKETS_NOWTI,
-                        nonferr_control="trend_filter",
-                        nonferr_trend_window=75,
-                        gold_trend_filter=True,
-                        gold_trend_window=75,
-                        equity_trend_assets=["us_sp500", "hs300"],
-                        equity_trend_window=SP500_TREND_WINDOW,
-                        equity_trend_windows={"us_sp500": SP500_TREND_WINDOW, "hs300": HS300_TREND_WINDOW},
-                        hs300_value_dip=True,
-                        track_weights=True, track_signals=True,
-                        signal_label="V3-B 风险平价",
-                        hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
-                        hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
-                        track_dynamic_nav=True,
-                        target_vol=RISK_PARITY_TARGET_VOL,
-                        vol_target_window=RISK_PARITY_COV_WINDOW,
-                        gold_dip_threshold=None)
-    nv_base, nv_dyn, n, wh, sl = result
-    nv_results[("V3-B 风险平价(20d)", "100% RP")] = nv_base
-    nv_results[("V3-B 风险平价(20d)", "动态")] = nv_dyn
-    weight_history["V3-B 风险平价(20d)"] = wh
-    signal_logs["V3-B 风险平价(20d)"] = sl
-    n_rebal_total += n
-    for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
-        nv_results[("V3-B 风险平价(20d)", tier_label)] = adjust_nav_for_cash(nv_base, c)
+    _common = dict(
+        cash_ratio=0.0,
+        nonferr_trend_window=75,
+        hs300_value_dip=True,
+        track_weights=True, track_signals=True,
+        hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
+        hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
+    )
+    _b_rp = dict(rp_window=20,
+                 nonferr_control="trend_filter",
+                 gold_trend_filter=True, gold_trend_window=75,
+                 equity_trend_assets=["us_sp500", "hs300"],
+                 equity_trend_windows={"us_sp500": SP500_TREND_WINDOW, "hs300": HS300_TREND_WINDOW},
+                 track_dynamic_nav=True,
+                 target_vol=RISK_PARITY_TARGET_VOL, vol_target_window=RISK_PARITY_COV_WINDOW,
+                 gold_dip_threshold=None)
+    _b_con = dict(rp_window=20, max_w=0.25, weighting_method="inverse_vol",
+                  nonferr_control="trend_filter",
+                  gold_dip_threshold=None, gold_dip_cap=0.20, track_dynamic_nav=True)
+    _iv = dict(iv_window=60, max_w=0.30, min_w=0.03,
+               gold_trend_filter=True, gold_trend_window=75,
+               gold_dip_threshold=None, gold_dip_cap=0.20,
+               equity_trend_assets=["us_sp500"], equity_trend_window=75,
+               track_dynamic_nav=False)
 
-    # --- V3-B Con: single call, base + dynamic nav ---
-    result = backtest_b(rets[V3B_CON_ASSETS_NO_WTI], cash_ratio=0.0, rp_window=20,
-                        max_w=0.25,
-                        nonferr_control="trend_filter",
-                        nonferr_trend_window=75,
-                        weighting_method="inverse_vol",
-                        gold_dip_threshold=None, gold_dip_cap=0.20,
-                        hs300_value_dip=True,
-                        track_weights=True, track_signals=True,
-                        signal_label="V3-B 保守增强",
-                        hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
-                        hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
-                        track_dynamic_nav=True,
-                        )
-    nv_base, nv_dyn, n, wh, sl = result
-    nv_results[("V3-B 保守增强(20d)", "100% RP")] = nv_base
-    nv_results[("V3-B 保守增强(20d)", "动态")] = nv_dyn
-    weight_history["V3-B 保守增强(20d)"] = wh
-    signal_logs["V3-B 保守增强(20d)"] = sl
-    n_rebal_total += n
-    for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
-        nv_results[("V3-B 保守增强(20d)", tier_label)] = adjust_nav_for_cash(nv_base, c)
+    def _store(name, nv_base, nv_dyn, n, wh, sl):
+        nonlocal n_rebal_total
+        nv_results[(name, "100% RP")] = nv_base
+        if nv_dyn is not None:
+            nv_results[(name, "动态")] = nv_dyn
+        weight_history[name] = wh
+        signal_logs[name] = sl
+        n_rebal_total += n
+        for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
+            nv_results[(name, tier_label)] = adjust_nav_for_cash(nv_base, c)
 
-    # --- V3c 多元: 逆波动率60d + nonferr趋势75d + Gold趋势75d + SP500趋势75d + HS300 AND抄底 ---
-    result_v3c = backtest_iv(rets, cash_ratio=0.0, iv_window=60, max_w=0.30, min_w=0.03,
-                             nonferr_trend_window=75, assets=V3C_ASSETS_NO_WTI,
-                             gold_trend_filter=True,
-                             gold_trend_window=75,
-                             gold_dip_threshold=None, gold_dip_cap=0.20,
-                             equity_trend_assets=["us_sp500"], equity_trend_window=75,
-                             hs300_value_dip=True,
-                             track_weights=True, track_signals=True,
-                             signal_label="V3c 多元",
-                             hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
-                             hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
-                             track_dynamic_nav=False)
-    nv_base_v3c, n_v3c, wh_v3c, sl_v3c = result_v3c
-    nv_results[("V3c 多元", "100% RP")] = nv_base_v3c
-    weight_history["V3c 多元"] = wh_v3c
-    signal_logs["V3c 多元"] = sl_v3c
-    n_rebal_total += n_v3c
-    for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
-        nv_results[("V3c 多元", tier_label)] = adjust_nav_for_cash(nv_base_v3c, c)
+    # --- V3-B RP ---
+    nv_base, nv_dyn, n, wh, sl = backtest_b(
+        rets[V3B_RP_ASSETS_NOWTI], rp_buckets=V3B_RP_BUCKETS_NOWTI,
+        signal_label="V3-B 风险平价", **_common, **_b_rp)
+    _store("V3-B 风险平价(20d)", nv_base, nv_dyn, n, wh, sl)
 
-    # ============================================================
-    # 第 2 轮：含原油（补充对比）
-    # ============================================================
+    # --- V3-B Con ---
+    nv_base, nv_dyn, n, wh, sl = backtest_b(
+        rets[V3B_CON_ASSETS_NO_WTI], signal_label="V3-B 保守增强", **_common, **_b_con)
+    _store("V3-B 保守增强(20d)", nv_base, nv_dyn, n, wh, sl)
+
+    # --- V3c 多元 ---
+    nv_base, n, wh, sl = backtest_iv(
+        rets, assets=V3C_ASSETS_NO_WTI, signal_label="V3c 多元", **_common, **_iv)
+    _store("V3c 多元", nv_base, None, n, wh, sl)
+
     # --- V3-B RP +WTI ---
-    result = backtest_b(rets[V3B_RP_ASSETS], cash_ratio=0.0, rp_window=20,
-                        rp_buckets=V3B_RP_BUCKETS,
-                        nonferr_control="trend_filter",
-                        nonferr_trend_window=75,
-                        gold_trend_filter=True,
-                        gold_trend_window=75,
-                        equity_trend_assets=["us_sp500", "hs300"],
-                        equity_trend_window=SP500_TREND_WINDOW,
-                        equity_trend_windows={"us_sp500": SP500_TREND_WINDOW, "hs300": HS300_TREND_WINDOW},
-                        hs300_value_dip=True,
-                        track_weights=True, track_signals=True,
-                        signal_label="V3-B 风险平价",
-                        hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
-                        hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
-                        track_dynamic_nav=True,
-                        target_vol=RISK_PARITY_TARGET_VOL,
-                        vol_target_window=RISK_PARITY_COV_WINDOW,
-                        gold_dip_threshold=None)
-    nv_base, nv_dyn, n, wh, sl = result
-    nv_results[("V3-B 风险平价(20d)+WTI", "100% RP")] = nv_base
-    nv_results[("V3-B 风险平价(20d)+WTI", "动态")] = nv_dyn
-    weight_history["V3-B 风险平价(20d)+WTI"] = wh
-    signal_logs["V3-B 风险平价(20d)+WTI"] = sl
-    n_rebal_total += n
-    for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
-        nv_results[("V3-B 风险平价(20d)+WTI", tier_label)] = adjust_nav_for_cash(nv_base, c)
+    nv_base, nv_dyn, n, wh, sl = backtest_b(
+        rets[V3B_RP_ASSETS], rp_buckets=V3B_RP_BUCKETS,
+        signal_label="V3-B 风险平价", **_common, **_b_rp)
+    _store("V3-B 风险平价(20d)+WTI", nv_base, nv_dyn, n, wh, sl)
 
     # --- V3-B Con +WTI ---
-    result = backtest_b(rets[V3B_ASSETS], cash_ratio=0.0, rp_window=20,
-                        max_w=0.25,
-                        nonferr_control="trend_filter",
-                        nonferr_trend_window=75,
-                        weighting_method="inverse_vol",
-                        gold_dip_threshold=None, gold_dip_cap=0.20,
-                        hs300_value_dip=True,
-                        track_weights=True, track_signals=True,
-                        signal_label="V3-B 保守增强",
-                        hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
-                        hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
-                        track_dynamic_nav=True,
-                        )
-    nv_base, nv_dyn, n, wh, sl = result
-    nv_results[("V3-B 保守增强(20d)+WTI", "100% RP")] = nv_base
-    nv_results[("V3-B 保守增强(20d)+WTI", "动态")] = nv_dyn
-    weight_history["V3-B 保守增强(20d)+WTI"] = wh
-    signal_logs["V3-B 保守增强(20d)+WTI"] = sl
-    n_rebal_total += n
-    for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
-        nv_results[("V3-B 保守增强(20d)+WTI", tier_label)] = adjust_nav_for_cash(nv_base, c)
+    nv_base, nv_dyn, n, wh, sl = backtest_b(
+        rets[V3B_ASSETS], signal_label="V3-B 保守增强", **_common, **_b_con)
+    _store("V3-B 保守增强(20d)+WTI", nv_base, nv_dyn, n, wh, sl)
 
     # --- V3c 多元 +WTI ---
-    result_v3c = backtest_iv(rets, cash_ratio=0.0, iv_window=60, max_w=0.30, min_w=0.03,
-                             nonferr_trend_window=75, assets=V3C_ASSETS,
-                             gold_trend_filter=True,
-                             gold_trend_window=75,
-                             gold_dip_threshold=None, gold_dip_cap=0.20,
-                             equity_trend_assets=["us_sp500"], equity_trend_window=75,
-                             hs300_value_dip=True,
-                             track_weights=True, track_signals=True,
-                             signal_label="V3c 多元",
-                             hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
-                             hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
-                             track_dynamic_nav=False)
-    nv_base_v3c, n_v3c, wh_v3c, sl_v3c = result_v3c
-    nv_results[("V3c 多元+WTI", "100% RP")] = nv_base_v3c
-    weight_history["V3c 多元+WTI"] = wh_v3c
-    signal_logs["V3c 多元+WTI"] = sl_v3c
-    n_rebal_total += n_v3c
-    for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
-        nv_results[("V3c 多元+WTI", tier_label)] = adjust_nav_for_cash(nv_base_v3c, c)
+    nv_base, n, wh, sl = backtest_iv(
+        rets, assets=V3C_ASSETS, signal_label="V3c 多元", **_common, **_iv)
+    _store("V3c 多元+WTI", nv_base, None, n, wh, sl)
 
     total = len(nv_results)
     print(f"  ok 完成 {total} 个回测")

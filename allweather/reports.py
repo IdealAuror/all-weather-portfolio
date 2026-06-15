@@ -156,62 +156,70 @@ def print_weight_stability_table(ws_results: dict):
               f"{_fmt_pct(s['cost_drag_annual'], w=12)}")
 
 
+_SIGNAL_COLS = {
+    "nonferr_filtered":     "有色趋势过滤",
+    "gold_filtered":        "黄金趋势过滤",
+    "us_sp500_filtered":    "SP500趋势过滤",
+    "gold_dip_active":      "黄金抄底",
+    "active":               "HS300抄底",
+}
+
+def compute_signal_summary(signal_logs: dict) -> dict:
+    """信号触发频率汇总（共享数据层）。
+
+    Returns {label: {"avail": {col_key: col_name},
+                      "years": [year, ...],
+                      "yearly": {year: {col_key: count}},
+                      "total":  {col_key: count}}}
+    """
+    result = {}
+    for label, sl in signal_logs.items():
+        if sl.empty or "date" not in sl.columns:
+            continue
+        sl = sl.copy()
+        sl["year"] = pd.to_datetime(sl["date"]).dt.year
+        avail = {k: v for k, v in _SIGNAL_COLS.items() if k in sl.columns}
+        if not avail:
+            continue
+        years_list = sorted(sl["year"].unique())
+        yearly_data = {}
+        for y in years_list:
+            ydata = sl[sl["year"] == y]
+            row = {}
+            for k in avail:
+                col = sl[k]
+                is_bool = col.dtype == bool or col.dropna().isin([0, 1]).all()
+                row[k] = int(ydata[k].sum()) if is_bool else int((ydata[k] > 0).sum())
+            yearly_data[y] = row
+        total_row = {}
+        for k in avail:
+            col = sl[k]
+            is_bool = col.dtype == bool or col.dropna().isin([0, 1]).all()
+            total_row[k] = int(col.sum()) if is_bool else int((col > 0).sum())
+        result[label] = {"avail": avail, "years": years_list,
+                         "yearly": yearly_data, "total": total_row}
+    return result
+
+
 def print_signal_summary(signal_logs: dict):
-    """信号触发频率汇总。signal_logs: {label: pd.DataFrame}"""
-    if not signal_logs:
+    """信号触发频率汇总（控制台输出）。"""
+    summary = compute_signal_summary(signal_logs)
+    if not summary:
         return
     print_header("【3c】风控信号触发频率汇总（年均次数）")
 
-    # 定义各策略关心的信号列
-    signal_cols = {
-        "nonferr_filtered":     "有色趋势过滤",
-        "gold_filtered":        "黄金趋势过滤",
-        "us_sp500_filtered":    "SP500趋势过滤",
-        "gold_dip_active":      "黄金抄底",
-        "active":               "HS300抄底",
-    }
-
-    for label, sl in signal_logs.items():
-        if sl.empty:
-            continue
-        sl = sl.copy()
-        if "date" in sl.columns:
-            sl["year"] = pd.to_datetime(sl["date"]).dt.year
-        else:
-            continue
-
+    for label, s in summary.items():
         print_subheader(f"{label}")
-        # 只取该策略实际存在的信号列
-        avail = {k: v for k, v in signal_cols.items() if k in sl.columns}
-        if not avail:
-            print("    （无信号列）")
-            continue
-
-        yearly = sl.groupby("year")
-        years_list = sorted(sl["year"].unique())
-        print(f"  {'年度':<8}" + "".join(f"{v:>14}" for v in avail.values()))
-        for y in years_list:
-            ydata = yearly.get_group(y)
+        print(f"  {'年度':<8}" + "".join(f"{v:>14}" for v in s["avail"].values()))
+        for y in s["years"]:
             line = f"  {y:<8}"
-            for k in avail:
-                if k in sl.columns:
-                    if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all():
-                        count = ydata[k].sum()
-                    else:
-                        count = (ydata[k] > 0).sum()
-                    line += f"{int(count):>14}"
-                else:
-                    line += f"{'n/a':>14}"
+            for k in s["avail"]:
+                line += f"{s['yearly'][y][k]:>14}"
             print(line)
-
         # 合计行
         line = f"  {'合计':<8}"
-        for k in avail:
-            if k in sl.columns:
-                total = int(sl[k].sum()) if sl[k].dtype == bool or sl[k].dropna().isin([0, 1]).all() else int((sl[k] > 0).sum())
-                line += f"{total:>14}"
-            else:
-                line += f"{'n/a':>14}"
+        for k in s["avail"]:
+            line += f"{s['total'][k]:>14}"
         print(line)
 
 
