@@ -121,15 +121,19 @@ def save_docs_json(perf_results, yearly_results, event_results,
 
         data["strategies"][strat] = entry
 
-    # --- 最新权重快照 ---
+    # --- 最新权重快照（含日期）---
     data["weights_snapshot"] = {}
+    snap_date = ""
     for name, wh_df in weight_history.items():
         if wh_df.empty:
             continue
+        if snap_date == "":
+            snap_date = str(wh_df.index[-1].date())
         last = wh_df.iloc[-1]
         data["weights_snapshot"][name] = {
             str(k): round(float(v), 6) for k, v in last.items()
         }
+    data["weights_snapshot_date"] = snap_date
 
     json_path = DOCS_DIR / "data.json"
     json_path.write_text(
@@ -658,6 +662,18 @@ def patch_index_html():
     script = _generate_sync_script(S)
     html = _inject_sync_script(html, script)
     replacements += 1  # 算一次注入
+
+    # ================================================================
+    # 权重快照日期更新（硬编码 "2025年12月末" → 最新日期）
+    # ================================================================
+    snap_date = data.get("weights_snapshot_date", "")
+    if snap_date:
+        # "2025-12-31" → "2025年12月末"
+        dt = snap_date.split("-")
+        snap_label = f"{dt[0]}年{int(dt[1])}月末"
+        html = html.replace("2025年12月末", snap_label)
+        html = html.replace("2025年末", snap_label)
+        replacements += 1
 
     # ================================================================
     # 保存

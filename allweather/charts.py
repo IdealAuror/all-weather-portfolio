@@ -308,16 +308,17 @@ ASSET_COLORS = {
     "us_sp500": "#e67e22",
     "gold":     "#d4a017",
     "nonferr":  "#8e44ad",
+    "wti":      "#c0392b",
 }
 
 ASSET_LABELS = {
     "hs300": "沪深300", "us_sp500": "标普500", "credit": "信用债",
     "bond_10y": "10年国债", "bond_30y": "30年国债",
-    "gold": "黄金", "nonferr": "有色金属",
+    "gold": "黄金", "nonferr": "有色金属", "wti": "原油",
 }
 
 FIXED_INCOME = ["credit", "bond_10y", "bond_30y"]
-RISK_ASSETS = ["hs300", "us_sp500", "gold", "nonferr"]
+RISK_ASSETS = ["hs300", "us_sp500", "gold", "nonferr", "wti"]
 
 def _chart_events():
     """从 STRESS_EVENTS 筛选图表标注事件。"""

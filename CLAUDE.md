@@ -84,7 +84,7 @@ py main.py --fetch                 # 拉数据 + 回测
 py main.py --fetch-only            # 仅拉数据
 py main.py --force-fetch           # 强制重拉
 python -m allweather.rebalance              # 实盘再平衡
-python -m allweather.rebalance --strat V4   # 只看 V4 详情
+python -m allweather.rebalance --strat V3c  # 只看 V3c 详情
 python -m allweather.rebalance --signals    # 只看当前市场信号状态
 ```
 
