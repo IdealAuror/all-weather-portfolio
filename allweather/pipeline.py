@@ -472,6 +472,10 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
         shutil.copy2(f, chart_dst / f.name)
     print(f"  ok docs/data.json + docs/charts/（GitHub Pages 同步）")
 
+    # --- 同步 README.md / CLAUDE.md 占位符 ---
+    from .update_docs import sync_readme_claude
+    sync_readme_claude()
+
     print(f"  ok 输出目录: {p1.parent}")
     print(f"  ok 用时: {time.time()-t0:.2f}s")
 

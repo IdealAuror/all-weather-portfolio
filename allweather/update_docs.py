@@ -723,6 +723,57 @@ def patch_index_html():
     print(f"  ok index.html（{replacements} 处指标自动更新 + JS 同步脚本）")
 
 
+def sync_readme_claude():
+    """用 data.json 最新指标更新 README.md 和 CLAUDE.md 中的 {{PLACEHOLDER}}。"""
+    json_path = DOCS_DIR / "data.json"
+    if not json_path.exists():
+        return
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+    ROOT = Path(__file__).resolve().parent.parent
+    S = data["strategies"]
+
+    def p(v): return f"{v*100:.2f}%" if v is not None else "n/a"
+    def n(v): return f"{v:.2f}" if v is not None else "n/a"
+    def neg_years(strat):
+        yr = S.get(strat, {}).get("yearly", {})
+        return str(sum(1 for v in yr.values() if v < 0))
+    def cum(v): return f"{'+' if v>=0 else ''}{v*100:.0f}%"
+
+    ph = {}
+    for s_name, prefix in [("V3-B 保守增强(20d)", "BCON"), ("V3-B 风险平价(20d)", "BRP"), ("V3c 多元", "V3C")]:
+        s100 = S[s_name]["100% RP"]
+        ph[f"{{{prefix}_CAGR}}"] = p(s100["cagr"])
+        ph[f"{{{prefix}_VOL}}"] = p(s100["vol"])
+        ph[f"{{{prefix}_MDD}}"] = p(s100["mdd"])
+        ph[f"{{{prefix}_SHARPE}}"] = n(s100["sharpe"])
+        ph[f"{{{prefix}_CALMAR}}"] = n(s100["calmar"])
+        ph[f"{{{prefix}_CUM}}"] = cum(s100["cum_return"])
+        ph[f"{{{prefix}_NEG_YEARS}}"] = neg_years(s_name)
+        wti = f"{s_name}+WTI"
+        if wti in S:
+            m = S[wti]["100% RP"]
+            ph[f"{{{prefix}_WTI_CAGR}}"] = p(m["cagr"])
+            ph[f"{{{prefix}_WTI_VOL}}"] = p(m["vol"])
+            ph[f"{{{prefix}_WTI_MDD}}"] = p(m["mdd"])
+            ph[f"{{{prefix}_WTI_SHARPE}}"] = n(m["sharpe"])
+            ph[f"{{{prefix}_WTI_CALMAR}}"] = n(m["calmar"])
+
+    ph["{V3C_TREND_DESC}"] = "nonferr/gold/sp500 趋势(75d)"
+
+    for fname in ["README.md", "CLAUDE.md"]:
+        path = ROOT / fname
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        count = 0
+        for k, v in ph.items():
+            if k in text:
+                text = text.replace(k, v)
+                count += 1
+        path.write_text(text, encoding="utf-8")
+        print(f"  ok {fname}（{count} 处占位符更新）")
+
+
 # ============================================================
 #  占位符系统（保留向后兼容）
 # ============================================================
