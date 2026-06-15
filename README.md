@@ -80,14 +80,11 @@
 
 ```bash
 pip install -r requirements.txt
-python main.py                        # 全量回测（自动增量更新数据）
-python main.py --force-fetch          # 强制重拉所有数据 + 回测
-python main.py --no-excel             # 跳过 Excel 报告
-python main.py --no-markdown          # 跳过 Markdown 报告
-
-python -m allweather.rebalance        # 实盘再平衡（四策略对比 + 信号仪表盘）
-python -m allweather.rebalance --strat V3c   # 只看 V3c 详情
-python -m allweather.rebalance --signals     # 只看当前市场信号状态
+python main.py                         # 全量回测（自动增量更新数据 + 报告）
+# python main.py --force-fetch         # 强制重拉所有数据
+# python main.py --no-excel            # 跳过 Excel 报告
+# python main.py --no-markdown         # 跳过 Markdown 报告
+python -m allweather.rebalance         # 实盘再平衡
 ```
 
 **输出文件**:

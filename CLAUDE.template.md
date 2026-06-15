@@ -65,13 +65,9 @@ This file provides guidance to Claude Code when working with code in this reposi
 4. 通过后进入实施 Checklist
 ## 命令
 ```bash
-py main.py                         # 全量回测（自动增量更新数据）
-py main.py --no-excel              # 跳过 Excel
-py main.py --no-markdown           # 跳过 Markdown
-py main.py --force-fetch           # 强制重拉所有数据 + 回测
-python -m allweather.rebalance              # 实盘再平衡
-python -m allweather.rebalance --strat V3c  # 只看 V3c 详情
-python -m allweather.rebalance --signals    # 只看当前市场信号状态
+py main.py                         # 全量回测（自动增量更新数据 + 报告）
+# flags: --force-fetch  --no-excel  --no-markdown
+python -m allweather.rebalance     # 实盘再平衡
 ```
 CI：`.github/workflows/backtest.yml` 跑 `py main.py`，检查 Sharpe/MDD 边界。
 ## 策略目标框架
