@@ -12,17 +12,9 @@ sys.path.insert(0, ".")
 import pandas as pd
 from allweather.data import load_panel
 from allweather.stats import perf_metrics, event_returns, regime_returns
-from allweather.config import STRESS_EVENTS, V3C_ASSETS
+from allweather.config import STRESS_EVENTS, V3C_ASSETS, V3B_RP_BUCKETS_NO_WTI, V3B_RP_ASSETS_NO_WTI
 from allweather.backtest import backtest_iv
 from allweather.strategy_b import backtest_b
-
-V3B_RP_BUCKETS = {
-    "增长↑":   ["hs300", "us_sp500"],
-    "收益垫":  ["credit"],
-    "增长↓":   ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr"],
-}
-V3B_RP_ASSETS = [a for assets in V3B_RP_BUCKETS.values() for a in assets]
 
 LINE = "=" * 110
 print(LINE)
@@ -45,10 +37,10 @@ configs = [
                                         hs300_value_dip=True,
                                         equity_trend_assets=["us_sp500"], equity_trend_window=120,
                                         track_weights=True, track_signals=True, signal_label="V3c+ SMA120")),
-    ("V3-B RP 基准", lambda: backtest_b(rets[V3B_RP_ASSETS], cash_ratio=0.0, rp_window=20,
-                                        rp_buckets=V3B_RP_BUCKETS,
-                                        nonferr_control="trend_filter", nonferr_trend_window=75,
-                                        gold_trend_filter=True, gold_trend_window=75,
+    ("V3-B RP 基准", lambda: backtest_b(rets[V3B_RP_ASSETS_NO_WTI], cash_ratio=0.0, rp_window=20,
+                                        rp_buckets=V3B_RP_BUCKETS_NO_WTI,
+                                        nonferr_trend_window=75,
+    gold_trend_filter=True, gold_trend_window=75,
                                         equity_trend_assets=["us_sp500"], equity_trend_window=120,
                                         hs300_value_dip=True,
                                         track_weights=True, track_signals=True, signal_label="V3-B RP")),
@@ -57,13 +49,8 @@ configs = [
 results = {}
 for label, fn in configs:
     print(f"  运行: {label} ...")
-    result = fn()
-    if len(result) == 4:
-        nv, n, wh, sl = result
-    else:
-        nv, n = result
-        wh = sl = None
-    results[label] = {"nv": nv, "n": n, "wh": wh, "sl": sl}
+    r = fn()
+    results[label] = {"nv": r.nv, "n": r.n_rebal, "wh": r.weight_df, "sl": r.signal_df}
 
 # --- 核心指标 ---
 print(f"\n{'变体':<24}{'累计收益':>10}{'CAGR':>9}{'波动':>8}{'MDD':>10}{'Sharpe':>8}{'Calmar':>8}"

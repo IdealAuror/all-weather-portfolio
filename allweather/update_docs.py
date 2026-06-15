@@ -4,16 +4,15 @@ import re
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from .config import OUTPUT_DIR
+from .config import OUTPUT_DIR, PORTFOLIO_NAMES, CASH_TIERS
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = ROOT / "docs"
 
-STRAT_NAMES = [
-    "V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元",
-    "V3-B 保守增强(20d)+WTI", "V3-B 风险平价(20d)+WTI", "V3c 多元+WTI",
-]
-TIER_LABELS = ["100% RP", "85% RP", "70% RP", "动态"]
+STRAT_NAMES = list(PORTFOLIO_NAMES.values()) + [f"{v}+WTI" for v in PORTFOLIO_NAMES.values()]
+TIER_LABELS = [t[0] for t in CASH_TIERS] + ["动态"]
+
+_PREFIX_MAP = {PORTFOLIO_NAMES["con"]: "BCON", PORTFOLIO_NAMES["rp"]: "BRP", PORTFOLIO_NAMES["v3c"]: "V3C"}
 
 
 class _NpEncoder(json.JSONEncoder):
@@ -745,7 +744,7 @@ def sync_readme_claude():
     def cum(v): return f"{'+' if v>=0 else ''}{v*100:.0f}%"
 
     ph = {}
-    for s_name, prefix in [("V3-B 保守增强(20d)", "BCON"), ("V3-B 风险平价(20d)", "BRP"), ("V3c 多元", "V3C")]:
+    for s_name, prefix in _PREFIX_MAP.items():
         s100 = S[s_name]["100% RP"]
         ph[f"{{{prefix}_CAGR}}"] = p(s100["cagr"])
         ph[f"{{{prefix}_VOL}}"] = p(s100["vol"])
@@ -810,13 +809,9 @@ def _build_placeholders(S):
         return f"{v*100:.1f} 万"
 
     ph = {}
-    STRAT_MAP = [
-        ("V3-B 保守增强(20d)",     "V3BCON"),
-        ("V3-B 风险平价(20d)",     "V3BRP"),
-        ("V3c 多元",               "V3C"),
-    ]
-    TIERS = ["100% RP", "85% RP", "70% RP"]
-    TIER_SHORT = {"100% RP": "100RP", "85% RP": "85RP", "70% RP": "70RP"}
+    STRAT_MAP = list(_PREFIX_MAP.items())
+    TIERS = [t[0] for t in CASH_TIERS]
+    TIER_SHORT = {t[0]: f"{int((1-t[1])*100)}RP" for t in CASH_TIERS}
 
     for strat_name, prefix in STRAT_MAP:
         s100 = S[strat_name]["100% RP"]
@@ -828,7 +823,7 @@ def _build_placeholders(S):
         ph[f"{{{{{prefix}_MDD}}}}"]    = p(s100["mdd"])
         ph[f"{{{{{prefix}_SHARPE}}}}"] = n(s100["sharpe"])
         ph[f"{{{{{prefix}_CUM}}}}"]    = ps(s100["cum_return"], 0)
-        if prefix == "V3BCON":
+        if prefix == "BCON":
             ph[f"{{{{{prefix}_VOL}}}}"] = p(s100["vol"])
 
         # --- Bootstrap ---
@@ -836,8 +831,8 @@ def _build_placeholders(S):
             ph[f"{{{{{prefix}_BOOT_LOSS}}}}"] = p(b.get("loss_prob"))
             ph[f"{{{{{prefix}_BOOT_P5}}}}"] = ps(b.get("p5"))
 
-        # --- 年度特定值 (V3BCON) ---
-        if prefix == "V3BCON":
+        # --- 年度特定值 (BCON) ---
+        if prefix == "BCON":
             for y in ["2017", "2018", "2019", "2022"]:
                 vy = yr.get(y)
                 ph[f"{{{{{prefix}_Y{y}}}}}"] = ps(vy, 1) if vy is not None else "n/a"

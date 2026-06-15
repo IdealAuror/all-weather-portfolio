@@ -17,35 +17,20 @@ from .stats import (
 )
 from .config import (
     STRESS_EVENTS, OUTPUT_DIR,
-    BUCKETS, BUCKET_GROUPS,
-    SP500_TREND_WINDOW, HS300_TREND_WINDOW,
+    BUCKETS, BUCKET_GROUPS, CASH_TIERS,
+    SP500_TREND_WINDOW, HS300_TREND_WINDOW, STRATEGY_PARAMS,
     V3C_ASSETS, V3C_ASSETS_NO_WTI,
-    V3B_RP_BUCKETS_NO_WTI, V3B_CON_ASSETS_NO_WTI,
+    V3B_RP_BUCKETS, V3B_RP_ASSETS,
+    V3B_RP_BUCKETS_NO_WTI, V3B_RP_ASSETS_NO_WTI,
+    V3B_CON_ASSETS, V3B_CON_ASSETS_NO_WTI,
     RISK_PARITY_TARGET_VOL,
     RISK_PARITY_COV_WINDOW,
 )
-
-V3B_ASSETS = [a for assets in BUCKET_GROUPS.values() for a in assets]
-V3B_RP_BUCKETS = {
-    "增长↑":   ["hs300", "us_sp500"],
-    "收益垫":  ["credit"],
-    "增长↓":   ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr", "wti"],
-}
-V3B_RP_ASSETS = [a for assets in V3B_RP_BUCKETS.values() for a in assets]
-
-# --- NO_WTI 变体（V3-B RP 桶 + V3-B Con 资产） ---
-V3B_RP_BUCKETS_NOWTI = {
-    "增长↑":   ["hs300", "us_sp500"],
-    "收益垫":  ["credit"],
-    "增长↓":   ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr"],
-}
-V3B_RP_ASSETS_NOWTI = [a for assets in V3B_RP_BUCKETS_NOWTI.values() for a in assets]
 from . import reports
 DOCS_DIR = OUTPUT_DIR.parent / "docs"
 from .update_docs import save_docs_json, patch_index_html
 from .strategy_b import backtest_b
+from .types import Step3Metrics
 
 
 def step_1_load_data():
@@ -91,18 +76,18 @@ def step_2_run_backtests(rets):
         hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,
         hs300_pb_pct=hs300_pb_pct, hs300_pe_pct=hs300_pe_pct,
     )
-    _b_rp = dict(rp_window=20,
-                 nonferr_control="trend_filter",
+    _b_rp = dict(rp_window=STRATEGY_PARAMS["rp"]["window"],
                  gold_trend_filter=True, gold_trend_window=75,
                  equity_trend_assets=["us_sp500", "hs300"],
                  equity_trend_windows={"us_sp500": SP500_TREND_WINDOW, "hs300": HS300_TREND_WINDOW},
                  track_dynamic_nav=True,
                  target_vol=RISK_PARITY_TARGET_VOL, vol_target_window=RISK_PARITY_COV_WINDOW,
                  gold_dip_threshold=None)
-    _b_con = dict(rp_window=20, max_w=0.25, weighting_method="inverse_vol",
-                  nonferr_control="trend_filter",
+    _b_con = dict(rp_window=STRATEGY_PARAMS["con"]["window"], max_w=STRATEGY_PARAMS["con"]["max_w"],
+                  weighting_method="inverse_vol",
                   gold_dip_threshold=None, gold_dip_cap=0.20, track_dynamic_nav=True)
-    _iv = dict(iv_window=60, max_w=0.30, min_w=0.03,
+    _iv = dict(iv_window=STRATEGY_PARAMS["v3c"]["window"],
+               max_w=STRATEGY_PARAMS["v3c"]["max_w"], min_w=STRATEGY_PARAMS["v3c"]["min_w"],
                gold_trend_filter=True, gold_trend_window=75,
                gold_dip_threshold=None, gold_dip_cap=0.20,
                equity_trend_assets=["us_sp500"], equity_trend_window=75,
@@ -116,12 +101,12 @@ def step_2_run_backtests(rets):
         weight_history[name] = wh
         signal_logs[name] = sl
         n_rebal_total += n
-        for tier_label, c in [("85% RP", 0.15), ("70% RP", 0.30)]:
+        for tier_label, c in CASH_TIERS[1:]:
             nv_results[(name, tier_label)] = adjust_nav_for_cash(nv_base, c)
 
     # --- V3-B RP ---
     nv_base, nv_dyn, n, wh, sl = backtest_b(
-        rets[V3B_RP_ASSETS_NOWTI], rp_buckets=V3B_RP_BUCKETS_NOWTI,
+        rets[V3B_RP_ASSETS_NO_WTI], rp_buckets=V3B_RP_BUCKETS_NO_WTI,
         signal_label="V3-B 风险平价", **_common, **_b_rp)
     _store("V3-B 风险平价(20d)", nv_base, nv_dyn, n, wh, sl)
 
@@ -131,7 +116,7 @@ def step_2_run_backtests(rets):
     _store("V3-B 保守增强(20d)", nv_base, nv_dyn, n, wh, sl)
 
     # --- V3c 多元 ---
-    nv_base, n, wh, sl = backtest_iv(
+    nv_base, _, n, wh, sl = backtest_iv(
         rets, assets=V3C_ASSETS_NO_WTI, signal_label="V3c 多元", **_common, **_iv)
     _store("V3c 多元", nv_base, None, n, wh, sl)
 
@@ -143,11 +128,11 @@ def step_2_run_backtests(rets):
 
     # --- V3-B Con +WTI ---
     nv_base, nv_dyn, n, wh, sl = backtest_b(
-        rets[V3B_ASSETS], signal_label="V3-B 保守增强", **_common, **_b_con)
+        rets[V3B_CON_ASSETS], signal_label="V3-B 保守增强", **_common, **_b_con)
     _store("V3-B 保守增强(20d)+WTI", nv_base, nv_dyn, n, wh, sl)
 
     # --- V3c 多元 +WTI ---
-    nv_base, n, wh, sl = backtest_iv(
+    nv_base, _, n, wh, sl = backtest_iv(
         rets, assets=V3C_ASSETS, signal_label="V3c 多元", **_common, **_iv)
     _store("V3c 多元+WTI", nv_base, None, n, wh, sl)
 
@@ -158,7 +143,7 @@ def step_2_run_backtests(rets):
     return nv_results, weight_history, signal_logs
 
 
-def step_3_compute_metrics(nv_results, rets, weight_history=None, signal_logs=None):
+def step_3_compute_metrics(nv_results, rets, weight_history=None, signal_logs=None) -> Step3Metrics:
     """Step 3: 计算所有衍生指标。"""
     print("\n" + "─" * 60)
     print("Step 3/6: 计算衍生指标")
@@ -236,7 +221,7 @@ def step_4_bootstrap(rets, nv_results=None, weight_history=None):
                 boot_rets = rets
                 if "保守增强" in portfolio:
                     proxy_w = inverse_vol_weights(
-                        boot_rets[V3B_ASSETS].tail(20), window=20, max_w=0.25, min_w=0.02)
+                        boot_rets[V3B_CON_ASSETS].tail(20), window=20, max_w=0.25, min_w=0.02)
                 else:
                     proxy_w = hierarchical_rp_weights(
                         boot_rets[V3B_RP_ASSETS].tail(20), rp_buckets_boot_rp, 20,

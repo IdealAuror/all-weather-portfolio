@@ -5,9 +5,9 @@ from .config import (
     BUCKETS, BOOTSTRAP_N_SIM, BOOTSTRAP_HORIZON_DAYS,
     BOOTSTRAP_BLOCK_DAYS, BOOTSTRAP_SEED, RISK_FREE_ANNUAL,
 )
+from .types import PerfMetrics, RollingStats, DExcessResult, WeightStability, BootstrapResult
 
-
-def perf_metrics(nv: pd.Series, rets: pd.Series | None = None) -> dict:
+def perf_metrics(nv: pd.Series, rets: pd.Series | None = None) -> PerfMetrics:
     """从净值序列算核心指标。
 
     注：sharpe = (CAGR - RISK_FREE_ANNUAL) / vol, 与 CLAUDE.md 一致。

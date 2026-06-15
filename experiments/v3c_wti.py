@@ -44,13 +44,8 @@ for label, assets, extra in configs:
     print(f"  运行: {label} (n={len(assets)} 资产) ...")
     kwargs = {**KWARGS, **extra, "assets": assets,
               "signal_label": label}
-    result = backtest_iv(rets, **kwargs)
-    if len(result) == 4:
-        nv, n, wh, sl = result
-    else:
-        nv, n = result
-        wh = sl = None
-    results[label] = {"nv": nv, "n": n, "wh": wh, "sl": sl}
+    r = backtest_iv(rets, **kwargs)
+    results[label] = {"nv": r.nv, "n": r.n_rebal, "wh": r.weight_df, "sl": r.signal_df}
 
 # --- 核心指标 ---
 print(f"\n{'变体':<20}{'累计收益':>10}{'CAGR':>9}{'波动':>8}{'MDD':>10}{'Sharpe':>8}{'Calmar':>8}"

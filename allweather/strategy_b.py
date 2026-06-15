@@ -1,5 +1,5 @@
 """方案 B 向后兼容包装 — 委托给 backtest.py 的统一引擎。"""
-from .backtest import backtest
+from .backtest import BacktestResult, backtest
 from .config import (
     RISK_PARITY_WINDOW,
     RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
@@ -19,7 +19,6 @@ def backtest_b(
     max_w=RISK_PARITY_MAX_WEIGHT,
     min_w=RISK_PARITY_MIN_WEIGHT,
     rp_buckets=None,
-    nonferr_control=None,
     nonferr_trend_window=75,
     weighting_method="hierarchical_rp",
     gold_dip_threshold=GOLD_DIP_THRESHOLD,
@@ -40,7 +39,6 @@ def backtest_b(
     hs300_pe_exit=HS300_PE_EXIT,
     track_signals=False,
     signal_label="",
-    dynamic_cash=False,
     post_process_max_w=None,
     hs300_pb_data=None,
     hs300_pe_data=None,
@@ -49,7 +47,7 @@ def backtest_b(
     track_dynamic_nav: bool = False,
     target_vol: float | None = None,
     vol_target_window: int = 60,
-):
+) -> BacktestResult:
     """Plan B backtest — 委托给 backtest() 统一引擎。"""
     return backtest(
         rets, cash_ratio=cash_ratio,
@@ -59,7 +57,7 @@ def backtest_b(
         bucket_method=bucket_method,
         max_w=max_w, min_w=min_w,
         rp_buckets=rp_buckets,
-        nonferr_trend_window=nonferr_trend_window if nonferr_control == "trend_filter" else 0,
+        nonferr_trend_window=nonferr_trend_window,
         gold_trend_filter=gold_trend_filter,
         gold_trend_window=gold_trend_window,
         gold_dip_threshold=gold_dip_threshold,
@@ -75,7 +73,6 @@ def backtest_b(
         equity_trend_assets=equity_trend_assets,
         equity_trend_window=equity_trend_window,
         equity_trend_windows=equity_trend_windows,
-        dynamic_cash=dynamic_cash,
         track_weights=track_weights,
         track_signals=track_signals,
         signal_label=signal_label,

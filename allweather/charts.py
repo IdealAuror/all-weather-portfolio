@@ -7,7 +7,7 @@ import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from .config import OUTPUT_DIR, STRESS_EVENTS, CHART_EVENT_NAMES
+from .config import OUTPUT_DIR, STRESS_EVENTS, CHART_EVENT_NAMES, PORTFOLIO_NAMES, CASH_TIERS
 
 plt.rcParams.update({
     "font.family": "sans-serif",
@@ -21,17 +21,20 @@ plt.rcParams.update({
 
 CHART_DIR = OUTPUT_DIR / "charts"
 
-TIER_COLORS = {"100% RP": "#2c3e50", "85% RP": "#7f8c8d", "70% RP": "#bdc3c7"}
+TIER_COLORS = {t[0]: c for t, c in zip(CASH_TIERS, ["#2c3e50", "#7f8c8d", "#bdc3c7"])}
 PORT_COLORS = {
-    "V3-B 保守增强(20d)": "#2ecc71",
-    "V3-B 风险平价(20d)": "#e74c3c",
-    "V3c 多元":           "#3498db",
+    PORTFOLIO_NAMES["con"]: "#2ecc71",
+    PORTFOLIO_NAMES["rp"]: "#e74c3c",
+    PORTFOLIO_NAMES["v3c"]: "#3498db",
 }
 PORT_LINESTYLES = {
-    "V3-B 保守增强(20d)": "-",
-    "V3-B 风险平价(20d)": "--",
-    "V3c 多元":           "-.",
+    PORTFOLIO_NAMES["con"]: "-",
+    PORTFOLIO_NAMES["rp"]: "--",
+    PORTFOLIO_NAMES["v3c"]: "-.",
 }
+
+_PORTS = list(PORTFOLIO_NAMES.values())
+_TIER_LABELS = [t[0] for t in CASH_TIERS]
 
 
 def _ensure_dir():
@@ -49,7 +52,7 @@ def plot_nav_and_dd(nv_results: dict, tier: str = "100% RP",
     benchmark_nv: 可选，沪深300等基准净值曲线（灰色虚线叠加）。
     """
     _ensure_dir()
-    ports = ["V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元"]
+    ports = _PORTS
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), sharex=True,
                                     gridspec_kw={"height_ratios": [3, 2], "hspace": 0.05})
@@ -99,8 +102,8 @@ def plot_nav_and_dd(nv_results: dict, tier: str = "100% RP",
 def plot_all_tiers_nv(nv_results: dict):
     """三策略各自分面板，每面板三条现金档位净值曲线。"""
     _ensure_dir()
-    ports = ["V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元"]
-    tiers = ["100% RP", "85% RP", "70% RP"]
+    ports = _PORTS
+    tiers = _TIER_LABELS
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=False)
     for ax, p in zip(axes, ports):
@@ -110,8 +113,8 @@ def plot_all_tiers_nv(nv_results: dict):
             if key not in nv_results:
                 continue
             nv = nv_results[key]
-            alpha = 1.0 if t == "100% RP" else 0.5
-            lw = 1.5 if t == "100% RP" else 0.8
+            alpha = 1.0 if t == _TIER_LABELS[0] else 0.5
+            lw = 1.5 if t == _TIER_LABELS[0] else 0.8
             ax.plot(nv.index, nv.values, color=color, alpha=alpha, lw=lw, label=t)
         ax.set_title(p, fontsize=11, fontweight="bold")
         ax.legend(loc="upper left", frameon=False, fontsize=8)
@@ -136,7 +139,7 @@ def plot_rolling_returns(metrics: dict):
     """滚动 1 年年化收益 + 回撤曲线。"""
     _ensure_dir()
     rolling = metrics.get("rolling", {})
-    ports = ["V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元"]
+    ports = _PORTS
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10), sharex=True,
                                     gridspec_kw={"height_ratios": [3, 2], "hspace": 0.05})
@@ -179,8 +182,8 @@ def plot_rolling_returns(metrics: dict):
 def plot_monthly_returns_comparison(nv_results: dict):
     """三策略月度收益对比 — 上半时序线图 + 下半箱线图。"""
     _ensure_dir()
-    ports = ["V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元"]
-    tier = "100% RP"
+    ports = _PORTS
+    tier = _TIER_LABELS[0]
 
     monthly_data = {}
     for p in ports:
@@ -245,11 +248,11 @@ def plot_monthly_returns_comparison(nv_results: dict):
 def plot_yearly_returns(metrics: dict, nv_results: dict = None):
     """月度收益热力图 — 行=年份，列=月份，颜色=月收益。"""
     _ensure_dir()
-    ports = ["V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元"]
+    ports = _PORTS
     import calendar
 
     for p in ports:
-        key = (p, "100% RP")
+        key = (p, _TIER_LABELS[0])
         if nv_results is None or key not in nv_results:
             continue
         nv = nv_results[key]
@@ -415,7 +418,7 @@ def plot_bootstrap_distribution(boot_results: dict, perf_results: dict = None):
     boot_results: {策略名: {p50, p05, p95, p25, q75, samples, ...}}
     """
     _ensure_dir()
-    ports = ["V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元"]
+    ports = _PORTS
 
     # --- 1. X 轴范围（三策略 p1-p99）---
     all_s = np.concatenate([
@@ -509,7 +512,7 @@ def plot_yearly_bar(metrics: dict, nv_results: dict = None):
     nv_results: {(策略名, "100% RP"): pd.Series(nav)}
     """
     _ensure_dir()
-    ports = ["V3-B 保守增强(20d)", "V3-B 风险平价(20d)", "V3c 多元"]
+    ports = _PORTS
     yearly = metrics.get("yearly", {})
     if not yearly:
         return
@@ -539,7 +542,7 @@ def plot_yearly_bar(metrics: dict, nv_results: dict = None):
     # ─── 下排：累计净值曲线 ───
     if nv_results:
         for p in ports:
-            key = (p, "100% RP")
+            key = (p, _TIER_LABELS[0])
             if key not in nv_results:
                 continue
             nv = nv_results[key]

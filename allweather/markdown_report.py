@@ -5,7 +5,7 @@
 from datetime import datetime
 import pandas as pd
 
-from .config import BUCKET_GROUPS, ETF_META, OUTPUT_DIR
+from .config import BUCKET_GROUPS, ETF_META, OUTPUT_DIR, PORTFOLIO_NAMES, CASH_TIERS
 from .config import PORTFOLIO_TAGS
 from .reports import compute_signal_summary
 
@@ -56,17 +56,17 @@ def _section_header():
 def _section_recommendation(perf_results=None):
     def _fmt(name, key, pct=True):
         if perf_results:
-            v = perf_results.get((name, "100% RP"), {}).get(key)
+            v = perf_results.get((name, CASH_TIERS[0][0]), {}).get(key)
             if v is not None and not (isinstance(v, float) and v != v):
                 return f"{v*100:.2f}%" if pct else f"{v:.2f}"
         return ""
 
     items = sorted(PORTFOLIO_TAGS.items(), key=lambda kv: -len(kv[1]["stars"]))
-    cagr_rp = _fmt("V3-B 风险平价(20d)", "cagr")
-    sharpe_con = _fmt("V3-B 保守增强(20d)", "sharpe", pct=False)
+    cagr_rp = _fmt(PORTFOLIO_NAMES["rp"], "cagr")
+    sharpe_con = _fmt(PORTFOLIO_NAMES["con"], "sharpe", pct=False)
     notes = {
-        "V3-B 保守增强(20d)": f"保守增强 — 逆波动率+nonferr趋势过滤+HS300抄底{'，Sharpe 最高（' + sharpe_con + '）' if sharpe_con else ''}",
-        "V3-B 风险平价(20d)": f"学院派 — 4桶分层风险平价(30Y) + nonferr/gold/sp500 趋势过滤 + Gold/HS300抄底{f'，CAGR {cagr_rp}' if cagr_rp else ''}",
+        PORTFOLIO_NAMES["con"]: f"保守增强 — 逆波动率+nonferr趋势过滤+HS300抄底{'，Sharpe 最高（' + sharpe_con + '）' if sharpe_con else ''}",
+        PORTFOLIO_NAMES["rp"]: f"学院派 — 4桶分层风险平价(30Y) + nonferr/gold/sp500 趋势过滤 + Gold/HS300抄底{f'，CAGR {cagr_rp}' if cagr_rp else ''}",
     }
     rows = [(tag["stars"], port, tag["label"], notes.get(port, ""))
             for port, tag in items]

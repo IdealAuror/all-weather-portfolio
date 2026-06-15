@@ -17,12 +17,15 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from .config import (
-    ROOT, DATA_DIR, ASSETS, ETF_META,
+    ROOT, DATA_DIR, ASSETS, ETF_META, PORTFOLIO_NAMES, STRATEGY_PARAMS,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
     GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
     HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
     HS300_PB_ENTRY, HS300_PE_EXIT, HS300_DIP_EXIT_RECOVERY,
     SP500_TREND_WINDOW,
+    V3B_RP_ASSETS, V3B_RP_BUCKETS,
+    V3B_CON_ASSETS, V3B_CON_BUCKETS,
+    V3C_ASSETS,
 )
 from .risk import inverse_vol_weights, hierarchical_rp_weights, erc_weights
 
@@ -49,43 +52,20 @@ def _save_rebalance_state(state):
     except Exception as e:
         print(f"  [WARN] 保存 rebalance 状态失败: {e}")
 
-# === 策略定义 ===
-V3B_RP_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti"]
-V3B_CON_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti"]
-V3C_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti"]
-
-V3B_RP_BUCKETS = {
-    "增长↑": ["hs300", "us_sp500"],
-    "收益垫": ["credit"],
-    "增长↓": ["bond_30y"],
-    "通胀↑": ["gold", "nonferr", "wti"],
-}
-V3B_CON_BUCKETS = {
-    "增长↑": ["hs300", "us_sp500"],
-    "收益垫": ["credit"],
-    "增长↓10Y": ["bond_10y"],
-    "增长↓30Y": ["bond_30y"],
-    "通胀↑": ["gold", "nonferr", "wti"],
+_ASSET_MAP = {
+    "rp": (V3B_RP_ASSETS, {"buckets": V3B_RP_BUCKETS}),
+    "con": (V3B_CON_ASSETS, {}),
+    "v3c": (V3C_ASSETS, {}),
 }
 
-STRATEGIES = {
-    "B-RP": {
-        "name": "V3-B 风险平价(20d)", "assets": V3B_RP_ASSETS,
-        "method": "hierarchical_rp", "window": 20,
-        "max_w": 0.20, "min_w": 0.02,
-        "buckets": V3B_RP_BUCKETS,
-    },
-    "B-Con": {
-        "name": "V3-B 保守增强(20d)", "assets": V3B_CON_ASSETS,
-        "method": "inverse_vol", "window": 20,
-        "max_w": 0.25, "min_w": 0.02,
-    },
-    "V3c": {
-        "name": "V3c 多元", "assets": V3C_ASSETS,
-        "method": "inverse_vol", "window": 60,
-        "max_w": 0.30, "min_w": 0.03,
-    },
-}
+_STRAT_KEY_MAP = {"rp": "B-RP", "con": "B-Con", "v3c": "V3c"}
+STRATEGIES = {}
+for key, params in STRATEGY_PARAMS.items():
+    assets, extra = _ASSET_MAP[key]
+    STRATEGIES[_STRAT_KEY_MAP[key]] = {
+        "name": PORTFOLIO_NAMES[key], "assets": assets,
+        **params, **extra,
+    }
 
 LINE = "=" * 72
 

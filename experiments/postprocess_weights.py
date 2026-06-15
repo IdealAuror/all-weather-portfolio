@@ -12,16 +12,8 @@ sys.path.insert(0, ".")
 import pandas as pd
 from allweather.data import load_panel
 from allweather.stats import perf_metrics, event_returns, regime_returns
-from allweather.config import STRESS_EVENTS
+from allweather.config import STRESS_EVENTS, V3B_RP_BUCKETS_NO_WTI, V3B_RP_ASSETS_NO_WTI
 from allweather.strategy_b import backtest_b
-
-V3B_RP_BUCKETS = {
-    "增长↑":   ["hs300", "us_sp500"],
-    "收益垫":  ["credit"],
-    "增长↓":   ["bond_30y"],
-    "通胀↑":   ["gold", "nonferr"],
-}
-V3B_RP_ASSETS = [a for assets in V3B_RP_BUCKETS.values() for a in assets]
 
 LINE = "=" * 110
 print(LINE)
@@ -41,17 +33,17 @@ configs = [
 results = {}
 for label, extra in configs:
     print(f"  运行: {label} ...")
-    nv, n, wh, sl = backtest_b(
-        rets[V3B_RP_ASSETS], cash_ratio=0.0, rp_window=20,
-        rp_buckets=V3B_RP_BUCKETS,
-        nonferr_control="trend_filter", nonferr_trend_window=75,
-        gold_trend_filter=True, gold_trend_window=75,
+    r = backtest_b(
+        rets[V3B_RP_ASSETS_NO_WTI], cash_ratio=0.0, rp_window=20,
+        rp_buckets=V3B_RP_BUCKETS_NO_WTI,
+        nonferr_trend_window=75,
+    gold_trend_filter=True, gold_trend_window=75,
         equity_trend_assets=["us_sp500"], equity_trend_window=120,
         hs300_value_dip=True,
         track_weights=True, track_signals=True, signal_label=label,
         **extra,
     )
-    results[label] = {"nv": nv, "wh": wh}
+    results[label] = {"nv": r.nv, "wh": r.weight_df}
 
 # --- 核心指标 + 权重统计 ---
 vols = rets.std() * (252 ** 0.5)  # 年化波动率
@@ -81,14 +73,14 @@ for label in results:
     print(f"{label:>22}", end="")
     print(f"{'风险贡献':>14}", end="")
 print()
-for asset in V3B_RP_ASSETS:
+for asset in V3B_RP_ASSETS_NO_WTI:
     vol = vols.get(asset, 0)
     print(f"  {asset:<12}{vol*100:>7.2f}%", end="")
     for label, r in results.items():
         wh = r["wh"]
         avg_w = wh[asset].mean() if asset in wh.columns else 0
         # 近似风险贡献：w * σ / sum(w_i * σ_i)
-        total_risk = sum(wh[a].mean() * vols.get(a, 0) for a in V3B_RP_ASSETS)
+        total_risk = sum(wh[a].mean() * vols.get(a, 0) for a in V3B_RP_ASSETS_NO_WTI)
         rc_approx = avg_w * vol / total_risk if total_risk > 0 else 0
         print(f"{avg_w*100:>11.2f}%  {rc_approx*100:>7.1f}%", end=" ")
     print()
@@ -104,7 +96,7 @@ print()
 print()
 for label, r in results.items():
     wh = r["wh"]
-    total_risk = sum(wh[a].mean() * vols.get(a, 0) for a in V3B_RP_ASSETS)
+    total_risk = sum(wh[a].mean() * vols.get(a, 0) for a in V3B_RP_ASSETS_NO_WTI)
     rcs = []
     for bucket_name, bucket_assets in [("A股", ["hs300"]), ("美股", ["us_sp500"]),
                                         ("信用债", ["credit"]), ("长债", ["bond_30y"]),

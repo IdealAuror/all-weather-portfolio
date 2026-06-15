@@ -4,14 +4,17 @@ import pandas as pd
 
 
 def _clip_normalize(w: pd.Series, min_w: float, max_w: float, max_iter: int = 10) -> pd.Series:
-    """迭代 clip→renormalize 直到所有权重落在 [min_w, max_w] 内。"""
-    w = w.fillna(0.0)
+    """迭代 clip→renormalize 直到所有权重落在 [min_w, max_w] 内。numpy 加速版。"""
+    arr = w.to_numpy(copy=True)
+    np.nan_to_num(arr, copy=False)
     for _ in range(max_iter):
-        w = w.clip(lower=min_w, upper=max_w)
-        w = w / w.sum()
-        if w.max() <= max_w * (1 + 1e-10) and w.min() >= min_w * (1 - 1e-10):
+        np.clip(arr, min_w, max_w, out=arr)
+        s = arr.sum()
+        if s > 0:
+            arr /= s
+        if arr.max() <= max_w * (1 + 1e-10) and arr.min() >= min_w * (1 - 1e-10):
             break
-    return w
+    return pd.Series(arr, index=w.index)
 
 
 def inverse_vol_weights(returns: pd.DataFrame, window: int = 60,

@@ -35,17 +35,17 @@ def run_grid_search():
     results = []
     t0 = time.time()
     for win, max_w, bm in itertools.product(windows, max_ws, bucket_methods):
-        nv, n_rebal, _, _ = backtest_b(
+        r = backtest_b(
             rets, cash_ratio=0.0, rp_window=win,
             bucket_method=bm, max_w=max_w, min_w=RISK_PARITY_MIN_WEIGHT,
         )
-        m = perf_metrics(nv)
+        m = perf_metrics(r.nv)
         results.append({
             "window": win, "max_w": max_w, "bucket_method": bm,
             "cagr": m["cagr"], "vol": m["vol"], "mdd": m["mdd"],
             "sharpe": m["sharpe"], "calmar": m["calmar"],
-            "cum_return": m["cum_return"], "n_rebal": n_rebal,
-            "nv": nv,
+            "cum_return": m["cum_return"], "n_rebal": r.n_rebal,
+            "nv": r.nv,
         })
     elapsed = time.time() - t0
     print(f"  36 组合回测完成: {elapsed:.1f}s")
@@ -100,12 +100,12 @@ def run_grid_search():
         print(f"  {'档位':<10} {'CAGR':<8} {'波动':<8} {'回撤':<9} {'Sharpe':<7} {'Calmar':<7} {'累计':<9}")
         print("  " + "-" * 60)
         for tier_label, c in CASH_TIERS:
-            nv, _ = backtest_b(
+            r2 = backtest_b(
                 rets, cash_ratio=c, rp_window=r["window"],
                 bucket_method=r["bucket_method"], max_w=r["max_w"],
                 min_w=RISK_PARITY_MIN_WEIGHT,
             )
-            m = perf_metrics(nv)
+            m = perf_metrics(r2.nv)
             print(f"  {tier_label:<10} {m['cagr']*100:>6.2f}%  {m['vol']*100:>6.2f}%  "
                   f"{m['mdd']*100:>7.2f}%  {m['sharpe']:>5.2f}   {m['calmar']:>5.2f}   "
                   f"{m['cum_return']*100:>+7.2f}%")
