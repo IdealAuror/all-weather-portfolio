@@ -145,36 +145,12 @@ HS300_PE_EXIT = 70               # PE%ile 退出阈值（PE不再便宜才退出
 SP500_TREND_WINDOW = 75      # 标普500 SMA 回看窗口（交易日），跌破则清仓转入 credit
 # 120d→75d: 2020 COVID MDD -9.66%→-6.91%（+2.75pp），牺牲 CAGR -0.16pp
 # 75d 提前 1 个月触发（3 月 vs 4 月），正好在 COVID 抛售最急期提供保护
-# 见 project_sp500-trend-rp-75d.md
 
 # === 沪深300 趋势过滤 ===
 HS300_TREND_WINDOW = 30      # 沪深300 SMA 回看窗口（交易日），跌破则清仓转入 credit
 # 选择 30d 基于 HS300 走势分析：2015 股灾 -10% 触发（15d 延迟）、月频调仓下假信号可接受。
 # 详细分析见 _analyze_hs300_sma.py
 
-# === Nonferr 趋势过滤 — N日确认参数 ===
-NF_TREND_CONFIRM_DAYS = 0     # 0=原始二值行为，>0 要求连续 N 日低于 SMA75 才触发清仓
-# 已测试 N=3/5/10，全部否决——nonferr SMA75 低频过滤器（~18次/21年），
-# 加确认条件只推迟保护，少量假信号节省不补偿延迟损失。
-# 见 project_nonferr-trend-confirm.md
-# 从国泰海通 TAA 启发：用连续 N 日确认来减少 whipsaw。
-# nonferr 21年仅触发 ~18 次，hypothesis：部分触发后短期反弹(假信号)被 N日确认过滤。
-# 候选值：3/5/7/10。先验选择 N=5（~1周）平衡延迟 vs 确认
-# 选择 30d 基于 HS300 走势分析：2015 股灾 -10% 触发（15d 延迟）、月频调仓下假信号可接受。
-# 详细分析见 _analyze_hs300_sma.py
-
-
-# === 杠杆 / 保证金参数 ===
-# 名义杠杆：1 单位资本可获得的资产名义敞口倍数
-LEVERAGE_FACTORS = {
-    "bond_10y": 3.0,     # T.CFFEX 10Y 国债期货名义敞口杠杆（从 5x 降到 3x，MDD -13.87%→-9.91%）
-    "bond_30y": 1.0,     # 30Y 已在数据层有 3x 久期放大，引擎层不加杠杆
-}
-# 融资利差：杠杆部分的年化融资成本（T.CFFEX 隐含回购利率 - rf）
-LEVERAGE_FINANCING_SPREAD = 0.002  # 年化 20bp
-
-# V4 已移除 — 保留 V4_ASSETS 定义以防外部引用
-V4_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti"]
 
 # === 策略标签 ===
 PORTFOLIO_TAGS = {

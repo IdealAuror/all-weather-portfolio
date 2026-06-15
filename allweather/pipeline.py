@@ -398,6 +398,13 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
         print("  [WARN] boot 结果缺失，跳过 Excel/Markdown 综合报告")
         excel = markdown = False
 
+    # 从 weight_history 取最新一期权重填入持仓明细
+    latest_weights = {}
+    if weight_history:
+        for strat_name, wh_df in weight_history.items():
+            if wh_df is not None and len(wh_df) > 0:
+                latest_weights[strat_name] = wh_df.iloc[-1]
+
     common_args = dict(
         nv_results=nv_results,
         perf_results=metrics["perf"],
@@ -407,7 +414,7 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
         event_results=metrics["events"],
         rolling_results=metrics["rolling"],
         boot_results=boot,
-        weights_dict={},
+        weights_dict=latest_weights,
         ws_results=metrics.get("weight_stability"),
         rc_tv_results=metrics.get("risk_contrib_tv"),
         signal_logs=signal_logs,

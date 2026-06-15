@@ -4,13 +4,13 @@
 """
 import time
 import pandas as pd
-from .config import DATA_DIR
+from .config import DATA_DIR, BACKTEST_END
 
 RETRY_TIMES = 3
 RETRY_DELAY = 5  # 秒
 
 DEFAULT_START = "20050101"
-DEFAULT_END   = "20260530"
+DEFAULT_END   = BACKTEST_END.replace("-", "")
 
 # 资产清单：name -> (kind, symbol)
 TARGETS = {

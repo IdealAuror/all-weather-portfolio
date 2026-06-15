@@ -26,6 +26,29 @@ from .config import (
 )
 from .risk import inverse_vol_weights, hierarchical_rp_weights, erc_weights
 
+# === 持久化状态（防止重复抄底 boost，与 backtest 引擎行为一致） ===
+REBALANCE_STATE_PATH = ROOT / "data" / "rebalance_state.json"
+
+def _load_rebalance_state():
+    """加载 rebalance 持久化状态。"""
+    try:
+        if REBALANCE_STATE_PATH.exists():
+            import json
+            with open(REBALANCE_STATE_PATH) as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+def _save_rebalance_state(state):
+    """保存 rebalance 持久化状态。"""
+    try:
+        import json
+        with open(REBALANCE_STATE_PATH, "w") as f:
+            json.dump(state, f, indent=2)
+    except Exception as e:
+        print(f"  [WARN] 保存 rebalance 状态失败: {e}")
+
 # === 策略定义 ===
 V3B_RP_ASSETS = ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr", "wti"]
 V3B_CON_ASSETS = ["hs300", "us_sp500", "credit", "bond_10y", "bond_30y", "gold", "nonferr", "wti"]
@@ -60,7 +83,7 @@ STRATEGIES = {
     "V3c": {
         "name": "V3c 多元", "assets": V3C_ASSETS,
         "method": "inverse_vol", "window": 60,
-        "max_w": 0.25, "min_w": 0.02,
+        "max_w": 0.30, "min_w": 0.03,
     },
 }
 
@@ -176,9 +199,19 @@ def compute_target_weights(strat_key, prices, cash_ratio=0.0):
     return w * (1 - cash_ratio)
 
 
-def apply_signal_overrides(strat_key, w, signals):
-    """按策略应用各风控措施到目标权重。"""
+def apply_signal_overrides(strat_key, w, signals, prices=None):
+    """按策略应用各风控措施到目标权重。
+
+    Args:
+        strat_key: 策略 key
+        w: 目标权重 Series
+        signals: 信号状态 dict
+        prices: 价格 DataFrame（可选，用于 boost 状态判断）
+    """
     w = w.copy()
+    state = _load_rebalance_state()
+    strat_state = state.setdefault(strat_key, {"gold_boost_month": None, "hs300_boost_month": None})
+    this_month = prices.index[-1].strftime("%Y-%m") if prices is not None else None
 
     # nonferr trend filter (all strategies)
     if signals.get("nonferr_below_sma75", False) and "nonferr" in w.index and "credit" in w.index:
@@ -199,27 +232,38 @@ def apply_signal_overrides(strat_key, w, signals):
             w["credit"] += w["us_sp500"]
             w["us_sp500"] = 0.0
 
-    # Gold dip (V3c and B-Con use cap 0.20)
-    if signals.get("gold_dip_active", False) and "gold" in w.index and "credit" in w.index:
+    # Gold dip — 防止重复 boost（同一个月内不重复触发）
+    gold_dip_eligible = signals.get("gold_dip_active", False)
+    gold_already_boosted = strat_state.get("gold_boost_month") == this_month
+    if gold_dip_eligible and not gold_already_boosted and "gold" in w.index and "credit" in w.index:
         if w["gold"] > 0:
             boost = w["gold"] * GOLD_DIP_BOOST
             if w["credit"] >= boost:
                 w["gold"] += boost
                 w["credit"] -= boost
+                strat_state["gold_boost_month"] = this_month
                 if strat_key == "B-Con":
                     cap = 0.20
                     if w["gold"] > cap:
                         w["credit"] += w["gold"] - cap
                         w["gold"] = cap
+    elif gold_already_boosted:
+        pass  # 本月已 boost，跳过
 
-    # HS300 AND dip
-    if signals.get("hs300_dip_ready", False) and "hs300" in w.index and "credit" in w.index:
+    # HS300 AND dip — 防止重复 boost
+    hs300_eligible = signals.get("hs300_dip_ready", False)
+    hs300_already_boosted = strat_state.get("hs300_boost_month") == this_month
+    if hs300_eligible and not hs300_already_boosted and "hs300" in w.index and "credit" in w.index:
         if w["hs300"] > 0:
             boost = w["hs300"] * (HS300_DIP_BOOST - 1)
             if w["credit"] >= boost:
                 w["hs300"] += boost
                 w["credit"] -= boost
+                strat_state["hs300_boost_month"] = this_month
+    elif hs300_already_boosted:
+        pass  # 本月已 boost，跳过
 
+    _save_rebalance_state(state)
     return w / w.sum()  # renormalize to 1.0
 
 
@@ -307,7 +351,7 @@ def display_all_strategies(prices, signals, tier="100"):
     results = {}
     for k in list(STRATEGIES.keys()):
         w0 = compute_target_weights(k, prices, cash_ratio)
-        w1 = apply_signal_overrides(k, w0, signals)
+        w1 = apply_signal_overrides(k, w0, signals, prices)
         results[k] = w1
 
     print(f"\n{LINE}")
@@ -491,9 +535,9 @@ def _auto_fetch_if_stale(max_calendar_days=7):
 def display_strategy_summary():
     """策略概要对比（每策略一行）。"""
     rows = [
-        ("V3-B 保守增强(20d)", "逆波动率 20d", "7.68%", "1.32", "-6.08%", "Sharpe最高，回撤最浅"),
-        ("V3-B 风险平价(20d)", "HRP 4桶", "9.38%", "1.18", "-8.82%", "CAGR最高，正统全天候"),
-        ("V3c 多元", "逆波动率 60d + SP500趋势", "8.86%", "1.16", "-7.26%", "中位回报，回撤偏低"),
+        ("V3-B 保守增强(20d)", "逆波动率 20d", "8.48%", "1.70", "-6.98%", "Sharpe最高，回撤最浅"),
+        ("V3-B 风险平价(20d)", "HRP 4桶", "9.61%", "1.43", "-8.61%", "CAGR最高，正统全天候"),
+        ("V3c 多元", "逆波动率 60d + SP500趋势", "9.54%", "1.61", "-7.60%", "中位回报，回撤偏低"),
     ]
     print(f"\n{LINE}")
     print("  策略概要")
@@ -529,7 +573,7 @@ def _single_strat_flow(strat_key, tier, prices, signals, build_amount):
 
     cash_ratio = 1 - int(tier) / 100
     w0 = compute_target_weights(strat_key, prices, cash_ratio)
-    w = apply_signal_overrides(strat_key, w0, signals)
+    w = apply_signal_overrides(strat_key, w0, signals, prices)
 
     display_signal_dashboard(signals)
     display_weight_table(strat_key, w, signals)
