@@ -724,7 +724,12 @@ def patch_index_html():
 
 
 def sync_readme_claude():
-    """用 data.json 最新指标更新 README.md 和 CLAUDE.md 中的 {{PLACEHOLDER}}。"""
+    """用 data.json 更新 README.md 和 CLAUDE.md。
+
+    读取 xxx.template.md（保留占位符），替换后写入 xxx.md。
+    无模板文件时回退到 xxx.md 本身（首次使用）。
+    首次运行会自动创建模板文件以保留占位符供下次使用。
+    """
     json_path = DOCS_DIR / "data.json"
     if not json_path.exists():
         return
@@ -764,14 +769,24 @@ def sync_readme_claude():
         path = ROOT / fname
         if not path.exists():
             continue
-        text = path.read_text(encoding="utf-8")
+
+        # 优先读取模板（保留占位符），无模板时直接读主文件（首次/降级）
+        template_path = ROOT / f"{fname}.template"
+        if template_path.exists():
+            text = template_path.read_text(encoding="utf-8")
+            source = "模板"
+        else:
+            text = path.read_text(encoding="utf-8")
+            source = "主文件"
+
         count = 0
         for k, v in ph.items():
             if k in text:
                 text = text.replace(k, v)
                 count += 1
+
         path.write_text(text, encoding="utf-8")
-        print(f"  ok {fname}（{count} 处占位符更新）")
+        print(f"  ok {fname}（{count} 处占位符更新，来源={source}）")
 
 
 # ============================================================
