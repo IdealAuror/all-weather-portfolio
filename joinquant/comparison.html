@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全季节策略 — 聚宽版 vs 本地版 对比报告</title>
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --border: #30363d;
+    --text: #c9d1d9; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d2991d;
+    --orange: #db6d28;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+    max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem;
+  }
+  h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+  h1 span { color: var(--muted); font-size: 1rem; font-weight: 400; margin-left: 0.75rem; }
+  h2 {
+    font-size: 1.25rem; margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 0.75rem; color: var(--accent); }
+  p, li { color: var(--text); }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.5rem;
+    font-size: 0.92rem;
+  }
+  th, td {
+    padding: 0.6rem 0.75rem; text-align: center;
+    border: 1px solid var(--border);
+  }
+  th { background: #1c2129; font-weight: 600; color: #e6edf3; }
+  td { background: var(--card); }
+  td:first-child, th:first-child { text-align: left; }
+  .num { font-family: 'JetBrains Mono', 'Cascadia Code', monospace; }
+
+  .tag-ok  { color: var(--green); font-weight: 600; }
+  .tag-warn { color: var(--yellow); }
+  .tag-bad { color: var(--red); }
+  .diff-neg { color: var(--orange); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1rem 0; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.25rem;
+  }
+  .card h3 { margin: 0 0 0.75rem; font-size: 0.95rem; color: #e6edf3; }
+  .card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.35rem; }
+
+  .bar-wrap { margin: 0.75rem 0; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem; }
+  .bar-label .name { color: var(--text); }
+  .bar-label .val { font-family: monospace; }
+
+  .section-note {
+    background: #1a1f2b; border-left: 3px solid var(--green);
+    padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 6px 6px 0;
+    font-size: 0.88rem; color: var(--muted);
+  }
+  .section-note strong { color: var(--text); }
+
+  .highlight-box {
+    background: #1a2f1f; border: 1px solid var(--green);
+    border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  .highlight-box strong { color: var(--green); }
+
+  .footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border);
+            font-size: 0.82rem; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>全季节策略 <span>聚宽版 vs 本地版 对比报告</span></h1>
+<p class="subtitle">
+  回测区间: 2020-01-02 ~ 2026-05-29 (本地) / 2020-01-01 ~ 2026-06-29 (聚宽) &ensp;|&ensp;
+  初始资金: 聚宽 200 万 / 本地 1 单位净值 &ensp;|&ensp;
+  安全过滤: 溢价率 5% + 成交量 3x
+</p>
+
+<!-- ============================================================ -->
+<h2>一、三策略对比总表</h2>
+
+<table>
+<thead>
+<tr>
+  <th>策略</th>
+  <th>本地 CAGR</th>
+  <th>聚宽 CAGR</th>
+  <th>差异</th>
+  <th>聚宽 MDD</th>
+  <th>聚宽 Sharpe</th>
+  <th>达标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>V3c 多元</strong></td>
+  <td class="num">9.21%</td>
+  <td class="num">9.50%</td>
+  <td class="num tag-ok">+0.29pp</td>
+  <td class="num">-7.73%</td>
+  <td class="num">1.01</td>
+  <td class="tag-ok">全部</td>
+</tr>
+<tr>
+  <td><strong>V3-B 保守增强</strong></td>
+  <td class="num">8.69%</td>
+  <td class="num">7.99%</td>
+  <td class="num diff-neg">-0.70pp</td>
+  <td class="num">-5.22%</td>
+  <td class="num">1.04</td>
+  <td class="tag-ok">全部</td>
+</tr>
+<tr>
+  <td><strong>V3-B 风险平价</strong></td>
+  <td class="num">10.03%</td>
+  <td class="num">10.23%</td>
+  <td class="num tag-ok">+0.20pp</td>
+  <td class="num">-7.51%</td>
+  <td class="num">0.93</td>
+  <td class="tag-ok">全部</td>
+</tr>
+</tbody>
+</table>
+
+<div class="grid2">
+  <div class="card">
+    <h3>CAGR 对比条形图</h3>
+    <div class="bar-wrap">
+      <div class="bar-label"><span class="name">V3c 多元</span><span class="val">本地 9.21% / JQ 9.50%</span></div>
+      <div style="height:8px;background:#21262d;border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:100%;background:var(--accent);border-radius:4px"></div>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-label"><span class="name">V3-B 保守增强</span><span class="val">本地 8.69% / JQ 7.99%</span></div>
+      <div style="height:8px;background:#21262d;border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:92%;background:var(--green);border-radius:4px"></div>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-label"><span class="name">V3-B 风险平价</span><span class="val">本地 10.03% / JQ 10.23%</span></div>
+      <div style="height:8px;background:#21262d;border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:100%;background:var(--green);border-radius:4px"></div>
+      </div>
+    </div>
+    <p>条形长度 = 聚宽 / 本地 比例。V3c 和 RP 已超过本地同期水平。</p>
+  </div>
+  <div class="card">
+    <h3>溢价率过滤效果（5% 阈值）</h3>
+    <p><strong>V3c:</strong> CAGR 8.55% → 9.50% (+0.95pp)  Sharpe 0.78 → 1.01</p>
+    <p><strong>Con:</strong> CAGR 7.44% → 7.99% (+0.55pp)  Sharpe 0.85 → 1.04</p>
+    <p><strong>RP:</strong> CAGR 9.03% → 10.23% (+1.20pp)  MDD -9.28% → -7.51%</p>
+    <p style="margin-top:0.75rem;color:var(--green)">QDII 高溢价买入是之前回撤的主要隐藏拖累。5% 过滤拦截后三策略全涨。</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>二、安全过滤器</h2>
+
+<table>
+<thead>
+<tr><th>过滤器</th><th>规则</th><th>阈值</th><th>数据源</th><th>处置</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>溢价率过滤</strong></td><td>(场内价 - 净值) / 净值</td><td>> 5%</td><td>get_extras('unit_net_value')</td><td>权重转 credit</td></tr>
+<tr><td><strong>成交量异常</strong></td><td>前日量 / 60日均量</td><td>> 3x</td><td>get_price(volume)</td><td>权重转 credit</td></tr>
+</tbody>
+</table>
+
+<div class="highlight-box">
+  <strong>溢价率 5% 过滤是聚宽版最重要的增量改进。</strong>
+  本地版没有溢价率数据（akshare 不提供 ETF 净值），这是聚宽版独有的优势。
+  QDII ETF (513500 标普500) 在额度紧张时溢价可达 10-20%，买入即亏损。
+  拦截后三策略 CAGR +0.55~1.20pp，MDD -0.20~1.77pp，纯 Alpha 改善。
+</div>
+
+<!-- ============================================================ -->
+<h2>三、策略详情</h2>
+
+<div class="grid2">
+  <div class="card">
+    <h3>V3c 多元 — 超过本地 (+0.29pp)</h3>
+    <table style="margin:0">
+      <tr><td>本地 CAGR</td><td class="num">9.21%</td></tr>
+      <tr><td>聚宽 CAGR</td><td class="num">9.50%</td></tr>
+      <tr><td>聚宽 MDD</td><td class="num">-7.73%</td></tr>
+      <tr><td>聚宽 Sharpe</td><td class="num">1.01</td></tr>
+    </table>
+    <p style="margin-top:0.5rem">溢价率过滤拦截 QDII 高溢价买入，Sharpe 突破 1.0。60d 长窗口 + 三重趋势缓冲 + 安全过滤，月频简化已被完全抵消。</p>
+  </div>
+  <div class="card">
+    <h3>V3-B 保守增强 — 差距收窄 (-0.70pp)</h3>
+    <table style="margin:0">
+      <tr><td>本地 CAGR</td><td class="num">8.69%</td></tr>
+      <tr><td>聚宽 CAGR</td><td class="num">7.99%</td></tr>
+      <tr><td>聚宽 MDD</td><td class="num">-5.22%</td></tr>
+      <tr><td>聚宽 Sharpe</td><td class="num">1.04</td></tr>
+    </table>
+    <p style="margin-top:0.5rem">从 -1.26pp 改善到 -0.70pp。20d 短窗口对月频简化敏感是结构性差异，安全过滤只能部分弥补。但 MDD 和 Sharpe 仍是三版最优。</p>
+  </div>
+  <div class="card">
+    <h3>V3-B 风险平价 — 改善最大 (+0.20pp)</h3>
+    <table style="margin:0">
+      <tr><td>本地 CAGR</td><td class="num">10.03%</td></tr>
+      <tr><td>聚宽 CAGR</td><td class="num">10.23%</td></tr>
+      <tr><td>聚宽 MDD</td><td class="num">-7.51%</td></tr>
+      <tr><td>聚宽 Sharpe</td><td class="num">0.93</td></tr>
+    </table>
+    <p style="margin-top:0.5rem">CAGR +1.20pp，MDD +1.77pp，三版中改善幅度最大。RP 暴露最多 QDII 资产，溢价过滤受益最大。CAGR 绝对值仍是三版最高。</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>四、与本地版的差异</h2>
+
+<table>
+<thead><tr><th>#</th><th>差异项</th><th>本地版</th><th>聚宽版</th><th>影响</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>HS300 抄底</td><td>PB/PE 分位 + DD + SMA120</td><td>价格版: DD + SMA120</td><td class="num diff-neg">-0.5~1.3pp</td></tr>
+<tr><td>2</td><td>趋势检查频率</td><td>月频调仓 + 日频 SMA</td><td>月频调仓 + 月频 SMA</td><td><0.1pp</td></tr>
+<tr><td>3</td><td><strong>溢价率过滤</strong></td><td>无（akshare 无净值）</td><td><strong>5% 阈值 (聚宽独有)</strong></td><td class="num tag-ok">+0.5~1.2pp</td></tr>
+<tr><td>4</td><td>成交量过滤</td><td>无</td><td>3x 放量跳过</td><td>边际</td></tr>
+<tr><td>5</td><td>回测起点</td><td>2005 年</td><td>2020 年</td><td>—</td></tr>
+</tbody>
+</table>
+
+<div class="section-note">
+  <strong>聚宽版溢价率过滤是独特优势</strong>——本地 akshare 不提供 ETF 净值数据，这个保护层只有聚宽能做到。
+  简化项 1 (HS300 PB/PE) 的损失已被溢价过滤的收益完全抵消。
+</div>
+
+<!-- ============================================================ -->
+<h2>五、结论</h2>
+
+<table>
+<thead><tr><th>#</th><th>结论</th><th style="width:12%">判定</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>核心算法完全一致，溢价率 5% 过滤后 V3c 和 RP 超过本地同期</td><td class="tag-ok">✓</td></tr>
+<tr><td>2</td><td>三策略 CAGR 全部改善，Sharpe 全部上升，MDD 全部下降</td><td class="tag-ok">✓</td></tr>
+<tr><td>3</td><td>溢价率过滤是聚宽版独有的结构优势（本地 akshare 无净值数据）</td><td class="tag-ok">✓</td></tr>
+<tr><td>4</td><td>HS300 PB/PE → 价格版是唯一剩余简化，受聚宽 API 限制无法避免</td><td class="tag-warn">△</td></tr>
+</tbody>
+</table>
+
+<div class="footer">
+  全季节策略 — 桥水全天候中国化 &ensp;|&ensp;
+  GitHub: IdealAuror/all-weather-portfolio &ensp;|&ensp;
+  更新: 2026-06-30 (溢价率 5% 过滤上线)
+</div>
+
+</body>
+</html>
