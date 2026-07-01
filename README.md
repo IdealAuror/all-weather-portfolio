@@ -23,17 +23,17 @@ Online docs: [https://idealauror.github.io/all-weather-portfolio/](https://ideal
 
 | Strategy | Style | CAGR | Vol | Max DD | Sharpe | One-liner |
 |----------|:-----:|:----:|:---:|:------:|:-----:|-----------|
-| **V3-B Conservative(20d)** | Conservative Enhanced | **>= 7%** | <= 5% | **<= -7%** | **>= 1.2** | Inverse vol 20d + nonferr(75d) + HS300 AND dip |
-| **V3-B Risk Parity(20d)** | Academic | >= 8.5% | <= 7% | <= -9% | — | 4-bucket equal HRP + nonferr/gold/sp500/hs300 trends + dip + target vol |
-| **V3c Multi-Asset** | All-Weather | **>= 8.5%** | <= 6% | <= -8.5% | — | 6-asset inverse vol 60d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
+| **V3-B Conservative(20d)** | Conservative Enhanced | **min 7%** | max 5% | **max -7%** | **min 1.2** | Inverse vol 20d + nonferr(75d) + HS300 AND dip |
+| **V3-B Risk Parity(20d)** | Academic | min 8.5% | max 7% | max -9% | — | 4-bucket equal HRP + nonferr/gold/sp500/hs300 trends + dip + target vol |
+| **V3c Multi-Asset** | All-Weather | **min 8.5%** | max 6% | max -8.5% | — | 6-asset inverse vol 60d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
 
 > V3-B RP 4 trend filters: nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d); V3c 3 trend filters: nonferr(75d) + gold(75d) + sp500(75d). Both exclude bond_10y. Table shows **no-WTI** version (6 assets), see WTI comparison below.
 
 | | Positioning | CAGR | MDD | Core Constraint | Trend Filters | Negative Years |
 |--|:-----------:|:---:|:---:|:--------------:|:-------------:|:--------------:|
-| **V3-B Conservative** | Conservative defense | >= 7% | <= -7% | Sharpe >= 1.2 | 1 | See Chinese docs |
-| **V3-B Risk Parity** | Aggressive return | >= 8.5% | <= -9% | CAGR priority | 4 | See Chinese docs |
-| **V3c Multi-Asset** | Balanced core | >= 8.5% | <= -8.5% | Drawdown priority | 3 | See Chinese docs |
+| **V3-B Conservative** | Conservative defense | min 7% | max -7% | Sharpe min 1.2 | 1 | See Chinese docs |
+| **V3-B Risk Parity** | Aggressive return | min 8.5% | max -9% | CAGR priority | 4 | See Chinese docs |
+| **V3c Multi-Asset** | Balanced core | min 8.5% | max -8.5% | Drawdown priority | 3 | See Chinese docs |
 
 ### How to Choose
 
@@ -70,11 +70,11 @@ Adding crude oil (Southern Crude Oil LOF 501018) to the 7-asset pool, key metric
 
 | Strategy | Version | CAGR | Vol | Max DD | Sharpe | Calmar |
 |----------|:------:|:----:|:---:|:------:|:-----:|:------:|
-| **V3-B Conservative** | No WTI | **>= 7%** | <= 5% | <= -7% | **>= 1.2** | — |
+| **V3-B Conservative** | No WTI | **min 7%** | max 5% | max -7% | **min 1.2** | — |
 | | +WTI | slightly lower | slightly higher | **improved** | — | — |
-| **V3-B Risk Parity** | No WTI | >= 8.5% | <= 7% | <= -9% | — | — |
+| **V3-B Risk Parity** | No WTI | min 8.5% | max 7% | max -9% | — | — |
 | | +WTI | slightly lower | — | **improved** | — | — |
-| **V3c Multi-Asset** | No WTI | >= 8.5% | <= 6% | <= -8.5% | — | — |
+| **V3c Multi-Asset** | No WTI | min 8.5% | max 6% | max -8.5% | — | — |
 | | +WTI | slightly lower | — | **improved** | — | — |
 
 > Adding WTI reduces CAGR by ~0.2-0.3pp but improves MDD by 1-2pp. WTI diversifies within the inflation bucket alongside gold and non-ferrous metals. Subscription for 501018 currently suspended; WTI version can be enabled once resumed.
