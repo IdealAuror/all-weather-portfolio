@@ -1,0 +1,550 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e3]:
+    - link "Skip to content" [ref=f1e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=f1e6]:
+      - heading "Navigation Menu" [level=2] [ref=f1e7]
+      - generic [ref=f1e8]:
+        - link "Homepage" [ref=f1e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=f1e11]
+        - generic [ref=f1e13]:
+          - navigation "Global" [ref=f1e16]:
+            - list [ref=f1e17]:
+              - listitem [ref=f1e18]:
+                - button "Platform" [ref=f1e20] [cursor=pointer]:
+                  - text: Platform
+                  - img [ref=f1e21]
+              - listitem [ref=f1e23]:
+                - button "Solutions" [ref=f1e25] [cursor=pointer]:
+                  - text: Solutions
+                  - img [ref=f1e26]
+              - listitem [ref=f1e28]:
+                - button "Resources" [ref=f1e30] [cursor=pointer]:
+                  - text: Resources
+                  - img [ref=f1e31]
+              - listitem [ref=f1e33]:
+                - button "Open Source" [ref=f1e35] [cursor=pointer]:
+                  - text: Open Source
+                  - img [ref=f1e36]
+              - listitem [ref=f1e38]:
+                - button "Enterprise" [ref=f1e40] [cursor=pointer]:
+                  - text: Enterprise
+                  - img [ref=f1e41]
+              - listitem [ref=f1e43]:
+                - link "Pricing" [ref=f1e44] [cursor=pointer]:
+                  - /url: https://github.com/pricing
+                  - generic [ref=f1e45]: Pricing
+          - generic [ref=f1e46]:
+            - button "Search or jump to…" [ref=f1e49] [cursor=pointer]:
+              - img [ref=f1e51]
+            - link "Sign in" [ref=f1e54] [cursor=pointer]:
+              - /url: /login?return_to=https%3A%2F%2Fgithub.com%2FIdealAuror%2Finvestment-learning
+            - link "Sign up" [ref=f1e55] [cursor=pointer]:
+              - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E&source=header-repo&source_repo=IdealAuror%2Finvestment-learning
+            - button "Appearance settings" [ref=f1e58] [cursor=pointer]:
+              - img
+  - main [ref=f1e62]:
+    - generic [ref=f1e63]:
+      - generic [ref=f1e64]:
+        - generic [ref=f1e66]:
+          - img [ref=f1e67]
+          - link "IdealAuror" [ref=f1e70] [cursor=pointer]:
+            - /url: /IdealAuror
+          - generic [ref=f1e71]: /
+          - strong [ref=f1e72]:
+            - link "investment-learning" [ref=f1e73] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning
+          - generic [ref=f1e74]: Public
+        - generic [ref=f1e75]:
+          - list:
+            - listitem [ref=f1e76]:
+              - link "You must be signed in to change notification settings" [ref=f1e77] [cursor=pointer]:
+                - /url: /login?return_to=%2FIdealAuror%2Finvestment-learning
+                - img [ref=f1e78]
+                - text: Notifications
+            - listitem [ref=f1e80]:
+              - link "Fork 0" [ref=f1e81] [cursor=pointer]:
+                - /url: /login?return_to=%2FIdealAuror%2Finvestment-learning
+                - img [ref=f1e82]
+                - text: Fork
+                - generic "0" [ref=f1e84]
+            - listitem [ref=f1e85]:
+              - link "You must be signed in to star a repository" [ref=f1e87] [cursor=pointer]:
+                - /url: /login?return_to=%2FIdealAuror%2Finvestment-learning
+                - img [ref=f1e88]
+                - text: Star
+                - generic "1 user starred this repository" [ref=f1e90]: "1"
+      - navigation "Repository" [ref=f1e91]:
+        - list [ref=f1e92]:
+          - listitem [ref=f1e93]:
+            - link "Code" [ref=f1e94] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning
+              - img [ref=f1e95]
+              - generic [ref=f1e97]: Code
+          - listitem [ref=f1e98]:
+            - link "Issues" [ref=f1e99] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/issues
+              - img [ref=f1e100]
+              - generic [ref=f1e103]: Issues
+          - listitem [ref=f1e104]:
+            - link "Pull requests" [ref=f1e105] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/pulls
+              - img [ref=f1e106]
+              - generic [ref=f1e108]: Pull requests
+          - listitem [ref=f1e109]:
+            - link "Actions" [ref=f1e110] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/actions
+              - img [ref=f1e111]
+              - generic [ref=f1e113]: Actions
+          - listitem [ref=f1e114]:
+            - link "Projects" [ref=f1e115] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/projects
+              - img [ref=f1e116]
+              - generic [ref=f1e118]: Projects
+          - listitem [ref=f1e119]:
+            - link "Security and quality" [ref=f1e120] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/security
+              - img [ref=f1e121]
+              - generic [ref=f1e123]: Security and quality
+          - listitem [ref=f1e124]:
+            - link "Insights" [ref=f1e125] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/pulse
+              - img [ref=f1e126]
+              - generic [ref=f1e128]: Insights
+    - generic [ref=f1e141]:
+      - heading "IdealAuror/investment-learning" [level=1] [ref=f1e143]
+      - generic [ref=f1e144]:
+        - generic [ref=f1e147]:
+          - generic [ref=f1e148]:
+            - generic [ref=f1e149]:
+              - button "master branch" [ref=f1e151] [cursor=pointer]:
+                - generic [ref=f1e152]:
+                  - generic [ref=f1e154]:
+                    - img [ref=f1e156]
+                    - generic [ref=f1e159]: master
+                  - generic:
+                    - img
+              - generic [ref=f1e160]:
+                - link "Branches" [ref=f1e161] [cursor=pointer]:
+                  - /url: /IdealAuror/investment-learning/branches
+                  - generic [ref=f1e162]:
+                    - generic:
+                      - img
+                    - generic [ref=f1e163]: Branches
+                - link "Tags" [ref=f1e164] [cursor=pointer]:
+                  - /url: /IdealAuror/investment-learning/tags
+                  - generic [ref=f1e165]:
+                    - generic:
+                      - img
+                    - generic [ref=f1e166]: Tags
+            - generic [ref=f1e167]:
+              - generic [ref=f1e171]:
+                - img [ref=f1e173]
+                - combobox "Go to file" [ref=f1e175]
+              - button "Code" [ref=f1e176] [cursor=pointer]:
+                - generic [ref=f1e177]:
+                  - generic:
+                    - img
+                  - generic [ref=f1e178]: Code
+                  - generic:
+                    - img
+          - generic [ref=f1e179]:
+            - generic [ref=f1e180]:
+              - heading "Folders and files" [level=2] [ref=f1e181]
+              - table "Folders and files" [ref=f1e182]:
+                - rowgroup:
+                  - row "Name Last commit message Last commit date":
+                    - columnheader "Name"
+                    - columnheader "Last commit message":
+                      - generic "Last commit message"
+                    - columnheader "Last commit date":
+                      - generic "Last commit date"
+                - rowgroup [ref=f1e183]:
+                  - row "Latest commit History 3 Commits" [ref=f1e184]:
+                    - cell "Latest commit History 3 Commits" [ref=f1e185]:
+                      - generic [ref=f1e186]:
+                        - heading "Latest commit" [level=2] [ref=f1e187]
+                        - generic [ref=f1e190]:
+                          - heading "History" [level=2] [ref=f1e191]
+                          - link "3 Commits" [ref=f1e192] [cursor=pointer]:
+                            - /url: /IdealAuror/investment-learning/commits/master/
+                            - generic [ref=f1e193]:
+                              - generic:
+                                - img
+                              - generic [ref=f1e194]: 3 Commits
+                  - row "01-philosophy, (Directory)" [ref=f1e195]:
+                    - cell "01-philosophy, (Directory)" [ref=f1e196]:
+                      - generic [ref=f1e197]:
+                        - img [ref=f1e198]
+                        - link "01-philosophy, (Directory)" [ref=f1e203] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/tree/master/01-philosophy
+                          - text: 01-philosophy
+                    - cell [ref=f1e204]
+                    - cell [ref=f1e206]
+                  - row "02-value, (Directory)" [ref=f1e209]:
+                    - cell "02-value, (Directory)" [ref=f1e210]:
+                      - generic [ref=f1e211]:
+                        - img [ref=f1e212]
+                        - link "02-value, (Directory)" [ref=f1e217] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/tree/master/02-value
+                          - text: 02-value
+                    - cell [ref=f1e218]
+                    - cell [ref=f1e220]
+                  - row "03-growth, (Directory)" [ref=f1e223]:
+                    - cell "03-growth, (Directory)" [ref=f1e224]:
+                      - generic [ref=f1e225]:
+                        - img [ref=f1e226]
+                        - link "03-growth, (Directory)" [ref=f1e231] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/tree/master/03-growth
+                          - text: 03-growth
+                    - cell [ref=f1e232]
+                    - cell [ref=f1e234]
+                  - row "04-technical, (Directory)" [ref=f1e237]:
+                    - cell "04-technical, (Directory)" [ref=f1e238]:
+                      - generic [ref=f1e239]:
+                        - img [ref=f1e240]
+                        - link "04-technical, (Directory)" [ref=f1e245] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/tree/master/04-technical
+                          - text: 04-technical
+                    - cell [ref=f1e246]
+                    - cell [ref=f1e248]
+                  - row "05-macro, (Directory)" [ref=f1e251]:
+                    - cell "05-macro, (Directory)" [ref=f1e252]:
+                      - generic [ref=f1e253]:
+                        - img [ref=f1e254]
+                        - link "05-macro, (Directory)" [ref=f1e259] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/tree/master/05-macro
+                          - text: 05-macro
+                    - cell [ref=f1e260]
+                    - cell [ref=f1e262]
+                  - row "06-quantitative, (Directory)" [ref=f1e265]:
+                    - cell "06-quantitative, (Directory)" [ref=f1e266]:
+                      - generic [ref=f1e267]:
+                        - img [ref=f1e268]
+                        - link "06-quantitative, (Directory)" [ref=f1e273] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/tree/master/06-quantitative
+                          - text: 06-quantitative
+                    - cell [ref=f1e274]
+                    - cell [ref=f1e276]
+                  - row "resources, (Directory)" [ref=f1e279]:
+                    - cell "resources, (Directory)" [ref=f1e280]:
+                      - generic [ref=f1e281]:
+                        - img [ref=f1e282]
+                        - link "resources, (Directory)" [ref=f1e287] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/tree/master/resources
+                          - text: resources
+                    - cell [ref=f1e288]
+                    - cell [ref=f1e290]
+                  - row "README-zh.md, (File)" [ref=f1e293]:
+                    - cell "README-zh.md, (File)" [ref=f1e294]:
+                      - generic [ref=f1e295]:
+                        - img [ref=f1e296]
+                        - link "README-zh.md, (File)" [ref=f1e301] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/blob/master/README-zh.md
+                          - text: README-zh.md
+                    - cell [ref=f1e302]
+                    - cell [ref=f1e304]
+                  - row "README.md, (File)" [ref=f1e307]:
+                    - cell "README.md, (File)" [ref=f1e308]:
+                      - generic [ref=f1e309]:
+                        - img [ref=f1e310]
+                        - link "README.md, (File)" [ref=f1e315] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/blob/master/README.md
+                          - text: README.md
+                    - cell [ref=f1e316]
+                    - cell [ref=f1e318]
+            - generic [ref=f1e322]:
+              - generic [ref=f1e323]:
+                - heading "Repository files navigation" [level=2] [ref=f1e324]
+                - navigation "Repository files" [ref=f1e325]:
+                  - list [ref=f1e326]:
+                    - listitem [ref=f1e327]:
+                      - link "README" [ref=f1e328] [cursor=pointer]:
+                        - /url: "#"
+                        - img [ref=f1e330]
+                        - generic [ref=f1e332]: README
+                - button "Outline" [ref=f1e333] [cursor=pointer]:
+                  - img [ref=f1e334]
+              - article [ref=f1e337]:
+                - paragraph [ref=f1e338]:
+                  - link "English" [ref=f1e339] [cursor=pointer]:
+                    - /url: /IdealAuror/investment-learning/blob/master/README.md
+                  - text: "|"
+                  - link "中文" [ref=f1e340] [cursor=pointer]:
+                    - /url: /IdealAuror/investment-learning/blob/master/README-zh.md
+                - paragraph
+                - generic [ref=f1e341]:
+                  - heading "📐 investment-learning" [level=1] [ref=f1e342]
+                  - 'link "Permalink: 📐 investment-learning" [ref=f1e343] [cursor=pointer]':
+                    - /url: "#-investment-learning"
+                    - img [ref=f1e344]
+                - paragraph [ref=f1e346]:
+                  - emphasis [ref=f1e347]: A systematic, full-spectrum learning path for investing — from philosophy to quantitative analysis
+                - paragraph [ref=f1e348]:
+                  - link "Modules" [ref=f1e349] [cursor=pointer]:
+                    - /url: https://camo.githubusercontent.com/007b4a0816833bd9070da2291f5608a890268f60b5e22ab4b42004bdab56d638/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6d6f64756c65732d362d627269676874677265656e
+                    - img "Modules" [ref=f1e350]
+                  - link "Bilingual" [ref=f1e351] [cursor=pointer]:
+                    - /url: https://camo.githubusercontent.com/92cf885238990762be6c36a24dbf4cbe721a9618973ef7008e923a99eece8bfa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6c616e67756167652d62696c696e6775616c2d626c7565
+                    - img "Bilingual" [ref=f1e352]
+                  - link "Status" [ref=f1e353] [cursor=pointer]:
+                    - /url: https://camo.githubusercontent.com/d908e6f9f026bcf43b2f27530ae24d55f4b46332bcff64ef6dd25513cc267227/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f7374617475732d67726f77696e672d6f72616e6765
+                    - img "Status" [ref=f1e354]
+                - paragraph
+                - separator [ref=f1e355]
+                - paragraph [ref=f1e356]:
+                  - text: This is both a
+                  - strong [ref=f1e357]: personal learning record
+                  - text: and a
+                  - strong [ref=f1e358]: public roadmap
+                  - text: for anyone who wants to understand investing as a discipline, not a gamble.
+                - paragraph [ref=f1e359]: No hype. No strategy-selling. No market predictions. Just logic, data, and the lessons of those who came before us — including their failures.
+                - generic [ref=f1e360]:
+                  - heading "Where to start?" [level=2] [ref=f1e361]
+                  - 'link "Permalink: Where to start?" [ref=f1e362] [cursor=pointer]':
+                    - /url: "#where-to-start"
+                    - img [ref=f1e363]
+                - paragraph [ref=f1e365]: "Pick the entry point that matches your background:"
+                - table [ref=f1e367]:
+                  - rowgroup [ref=f1e368]:
+                    - row "You are... Start here" [ref=f1e369]:
+                      - columnheader "You are..." [ref=f1e370]
+                      - columnheader "Start here" [ref=f1e371]
+                  - rowgroup [ref=f1e372]:
+                    - row "Already comfortable with financial statements and basic valuation 02-value" [ref=f1e373]:
+                      - cell "Already comfortable with financial statements and basic valuation" [ref=f1e374]
+                      - cell "02-value" [ref=f1e375]:
+                        - link "02-value" [ref=f1e376] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/blob/master/02-value
+                          - code [ref=f1e377]: 02-value
+                    - row "New to investing — want the \"why\" before the \"how\" 01-philosophy" [ref=f1e378]:
+                      - cell "New to investing — want the \"why\" before the \"how\"" [ref=f1e379]
+                      - cell "01-philosophy" [ref=f1e380]:
+                        - link "01-philosophy" [ref=f1e381] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/blob/master/01-philosophy
+                          - code [ref=f1e382]: 01-philosophy
+                    - row "From a technical/quant background (engineering, CS, math) 04-technical or 06-quantitative" [ref=f1e383]:
+                      - cell "From a technical/quant background (engineering, CS, math)" [ref=f1e384]
+                      - cell "04-technical or 06-quantitative" [ref=f1e385]:
+                        - link "04-technical" [ref=f1e386] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/blob/master/04-technical
+                          - code [ref=f1e387]: 04-technical
+                        - text: or
+                        - link "06-quantitative" [ref=f1e388] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/blob/master/06-quantitative
+                          - code [ref=f1e389]: 06-quantitative
+                    - row "Just want to understand macroeconomics and policy 05-macro" [ref=f1e390]:
+                      - cell "Just want to understand macroeconomics and policy" [ref=f1e391]
+                      - cell "05-macro" [ref=f1e392]:
+                        - link "05-macro" [ref=f1e393] [cursor=pointer]:
+                          - /url: /IdealAuror/investment-learning/blob/master/05-macro
+                          - code [ref=f1e394]: 05-macro
+                - paragraph [ref=f1e395]:
+                  - text: Every module is
+                  - strong [ref=f1e396]: self-contained
+                  - text: — study any one without reading the others.
+                - generic [ref=f1e397]:
+                  - heading "Learning path" [level=2] [ref=f1e398]
+                  - 'link "Permalink: Learning path" [ref=f1e399] [cursor=pointer]':
+                    - /url: "#learning-path"
+                    - img [ref=f1e400]
+                - paragraph [ref=f1e402]:
+                  - strong [ref=f1e403]: 01 → 02 → 03
+                  - text: "is the sequential core: philosophy establishes principles, value teaches valuation, growth builds on both to understand premiums."
+                - paragraph [ref=f1e404]:
+                  - strong [ref=f1e405]: "04"
+                  - text: (Technical & Behavioral) and
+                  - strong [ref=f1e406]: "05"
+                  - text: (Macro) are independent — start either at any time, no prerequisites from 01–03.
+                - paragraph [ref=f1e407]:
+                  - strong [ref=f1e408]: "06"
+                  - text: (Quantitative) is best saved for last as it synthesizes all previous methods, but those with strong quantitative backgrounds can jump straight in.
+                - generic [ref=f1e409]:
+                  - heading "What's inside" [level=2] [ref=f1e410]
+                  - 'link "Permalink: What''s inside" [ref=f1e411] [cursor=pointer]':
+                    - /url: "#whats-inside"
+                    - img [ref=f1e412]
+                - table [ref=f1e415]:
+                  - rowgroup [ref=f1e416]:
+                    - row "# Module One line Prerequisites" [ref=f1e417]:
+                      - columnheader "#" [ref=f1e418]
+                      - columnheader "Module" [ref=f1e419]
+                      - columnheader "One line" [ref=f1e420]
+                      - columnheader "Prerequisites" [ref=f1e421]
+                  - rowgroup [ref=f1e422]:
+                    - row "01 Philosophy What the masters got right — and wrong. The principles that survive. None" [ref=f1e423]:
+                      - cell "01" [ref=f1e424]
+                      - cell "Philosophy" [ref=f1e425]:
+                        - strong [ref=f1e426]: Philosophy
+                      - cell "What the masters got right — and wrong. The principles that survive." [ref=f1e427]
+                      - cell "None" [ref=f1e428]
+                    - row "02 Value Valuation, margin of safety, position sizing, portfolio construction 01 recommended" [ref=f1e429]:
+                      - cell "02" [ref=f1e430]
+                      - cell "Value" [ref=f1e431]:
+                        - strong [ref=f1e432]: Value
+                      - cell "Valuation, margin of safety, position sizing, portfolio construction" [ref=f1e433]
+                      - cell "01 recommended" [ref=f1e434]
+                    - row "03 Growth Growth stocks, momentum investing, DCF variants 02 recommended" [ref=f1e435]:
+                      - cell "03" [ref=f1e436]
+                      - cell "Growth" [ref=f1e437]:
+                        - strong [ref=f1e438]: Growth
+                      - cell "Growth stocks, momentum investing, DCF variants" [ref=f1e439]
+                      - cell "02 recommended" [ref=f1e440]
+                    - row "04 Technical Price action, trends, behavioral finance — human nature in charts None" [ref=f1e441]:
+                      - cell "04" [ref=f1e442]
+                      - cell "Technical" [ref=f1e443]:
+                        - strong [ref=f1e444]: Technical
+                      - cell "Price action, trends, behavioral finance — human nature in charts" [ref=f1e445]
+                      - cell "None" [ref=f1e446]
+                    - row "05 Macro How interest rates, inflation, and monetary cycles drive asset prices None" [ref=f1e447]:
+                      - cell "05" [ref=f1e448]
+                      - cell "Macro" [ref=f1e449]:
+                        - strong [ref=f1e450]: Macro
+                      - cell "How interest rates, inflation, and monetary cycles drive asset prices" [ref=f1e451]
+                      - cell "None" [ref=f1e452]
+                    - row "06 Quantitative Factors, backtesting, systematization — turning methods into code Math/stats background helpful" [ref=f1e453]:
+                      - cell "06" [ref=f1e454]
+                      - cell "Quantitative" [ref=f1e455]:
+                        - strong [ref=f1e456]: Quantitative
+                      - cell "Factors, backtesting, systematization — turning methods into code" [ref=f1e457]
+                      - cell "Math/stats background helpful" [ref=f1e458]
+                    - row "— Resources Curated books, tools, data sources — not a dump, a summary None" [ref=f1e459]:
+                      - cell "—" [ref=f1e460]
+                      - cell "Resources" [ref=f1e461]:
+                        - strong [ref=f1e462]: Resources
+                      - cell "Curated books, tools, data sources — not a dump, a summary" [ref=f1e463]
+                      - cell "None" [ref=f1e464]
+                - paragraph [ref=f1e465]:
+                  - text: Each module will eventually contain its own
+                  - code [ref=f1e466]: README.md
+                  - text: with a detailed syllabus, plus a
+                  - code [ref=f1e467]: project/
+                  - text: subdirectory for hands-on exercises.
+                - generic [ref=f1e468]:
+                  - heading "Repository Layout" [level=2] [ref=f1e469]
+                  - 'link "Permalink: Repository Layout" [ref=f1e470] [cursor=pointer]':
+                    - /url: "#repository-layout"
+                    - img [ref=f1e471]
+                - generic [ref=f1e473]:
+                  - code [ref=f1e475]: investment-learning/ ├── README.md ← English ├── README-zh.md ← 中文 │ ├── 01-philosophy/ ← investment philosophy ├── 02-value/ ← value investing + risk management ├── 03-growth/ ← growth & momentum investing ├── 04-technical/ ← technical analysis + behavioral finance ├── 05-macro/ ← macroeconomics & monetary policy ├── 06-quantitative/ ← quantitative investing │ └── quant-learning-guide.html ← quant evolution guide (Chinese) └── resources/ ← curated books, tools, data sources
+                  - button "Copy code to clipboard" [ref=f1e477] [cursor=pointer]:
+                    - img [ref=f1e478]
+                - paragraph [ref=f1e481]:
+                  - subscript [ref=f1e482]: Built with the belief that investing is a discipline to be learned, not a secret to be discovered.
+        - generic [ref=f1e486]:
+          - generic [ref=f1e489]:
+            - heading "About" [level=2] [ref=f1e490]
+            - paragraph [ref=f1e491]: "Full-spectrum investing: philosophy → value → growth → technical → macro → quantitative. A personal learning record and public roadmap."
+            - heading "Topics" [level=3] [ref=f1e492]
+            - generic [ref=f1e494]:
+              - link "learning" [ref=f1e495] [cursor=pointer]:
+                - /url: /topics/learning
+              - link "finance" [ref=f1e496] [cursor=pointer]:
+                - /url: /topics/finance
+              - link "investing" [ref=f1e497] [cursor=pointer]:
+                - /url: /topics/investing
+              - link "quantitative-finance" [ref=f1e498] [cursor=pointer]:
+                - /url: /topics/quantitative-finance
+              - link "technical-analysis" [ref=f1e499] [cursor=pointer]:
+                - /url: /topics/technical-analysis
+              - link "value-investing" [ref=f1e500] [cursor=pointer]:
+                - /url: /topics/value-investing
+              - link "macroeconomics" [ref=f1e501] [cursor=pointer]:
+                - /url: /topics/macroeconomics
+              - link "portfolio-management" [ref=f1e502] [cursor=pointer]:
+                - /url: /topics/portfolio-management
+              - link "behavioral-finance" [ref=f1e503] [cursor=pointer]:
+                - /url: /topics/behavioral-finance
+            - heading "Resources" [level=3] [ref=f1e504]
+            - link "Readme" [ref=f1e506] [cursor=pointer]:
+              - /url: "#readme-ov-file"
+              - img [ref=f1e507]
+              - text: Readme
+            - link "Activity" [ref=f1e510] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/activity
+              - img [ref=f1e511]
+              - text: Activity
+            - heading "Stars" [level=3] [ref=f1e513]
+            - link "1 star" [ref=f1e515] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/stargazers
+              - img [ref=f1e516]
+              - strong [ref=f1e518]: "1"
+              - text: star
+            - heading "Watchers" [level=3] [ref=f1e519]
+            - link "0 watching" [ref=f1e521] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/watchers
+              - img [ref=f1e522]
+              - strong [ref=f1e524]: "0"
+              - text: watching
+            - heading "Forks" [level=3] [ref=f1e525]
+            - link "0 forks" [ref=f1e527] [cursor=pointer]:
+              - /url: /IdealAuror/investment-learning/forks
+              - img [ref=f1e528]
+              - strong [ref=f1e530]: "0"
+              - text: forks
+            - link "Report repository" [ref=f1e532] [cursor=pointer]:
+              - /url: /contact/report-content?content_url=https%3A%2F%2Fgithub.com%2FIdealAuror%2Finvestment-learning&report=IdealAuror+%28user%29
+          - generic [ref=f1e534]:
+            - heading "Releases" [level=2] [ref=f1e535]:
+              - link "Releases" [ref=f1e536] [cursor=pointer]:
+                - /url: /IdealAuror/investment-learning/releases
+            - generic [ref=f1e537]: No releases published
+          - generic "Loading latest packages" [ref=f1e540]:
+            - heading "Packages" [level=2] [ref=f1e541]:
+              - link "Packages" [ref=f1e542] [cursor=pointer]:
+                - /url: /users/IdealAuror/packages?repo_name=investment-learning
+          - generic "Loading contributors" [ref=f1e554]:
+            - generic:
+              - heading "Contributors" [level=2] [ref=f1e555]:
+                - link "Contributors" [ref=f1e556] [cursor=pointer]:
+                  - /url: /IdealAuror/investment-learning/graphs/contributors
+              - list [ref=f1e557]:
+                - listitem [ref=f1e558]
+                - listitem [ref=f1e560]
+                - listitem [ref=f1e562]
+          - generic [ref=f1e565]:
+            - heading "Languages" [level=2] [ref=f1e566]
+            - list [ref=f1e570]:
+              - listitem [ref=f1e571]:
+                - link "HTML 100.0%" [ref=f1e572] [cursor=pointer]:
+                  - /url: /IdealAuror/investment-learning/search?l=html
+                  - img [ref=f1e573]
+                  - generic [ref=f1e575]: HTML
+                  - generic [ref=f1e576]: 100.0%
+  - contentinfo [ref=f1e578]:
+    - heading "Footer" [level=2] [ref=f1e579]
+    - generic [ref=f1e580]:
+      - generic [ref=f1e581]:
+        - link "GitHub Homepage" [ref=f1e582] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=f1e583]
+        - generic [ref=f1e585]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=f1e586]:
+        - heading "Footer navigation" [level=3] [ref=f1e587]
+        - list "Footer navigation" [ref=f1e588]:
+          - listitem [ref=f1e589]:
+            - link "Terms" [ref=f1e590] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=f1e591]:
+            - link "Privacy" [ref=f1e592] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=f1e593]:
+            - link "Security" [ref=f1e594] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=f1e595]:
+            - link "Status" [ref=f1e596] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=f1e597]:
+            - link "Community" [ref=f1e598] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=f1e599]:
+            - link "Docs" [ref=f1e600] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=f1e601]:
+            - link "Contact" [ref=f1e602] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=f1e603]:
+            - button "Manage cookies" [ref=f1e605] [cursor=pointer]
+          - listitem [ref=f1e606]:
+            - button "Do not share my personal information" [ref=f1e608] [cursor=pointer]

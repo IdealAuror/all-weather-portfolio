@@ -30,7 +30,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 |---|------|------|
 | 1 | 改代码 | `config.py`(常量) → `pipeline.py`(调用) → `strategy_b.py`/`backtest.py`(引擎) |
 | 2 | 全量回测 | `py main.py`，确认无报错并记录指标 |
-| 3 | 更新文档 | `py main.py` 自动同步 `README.md`（编辑文字改 `README.template.md`）、`docs/index.html`、`docs/charts/` |
+| 3 | 更新文档 | `py main.py` 自动同步 `README-zh.md`（编辑中文改 `README.template.md`）、英文 `README.md` 手动改、`docs/index.html`、`docs/charts/` |
 | 4 | 更新 Memory | 有新结论或推翻旧结论时才写 |
 | 5 | 提交 | `git add -A && git commit -m "..." && git push` |
 ## 行为原则

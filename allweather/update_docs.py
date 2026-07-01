@@ -764,14 +764,17 @@ def sync_readme_claude():
 
     ph["{V3C_TREND_DESC}"] = "nonferr/gold/sp500 趋势(75d)"
 
-    for fname in ["README.md", "CLAUDE.md"]:
+    for fname in ["README-zh.md", "CLAUDE.md"]:
         path = ROOT / fname
         if not path.exists():
             continue
 
         # 优先读取模板（保留占位符），无模板时直接读主文件（首次/降级）
-        stem = fname.replace(".md", "")
-        template_path = ROOT / f"{stem}.template.md"
+        if fname == "README-zh.md":
+            template_path = ROOT / "README.template.md"
+        else:
+            stem = fname.replace(".md", "")
+            template_path = ROOT / f"{stem}.template.md"
         if template_path.exists():
             text = template_path.read_text(encoding="utf-8")
             source = "模板"
