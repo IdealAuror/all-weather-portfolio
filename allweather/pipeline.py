@@ -19,10 +19,8 @@ from .config import (
     STRESS_EVENTS, OUTPUT_DIR,
     BUCKETS, BUCKET_GROUPS, CASH_TIERS,
     SP500_TREND_WINDOW, HS300_TREND_WINDOW, STRATEGY_PARAMS,
-    V3C_ASSETS, V3C_ASSETS_NO_WTI,
-    V3B_RP_BUCKETS, V3B_RP_ASSETS,
-    V3B_RP_BUCKETS_NO_WTI, V3B_RP_ASSETS_NO_WTI,
-    V3B_CON_ASSETS, V3B_CON_ASSETS_NO_WTI,
+    V3C_ASSETS, V3B_RP_BUCKETS, V3B_RP_ASSETS,
+    V3B_CON_ASSETS,
     RISK_PARITY_TARGET_VOL,
     RISK_PARITY_COV_WINDOW,
 )
@@ -106,35 +104,19 @@ def step_2_run_backtests(rets):
 
     # --- V3-B RP ---
     nv_base, nv_dyn, n, wh, sl = backtest_b(
-        rets[V3B_RP_ASSETS_NO_WTI], rp_buckets=V3B_RP_BUCKETS_NO_WTI,
+        rets[V3B_RP_ASSETS], rp_buckets=V3B_RP_BUCKETS,
         signal_label="V3-B 风险平价", **_common, **_b_rp)
     _store("V3-B 风险平价(20d)", nv_base, nv_dyn, n, wh, sl)
 
     # --- V3-B Con ---
     nv_base, nv_dyn, n, wh, sl = backtest_b(
-        rets[V3B_CON_ASSETS_NO_WTI], signal_label="V3-B 保守增强", **_common, **_b_con)
+        rets[V3B_CON_ASSETS], signal_label="V3-B 保守增强", **_common, **_b_con)
     _store("V3-B 保守增强(20d)", nv_base, nv_dyn, n, wh, sl)
 
     # --- V3c 多元 ---
     nv_base, _, n, wh, sl = backtest_iv(
-        rets, assets=V3C_ASSETS_NO_WTI, signal_label="V3c 多元", **_common, **_iv)
-    _store("V3c 多元", nv_base, None, n, wh, sl)
-
-    # --- V3-B RP +WTI ---
-    nv_base, nv_dyn, n, wh, sl = backtest_b(
-        rets[V3B_RP_ASSETS], rp_buckets=V3B_RP_BUCKETS,
-        signal_label="V3-B 风险平价", **_common, **_b_rp)
-    _store("V3-B 风险平价(20d)+WTI", nv_base, nv_dyn, n, wh, sl)
-
-    # --- V3-B Con +WTI ---
-    nv_base, nv_dyn, n, wh, sl = backtest_b(
-        rets[V3B_CON_ASSETS], signal_label="V3-B 保守增强", **_common, **_b_con)
-    _store("V3-B 保守增强(20d)+WTI", nv_base, nv_dyn, n, wh, sl)
-
-    # --- V3c 多元 +WTI ---
-    nv_base, _, n, wh, sl = backtest_iv(
         rets, assets=V3C_ASSETS, signal_label="V3c 多元", **_common, **_iv)
-    _store("V3c 多元+WTI", nv_base, None, n, wh, sl)
+    _store("V3c 多元", nv_base, None, n, wh, sl)
 
     total = len(nv_results)
     print(f"  ok 完成 {total} 个回测")

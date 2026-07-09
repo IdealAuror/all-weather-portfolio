@@ -1,6 +1,7 @@
-"""统计指标 - 收益、波动、回撤、Sharpe、Calmar、风险贡献、Bootstrap。"""
+"""统计指标 - 收益、波动、回撤、Sharpe、Calmar、风险贡献、Bootstrap、VaR。"""
 import numpy as np
 import pandas as pd
+from scipy import stats as scipy_stats
 from .config import (
     BUCKETS, BOOTSTRAP_N_SIM, BOOTSTRAP_HORIZON_DAYS,
     BOOTSTRAP_BLOCK_DAYS, BOOTSTRAP_SEED, RISK_FREE_ANNUAL,
@@ -308,3 +309,64 @@ def block_bootstrap(weights: pd.Series, rets: pd.DataFrame,
         "loss_prob": (samples_arr < 0).mean(),
         "samples": samples_arr.tolist(),
     }
+
+
+def var_diagnostics(rets: pd.DataFrame, horizon: int = 21,
+                    ci: float = 0.95) -> pd.DataFrame:
+    """VaR/CVaR 月度尾部风险诊断 — 每资产独立计算。
+
+    Args:
+        rets: 日收益率 DataFrame, 列=资产
+        horizon: 滚动窗口, 交易日, 默认 21 ≈ 1 个月
+        ci: 置信度, 默认 0.95
+    Returns:
+        DataFrame, 行=资产, 列=指标, 按 VaR Ratio 降序
+    """
+    z_score = abs(scipy_stats.norm.ppf(1 - ci))
+    z_99 = abs(scipy_stats.norm.ppf(0.01))
+    results = []
+
+    for col in rets.columns:
+        daily = rets[col].dropna()
+        if len(daily) < horizon * 2:
+            continue
+
+        rolling = daily.rolling(window=horizon).apply(
+            lambda x: (1 + x).prod() - 1).dropna()
+        n = len(rolling)
+
+        mu_m = rolling.mean()
+        sigma_m = rolling.std(ddof=1)
+
+        param_var = mu_m - z_score * sigma_m
+        param_var_99 = mu_m - z_99 * sigma_m
+
+        hist_var = float(rolling.quantile(1 - ci))
+        hist_var_99 = float(rolling.quantile(0.01))
+
+        cvar_mask = rolling <= hist_var
+        cvar = float(rolling[cvar_mask].mean()) if cvar_mask.any() else hist_var
+
+        var_ratio = hist_var / param_var if param_var != 0 else float('nan')
+        var_ratio_99 = hist_var_99 / param_var_99 if param_var_99 != 0 else float('nan')
+        cvar_ratio = cvar / hist_var if hist_var != 0 else float('nan')
+
+        daily_skew = float(daily.skew())
+        daily_kurt = float(daily.kurtosis())
+
+        results.append({
+            "asset": col,
+            "n_obs": n,
+            "param_var_95": param_var,
+            "hist_var_95": hist_var,
+            "cvar_95": cvar,
+            "var_ratio": var_ratio,
+            "var_ratio_99": var_ratio_99,
+            "cvar_var_ratio": cvar_ratio,
+            "daily_skew": daily_skew,
+            "daily_kurt": daily_kurt,
+            "vol_monthly": sigma_m,
+        })
+
+    df = pd.DataFrame(results).set_index("asset")
+    return df.sort_values("var_ratio", ascending=False)

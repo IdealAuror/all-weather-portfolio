@@ -68,18 +68,15 @@
 
 ## 附：含原油对比
 
-在 7 资产基础上加入原油（南方原油 LOF 501018），三策略核心指标对比如下：
+三策略核心指标如下（均含原油 WTI）：
 
-| 策略 | 版本 | CAGR | 波动率 | 最大回撤 | Sharpe | Calmar |
-|------|:---:|:----:|:------:|:--------:|:-----:|:------:|
-| **V3-B 保守增强** | 无原油 | **{BCON_CAGR}** | {BCON_VOL} | {BCON_MDD} | **{BCON_SHARPE}** | {BCON_CALMAR} |
-| | +原油 | {BCON_WTI_CAGR} | {BCON_WTI_VOL} | **{BCON_WTI_MDD}** | {BCON_WTI_SHARPE} | **{BCON_WTI_CALMAR}** |
-| **V3-B 风险平价** | 无原油 | **{BRP_CAGR}** | {BRP_VOL} | {BRP_MDD} | **{BRP_SHARPE}** | {BRP_CALMAR} |
-| | +原油 | {BRP_WTI_CAGR} | {BRP_WTI_VOL} | **{BRP_WTI_MDD}** | {BRP_WTI_SHARPE} | **{BRP_WTI_CALMAR}** |
-| **V3c 多元** | 无原油 | **{V3C_CAGR}** | {V3C_VOL} | {V3C_MDD} | **{V3C_SHARPE}** | {V3C_CALMAR} |
-| | +原油 | {V3C_WTI_CAGR} | {V3C_WTI_VOL} | **{V3C_WTI_MDD}** | {V3C_WTI_SHARPE} | **{V3C_WTI_CALMAR}** |
+| 策略 | CAGR | 波动率 | 最大回撤 | Sharpe | Calmar |
+|------|:----:|:------:|:--------:|:-----:|:------:|
+| **V3-B 保守增强** | **{BCON_CAGR}** | {BCON_VOL} | {BCON_MDD} | **{BCON_SHARPE}** | {BCON_CALMAR} |
+| **V3-B 风险平价** | **{BRP_CAGR}** | {BRP_VOL} | {BRP_MDD} | **{BRP_SHARPE}** | {BRP_CALMAR} |
+| **V3c 多元** | **{V3C_CAGR}** | {V3C_VOL} | {V3C_MDD} | **{V3C_SHARPE}** | {V3C_CALMAR} |
 
-> 加入原油后 CAGR 下降 0.2-0.3pp（WTI 本身 CAGR 约 2%），但 MDD 改善 1-2pp。原油在通胀桶内与 gold/nonferr 形成分散，降低尾部风险。当前 501018 申购暂停，恢复后可启用含原油版本。
+> 8 资产含原油（南方原油 LOF 501018），相比 7 资产版 MDD 改善 1-2pp（CAGR -0.2~-0.3pp），原油在通胀桶内与 gold/nonferr 低相关分散。场内 LOF 可直接买卖。
 
 
 ## 快速开始

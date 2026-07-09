@@ -9,7 +9,7 @@ from .config import OUTPUT_DIR, PORTFOLIO_NAMES, CASH_TIERS
 ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = ROOT / "docs"
 
-STRAT_NAMES = list(PORTFOLIO_NAMES.values()) + [f"{v}+WTI" for v in PORTFOLIO_NAMES.values()]
+STRAT_NAMES = list(PORTFOLIO_NAMES.values())
 TIER_LABELS = [t[0] for t in CASH_TIERS] + ["动态"]
 
 _PREFIX_MAP = {PORTFOLIO_NAMES["con"]: "BCON", PORTFOLIO_NAMES["rp"]: "BRP", PORTFOLIO_NAMES["v3c"]: "V3C"}
@@ -753,14 +753,6 @@ def sync_readme_claude():
         ph[f"{{{prefix}_CALMAR}}"] = n(s100["calmar"])
         ph[f"{{{prefix}_CUM}}"] = cum(s100["cum_return"])
         ph[f"{{{prefix}_NEG_YEARS}}"] = neg_years(s_name)
-        wti = f"{s_name}+WTI"
-        if wti in S:
-            m = S[wti]["100% RP"]
-            ph[f"{{{prefix}_WTI_CAGR}}"] = p(m["cagr"])
-            ph[f"{{{prefix}_WTI_VOL}}"] = p(m["vol"])
-            ph[f"{{{prefix}_WTI_MDD}}"] = p(m["mdd"])
-            ph[f"{{{prefix}_WTI_SHARPE}}"] = n(m["sharpe"])
-            ph[f"{{{prefix}_WTI_CALMAR}}"] = n(m["calmar"])
 
     ph["{V3C_TREND_DESC}"] = "nonferr/gold/sp500 趋势(75d)"
 
