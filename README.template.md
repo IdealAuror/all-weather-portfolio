@@ -87,7 +87,8 @@ python main.py                         # 全量回测（自动增量更新数据
 # python main.py --force-fetch         # 强制重拉所有数据
 # python main.py --no-excel            # 跳过 Excel 报告
 # python main.py --no-markdown         # 跳过 Markdown 报告
-python -m allweather.rebalance         # 实盘再平衡
+python -m allweather.rebalance         # CLI 再平衡
+# 或双击 streamlit_app/run.bat  打开 Web 面板（推荐）
 ```
 
 **输出文件**:
@@ -126,8 +127,12 @@ python -m allweather.rebalance         # 实盘再平衡
 │   ├── stats.py             绩效指标 / Bootstrap / D_excess 尾部诊断
 │   ├── reports.py           控制台输出
 │   ├── charts.py            15 张分析图表生成
-│   ├── rebalance.py         实盘再平衡（信号仪表盘）
-│   └── pipeline.py          6 步流水线编排
+│   ├── rebalance.py         实盘再平衡（CLI）
+│   ├── pipeline.py          6 步流水线编排
+├── streamlit_app/           # Web 再平衡面板（推荐）
+│   ├── app.py
+│   ├── run.bat              双击启动
+│   └── run.py               自动开浏览器
 ├── data/                    # 历史数据 CSV
 ├── docs/                    # GitHub Pages 文档
 │   ├── index.html           交互式报告
@@ -147,6 +152,6 @@ python -m allweather.rebalance         # 实盘再平衡
 | **V3-B 保守增强** | 8.69% | 7.99% | −0.70pp | −5.22% | 1.04 |
 | **V3-B 风险平价** | 10.03% | 10.23% | +0.20pp | −7.51% | 0.93 |
 
-> 聚宽版简化项：HS300 抄底从 PB/PE 分位+价格版（纯价格版）、趋势检查月频而非日频、回测起点 2020 年。对比详情见 `joinquant/comparison.md`。
+> 聚宽版简化项：HS300 抄底从 PB/PE 分位+价格版（纯价格版）、趋势检查月频而非日频、回测起点 2020 年。对比详情见 `_archive/joinquant/comparison.md`。
 
-详见 `joinquant/` 目录或 [joinquant/README.md](joinquant/README.md)。
+详见 `_archive/joinquant/` 目录或 [_archive/joinquant/README.md](_archive/joinquant/README.md)。

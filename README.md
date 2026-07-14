@@ -90,7 +90,8 @@ python main.py                         # Full backtest (auto incremental data + 
 # python main.py --force-fetch         # Force re-fetch all data
 # python main.py --no-excel            # Skip Excel report
 # python main.py --no-markdown         # Skip Markdown report
-python -m allweather.rebalance         # Real-portfolio rebalancing
+# 双击 streamlit_app/run.bat  打开 Web 再平衡面板
+python -m allweather.rebalance         # CLI rebalancing (legacy)
 ```
 
 **Output files**:
@@ -136,7 +137,7 @@ python -m allweather.rebalance         # Real-portfolio rebalancing
 │   ├── data.json            Structured metrics
 │   ├── strategy-paper.md    Strategy design paper
 │   └── charts/              Chart PNGs
-├── joinquant/               # JoinQuant platform implementation
+├── _archive/joinquant/      # JoinQuant platform implementation
 └── output/                  # Auto-generated reports
 ```
 
@@ -150,6 +151,6 @@ Three strategies ported to the [JoinQuant (聚宽)](https://www.joinquant.com/) 
 | **V3-B Conservative** | 8.69% | 7.99% | −0.70pp | −5.22% | 1.04 |
 | **V3-B Risk Parity** | 10.03% | 10.23% | +0.20pp | −7.51% | 0.93 |
 
-> JQ simplifications: HS300 dip-buying uses price-only (no PB/PE percentile), trend checks monthly not daily, backtest starts 2020. See `joinquant/comparison.md` for full comparison.
+> JQ simplifications: HS300 dip-buying uses price-only (no PB/PE percentile), trend checks monthly not daily, backtest starts 2020. See `_archive/joinquant/comparison.md` for full comparison.
 
-See `joinquant/` directory or [joinquant/README.md](joinquant/README.md).
+See `_archive/joinquant/` directory or [_archive/joinquant/README.md](_archive/joinquant/README.md).
