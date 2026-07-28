@@ -15,3 +15,10 @@ data/_ak_macro_gold_cache.csv
 .playwright-mcp/
 .firecrawl/
 .vscode/
+
+# 临时文件
+*.png
+data/rebalance_state.json
+data/dividend_etf.csv
+data/dividend_idx.csv
+data/dividend_total_return.csv

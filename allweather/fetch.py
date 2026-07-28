@@ -3,6 +3,8 @@
 仅在数据不齐全时调用；正常回测从已有 CSV 读取。
 """
 import time
+import math
+import requests
 import pandas as pd
 from .config import DATA_DIR, BACKTEST_END
 
@@ -63,23 +65,49 @@ def _fetch_idx_em(sym):
 
 
 def _fetch_etf_nav(code, start, end):
-    import akshare as ak
-    df = ak.fund_etf_fund_info_em(fund=code, start_date=start, end_date=end)
-    # 列顺序固定：净值日期, 单位净值, 累计净值, 日增长率, 申购状态, 赎回状态
-    # 用位置重命名，避免编码乱码导致 rename 失败
-    df.columns = ["date", "unit_nav", "close", "daily_chg", "buy", "sell"]
-    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    """直接调 eastmoney API 获取 ETF 历史净值，避免 akshare 列数硬编码 bug。"""
+    url = "https://api.fund.eastmoney.com/f10/lsjz"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
+        "Referer": f"https://fundf10.eastmoney.com/jjjz_{code}.html",
+    }
+    params = {
+        "fundCode": code,
+        "pageIndex": "1",
+        "pageSize": "20",
+        "startDate": "-".join([start[:4], start[4:6], start[6:]]),
+        "endDate": "-".join([end[:4], end[4:6], end[6:]]),
+        "_": round(time.time() * 1000),
+    }
+    r = requests.get(url, params=params, headers=headers, timeout=30)
+    data_json = r.json()
+    total_page = math.ceil(data_json["TotalCount"] / 20)
+    df_list = []
+    for page in range(1, total_page + 1):
+        if page > 1:
+            params["pageIndex"] = str(page)
+            params["_"] = round(time.time() * 1000)
+            r = requests.get(url, params=params, headers=headers, timeout=30)
+            data_json = r.json()
+        temp_df = pd.DataFrame(data_json["Data"]["LSJZList"])
+        df_list.append(temp_df)
+    big_df = pd.concat(df_list, ignore_index=True)
+    col_map = {
+        "FSRQ": "date", "DWJZ": "unit_nav", "LJJZ": "close",
+        "JZZZL": "daily_chg", "SGZT": "buy", "SHZT": "sell",
+    }
+    big_df = big_df[list(col_map.keys())].rename(columns=col_map)
+    big_df["date"] = pd.to_datetime(big_df["date"], errors="coerce")
     for col in ["close", "unit_nav"]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-    # 验证 close 值是否合理（511130 净值约 100 元，其他 ETF 通常 1~200 元）
-    close_mid = df["close"].median()
-    unit_mid = df["unit_nav"].median()
+        big_df[col] = pd.to_numeric(big_df[col], errors="coerce")
+    close_mid = big_df["close"].median()
+    unit_mid = big_df["unit_nav"].median()
     if not (0.1 <= close_mid <= 5000):
-        raise ValueError(f"{code}: close 中位数={close_mid}，可能列顺序已变更")
+        raise ValueError(f"{code}: close 中位数={close_mid}，超出预期")
     if not (0.1 <= unit_mid <= 5000):
-        raise ValueError(f"{code}: unit_nav 中位数={unit_mid}，可能列顺序已变更")
-    df = df.dropna(subset=["date", "close"])
-    return df[["date", "close"]].sort_values("date")
+        raise ValueError(f"{code}: unit_nav 中位数={unit_mid}，超出预期")
+    big_df = big_df.dropna(subset=["date", "close"])
+    return big_df[["date", "close"]].sort_values("date").reset_index(drop=True)
 
 
 def _fetch_etf_hist(code, start, end):
