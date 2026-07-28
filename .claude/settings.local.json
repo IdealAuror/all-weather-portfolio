@@ -206,7 +206,10 @@
       "WebFetch(domain:caifuhao.eastmoney.com)",
       "WebFetch(domain:xueqiu.com)",
       "Bash(git diff *)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Skill(firecrawl:firecrawl-search)",
+      "Skill(firecrawl:firecrawl-search:*)",
+      "Bash(python main.py --no-excel)"
     ],
     "additionalDirectories": [
       "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio",
