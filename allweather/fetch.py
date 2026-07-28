@@ -21,7 +21,7 @@ TARGETS = {
     "bond_30y_etf": ("etf_nav", "511130"),
     "bond_10y_etf": ("etf_nav", "511260"),
     "bond_credit":  ("etf_nav", "511220"),
-    "gold":         ("etf_nav", "518660"),
+    "gold":         ("etf_nav", "518850"),
     "nonferr":      ("etf_nav", "159980"),
     # QDII
     "us_sp500":     ("etf_nav", "513500"),

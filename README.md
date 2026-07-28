@@ -55,7 +55,7 @@ Based on Bridgewater's **four-quadrant macro exposure** framework, selecting fro
 | **Income** | Municipal bond | 511220 | ✓ | ✓ | ✓ |
 | **Growth↓ 10Y** | 10Y Treasury | 511260 | ✓ | — | — |
 | **Growth↓ 30Y** | 30Y Treasury | 511130 | ✓ | ✓ | ✓ |
-| **Inflation↑** | Gold | 518660 | ✓ | ✓ | ✓ |
+| **Inflation↑** | Gold | 518850 | ✓ | ✓ | ✓ |
 | | Non-ferrous metals | 159980 | ✓ | ✓ | ✓ |
 
 > V3c and V3-B RP exclude bond_10y (same growth↓ bucket as bond_30y, shorter duration, redundant contribution).
