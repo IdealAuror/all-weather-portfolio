@@ -25,8 +25,8 @@ SAFETY_DEDUCT = {
 
 # === 调仓规则 ===
 REBAL_FREQ = "ME"            # 月度再平衡（V3c）
-RISK_FREE_RATE = 0.022 / 252 # 货币基金年化 2.2%（日度）
-RISK_FREE_ANNUAL = 0.022         # 无风险利率年化，用于 Sharpe 修正
+RISK_FREE_RATE = 0.017 / 252   # 10年期国债收益率 ~1.7%（日度，2026.07）
+RISK_FREE_ANNUAL = 0.017       # 无风险利率年化，用于 Sharpe 修正
 
 # === 现金降杠杆档位 ===
 CASH_TIERS = [
