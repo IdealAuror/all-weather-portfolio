@@ -20,7 +20,7 @@ from .config import (
     ROOT, DATA_DIR, ASSETS, ETF_META, PORTFOLIO_NAMES, STRATEGY_PARAMS,
     RISK_PARITY_WINDOW, RISK_PARITY_MAX_WEIGHT, RISK_PARITY_MIN_WEIGHT,
     GOLD_DIP_THRESHOLD, GOLD_DIP_BOOST,
-    HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
+    HS300_DIP_THRESHOLD, HS300_DIP_BOOST, HS300_DIP_SMA,
     HS300_PB_ENTRY, HS300_PE_EXIT, HS300_DIP_EXIT_RECOVERY,
     SP500_TREND_WINDOW,
     V3B_RP_ASSETS, V3B_RP_BUCKETS,
@@ -106,7 +106,7 @@ def compute_signal_states(prices):
     # --- SMA trend filters ---
     signals["nonferr_below_sma75"] = _sma_filter(prices, "nonferr", 75)
     signals["gold_below_sma75"] = _sma_filter(prices, "gold", 75)
-    signals["sp500_below_sma120"] = _sma_filter(prices, "us_sp500", SP500_TREND_WINDOW)
+    signals["sp500_below_sma75"] = _sma_filter(prices, "us_sp500", SP500_TREND_WINDOW)
 
     # --- Gold dip ---
     gold_dd = _drawdown(prices, "gold", 252)
@@ -117,8 +117,8 @@ def compute_signal_states(prices):
     hs300_dd = _drawdown(prices, "hs300", 756)
     signals["hs300_dd_pct"] = hs300_dd
 
-    # HS300 SMA check (> SMA120 for entry, 与 backtest 引擎一致用 shift(1))
-    hs300_sma120 = prices["hs300"].rolling(120).mean().shift(1).iloc[-1]
+    # HS300 SMA check (> SMA for entry, 与 backtest 引擎一致用 shift(1))
+    hs300_sma120 = prices["hs300"].rolling(HS300_DIP_SMA).mean().shift(1).iloc[-1]
     signals["hs300_above_sma120"] = pd.notna(hs300_sma120) and prices["hs300"].iloc[-1] > hs300_sma120
 
     # HS300 PB/PE percentile
@@ -207,7 +207,7 @@ def apply_signal_overrides(strat_key, w, signals, prices=None):
                 w["gold"] = 0.0
 
     # SP500 trend filter (all strategies now include it)
-    if signals.get("sp500_below_sma120", False) and "us_sp500" in w.index and "credit" in w.index:
+    if signals.get("sp500_below_sma75", False) and "us_sp500" in w.index and "credit" in w.index:
         if w["us_sp500"] > 0:
             w["credit"] += w["us_sp500"]
             w["us_sp500"] = 0.0
@@ -270,7 +270,7 @@ def display_signal_dashboard(signals):
 
     print(f"  nonferr vs SMA75:  {_fmt_bool(signals['nonferr_below_sma75'])}")
     print(f"  gold vs SMA75:     {_fmt_bool(signals['gold_below_sma75'])}")
-    print(f"  SP500 vs SMA120:   {_fmt_bool(signals['sp500_below_sma120'])}")
+    print(f"  SP500 vs SMA{SP500_TREND_WINDOW}:   {_fmt_bool(signals['sp500_below_sma75'])}")
     print(f"  Gold 回撤:         {au_dd*100:>5.1f}%  ({_fmt_bool(signals['gold_dip_active'], '可抄底', '未触发')})")
     print(f"  HS300 回撤:        {hs_dd*100:>5.1f}%  ({_fmt_bool(signals['hs300_dd_pct'] <= -HS300_DIP_THRESHOLD, '深度回撤', '正常')})")
 
@@ -305,13 +305,13 @@ def display_weight_table(strat_key, w, signals):
             status.append("趋势过滤→credit")
         if a == "gold" and signals.get("gold_dip_active", False) and pct > 0:
             status.append(f"抄底×{GOLD_DIP_BOOST:.0f}")
-        if a == "us_sp500" and signals.get("sp500_below_sma120", False) and pct == 0:
+        if a == "us_sp500" and signals.get("sp500_below_sma75", False) and pct == 0:
             status.append("趋势过滤→credit")
         if a == "hs300" and signals.get("hs300_dip_ready", False) and pct > 0:
             status.append(f"AND抄底×{HS300_DIP_BOOST:.1f}")
         if a == "credit":
             nf = signals.get("nonferr_below_sma75", False)
-            sp = signals.get("sp500_below_sma120", False)
+            sp = signals.get("sp500_below_sma75", False)
             au = signals.get("gold_below_sma75", False)
             incoming = []
             if nf: incoming.append("nonferr")
@@ -592,8 +592,8 @@ def _check_and_alert(signals, date_str):
         alerts.append("nonferr 跌破 SMA75 → 已清仓转移至 credit")
     if signals.get("gold_below_sma75", False):
         alerts.append("gold 跌破 SMA75 → 已清仓转移至 credit")
-    if signals.get("sp500_below_sma120", False):
-        alerts.append("SP500 跌破 SMA120 → 已清仓转移至 credit")
+    if signals.get("sp500_below_sma75", False):
+        alerts.append(f"SP500 跌破 SMA{SP500_TREND_WINDOW} → 已清仓转移至 credit")
     if signals.get("gold_dip_active", False):
         alerts.append(f"黄金回撤 {signals['gold_dd_pct']*100:.1f}% → 抄底已触发")
     if signals.get("hs300_dip_ready", False):

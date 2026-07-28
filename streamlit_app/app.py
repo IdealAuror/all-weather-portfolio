@@ -24,8 +24,10 @@ from allweather.config import (
     DATA_DIR,
     GOLD_DIP_THRESHOLD,
     HS300_DIP_THRESHOLD,
+    HS300_DIP_SMA,
     HS300_PB_ENTRY,
     HS300_PE_EXIT,
+    SP500_TREND_WINDOW,
 )
 
 st.set_page_config(page_title="全天候再平衡", page_icon="🌤️", layout="wide")
@@ -45,31 +47,37 @@ header[data-testid="stHeader"] { display: none; }
 # ============================================================
 # 信号 → 操作 映射表
 # ============================================================
+_nf = f"{ETF_META['nonferr']['name']} ({ETF_META['nonferr']['code']})"
+_au = f"{ETF_META['gold']['name']} ({ETF_META['gold']['code']})"
+_hs = f"{ETF_META['hs300']['name']} ({ETF_META['hs300']['code']})"
+_sp = f"{ETF_META['us_sp500']['name']} ({ETF_META['us_sp500']['code']})"
+_cr = f"{ETF_META['credit']['name']} ({ETF_META['credit']['code']})"
+
 SIGNAL_ACTIONS = [
     {
         "key": "nonferr_below_sma75",
-        "desc": "有色金属ETF (159980) 跌破 SMA75",
+        "desc": f"{_nf} 跌破 SMA75",
         "condition": lambda s: s.get("nonferr_below_sma75", False),
-        "sell": "有色金属ETF (159980)",
-        "buy": "城投债ETF (511220)",
+        "sell": _nf,
+        "buy": _cr,
         "strategies": ["B-Con", "B-RP", "V3c"],
         "type": "趋势过滤",
     },
     {
         "key": "gold_below_sma75",
-        "desc": "黄金ETF (518850) 跌破 SMA75",
+        "desc": f"{_au} 跌破 SMA75",
         "condition": lambda s: s.get("gold_below_sma75", False),
-        "sell": "黄金ETF (518850)",
-        "buy": "城投债ETF (511220)",
+        "sell": _au,
+        "buy": _cr,
         "strategies": ["B-RP"],
         "type": "趋势过滤",
     },
     {
-        "key": "sp500_below_sma120",
-        "desc": "标普500ETF (513500) 跌破 SMA75",
-        "condition": lambda s: s.get("sp500_below_sma120", False),
-        "sell": "标普500ETF (513500)",
-        "buy": "城投债ETF (511220)",
+        "key": "sp500_below_sma75",
+        "desc": f"{_sp} 跌破 SMA{SP500_TREND_WINDOW}",
+        "condition": lambda s: s.get("sp500_below_sma75", False),
+        "sell": _sp,
+        "buy": _cr,
         "strategies": ["B-Con", "B-RP", "V3c"],
         "type": "趋势过滤",
     },
@@ -77,17 +85,17 @@ SIGNAL_ACTIONS = [
         "key": "gold_dip_active",
         "desc": f"黄金 1Y 回撤 > {GOLD_DIP_THRESHOLD:.0%}，触发抄底",
         "condition": lambda s: s.get("gold_dip_active", False),
-        "sell": "城投债ETF (511220)（筹资）",
-        "buy": "黄金ETF (518850) ×2.5",
+        "sell": f"{_cr}（筹资）",
+        "buy": f"{_au} ×2.5",
         "strategies": ["B-Con", "B-RP", "V3c"],
         "type": "抄底加仓",
     },
     {
         "key": "hs300_dip_ready",
-        "desc": f"HS300 回撤>{HS300_DIP_THRESHOLD:.0%} + PB<{HS300_PB_ENTRY}%ile + 价格>SMA120",
+        "desc": f"HS300 回撤>{HS300_DIP_THRESHOLD:.0%} + PB<{HS300_PB_ENTRY}%ile + 价格>SMA{HS300_DIP_SMA}",
         "condition": lambda s: s.get("hs300_dip_ready", False),
-        "sell": "城投债ETF (511220)（筹资）",
-        "buy": "沪深300ETF (510300) ×1.8",
+        "sell": f"{_cr}（筹资）",
+        "buy": f"{_hs} ×1.8",
         "strategies": ["B-Con", "B-RP", "V3c"],
         "type": "抄底加仓",
     },
@@ -95,8 +103,8 @@ SIGNAL_ACTIONS = [
         "key": "hs300_dip_exit",
         "desc": f"PE > {HS300_PE_EXIT}%ile，抄底出场",
         "condition": lambda s: s.get("hs300_dip_exit", False),
-        "sell": "沪深300ETF (510300) 恢复原权重",
-        "buy": "城投债ETF (511220)",
+        "sell": f"{_hs} 恢复原权重",
+        "buy": _cr,
         "strategies": ["B-Con", "B-RP", "V3c"],
         "type": "抄底出场",
     },
@@ -105,7 +113,7 @@ SIGNAL_ACTIONS = [
 # ============================================================
 # 数据新鲜度
 # ============================================================
-ASSETS_TO_CHECK = ["hs300", "us_sp500", "bond_credit", "bond_10y_etf", "bond_30y_etf", "gold", "nonferr"]
+ASSETS_TO_CHECK = ["hs300", "us_sp500", "bond_credit", "bond_10y_etf", "bond_30y_etf", "gold", "nonferr", "wti"]
 
 
 def _trading_days_ago(last_date, today):
@@ -248,12 +256,15 @@ tab1, tab2, tab3, tab4 = st.tabs(
 with tab1:
     triggered = []
     calm = []
+    not_applicable = []
 
     for sa in SIGNAL_ACTIONS:
         active = sa["condition"](signals)
         applies = strat_key in sa["strategies"]
         if active and applies:
             triggered.append(sa)
+        elif not applies:
+            not_applicable.append(sa)
         else:
             calm.append(sa)
 
@@ -272,11 +283,13 @@ with tab1:
     else:
         st.success("当前无触发信号，所有资产正常配置")
 
-    with st.expander(f"未触发信号（{len(calm)} 项）"):
+    with st.expander(f"未触发信号（{len(calm)} 项，适用本策略）"):
         for sa in calm:
-            applies = strat_key in sa["strategies"]
-            tag = "✅ 适用" if applies else "⚪ 不适用本策略"
-            st.text(f"{tag}  {sa['desc']}")
+            st.text(f"✅ {sa['desc']}")
+
+    with st.expander(f"不适用本策略（{len(not_applicable)} 项）"):
+        for sa in not_applicable:
+            st.text(f"⚪ {sa['desc']}")
 
     st.divider()
     st.subheader("估值分位")
@@ -367,7 +380,7 @@ with tab2:
             status_parts.append("趋势过滤→已清仓")
         if a == "gold" and strat_key == "B-RP" and signals.get("gold_below_sma75") and pct == 0:
             status_parts.append("趋势过滤→已清仓")
-        if a == "us_sp500" and signals.get("sp500_below_sma120") and pct == 0:
+        if a == "us_sp500" and signals.get("sp500_below_sma75") and pct == 0:
             status_parts.append("趋势过滤→已清仓")
         if a == "gold" and signals.get("gold_dip_active") and pct > 0:
             status_parts.append("抄底×2.5")
@@ -377,7 +390,7 @@ with tab2:
             incoming = []
             if signals.get("nonferr_below_sma75"):
                 incoming.append("有色")
-            if signals.get("sp500_below_sma120"):
+            if signals.get("sp500_below_sma75"):
                 incoming.append("标普")
             if strat_key == "B-RP" and signals.get("gold_below_sma75"):
                 incoming.append("黄金")
@@ -393,7 +406,7 @@ with tab2:
 
     st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
-    if any(signals.get(k, False) for k in ["nonferr_below_sma75", "gold_below_sma75", "sp500_below_sma120"]):
+    if any(signals.get(k, False) for k in ["nonferr_below_sma75", "gold_below_sma75", "sp500_below_sma75"]):
         st.info("趋势过滤触发 → 对应资产已清仓，权重转入城投债ETF (511220)")
 
 # ============================================================

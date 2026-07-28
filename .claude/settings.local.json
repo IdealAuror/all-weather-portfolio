@@ -244,7 +244,10 @@
       "Bash(taskkill /f /im streamlit.exe)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8501)",
       "Bash(git show *)",
-      "Bash(rm data/nonferr_old.csv)"
+      "Bash(rm data/nonferr_old.csv)",
+      "Bash(python -c \"from allweather.rebalance import STRATEGIES, compute_signal_states, apply_signal_overrides; print\\('rebalance OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('streamlit_app/app.py'\\).read\\(\\)\\); print\\('app.py syntax OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('streamlit_app/app.py', encoding='utf-8'\\).read\\(\\)\\); print\\('app.py syntax OK'\\)\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio",
