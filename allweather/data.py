@@ -405,7 +405,7 @@ def _load_wti_cny() -> pd.Series:
     u = usdcny.reindex(combined).ffill()
     wti_proxy = (w * u).dropna()
 
-    return stitch_series(sc, wti_proxy, annual_deduct=0.0)
+    return stitch_series(sc, wti_proxy, annual_deduct=0.009)
 
 
 def load_hs300_pe(col_index: int = 2) -> pd.Series:
