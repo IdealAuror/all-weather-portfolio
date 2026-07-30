@@ -69,6 +69,7 @@ def step_2_run_backtests(rets):
     _common = dict(
         cash_ratio=0.0,
         nonferr_trend_window=75,
+        wti_trend_window=75,
         hs300_value_dip=True,
         track_weights=True, track_signals=True,
         hs300_pb_data=hs300_pb_data, hs300_pe_data=hs300_pe_data,

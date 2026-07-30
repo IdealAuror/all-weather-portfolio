@@ -46,6 +46,7 @@ def _apply_trend_dip(w: np.ndarray, price_arr: np.ndarray, i: int,
     """
     nf_idx = col_idx.get("nonferr", -1)
     gold_idx = col_idx.get("gold", -1)
+    wti_idx = col_idx.get("wti", -1)
     hs300_idx = col_idx.get("hs300", -1)
     credit_idx = col_idx.get("credit", -1)
     s = sma_params
@@ -67,6 +68,11 @@ def _apply_trend_dip(w: np.ndarray, price_arr: np.ndarray, i: int,
         if price_arr[i, gold_idx] < s["au_sma"] and credit_idx >= 0:
             w[credit_idx] += w[gold_idx]
             w[gold_idx] = 0.0
+
+    if s["wti_window"] > 0 and wti_idx >= 0 and w[wti_idx] > 0 and s["wti_sma"] is not None:
+        if price_arr[i, wti_idx] < s["wti_sma"] and credit_idx >= 0:
+            w[credit_idx] += w[wti_idx]
+            w[wti_idx] = 0.0
 
     if d["gold_dip_threshold"] is not None and gold_idx >= 0 and w[gold_idx] > 0:
         gold_dd = price_arr[i, gold_idx] / d["gold_peak"] - 1
@@ -135,16 +141,20 @@ def _lookup_sma_params(
     i: int, price_arr: np.ndarray, col_idx: dict, sma_cache: dict,
     nonferr_trend_window: int, nonferr_idx: int,
     gold_trend_filter: bool, gold_idx: int, gold_trend_window: int,
+    wti_trend_window: int, wti_idx: int,
     equity_trend_assets: list | None, equity_trend_windows: dict | None, equity_trend_window: int,
 ) -> tuple:
     """Lookup SMA values for trend filters from precomputed cache."""
     nf_sma = None
     au_sma = None
+    wti_sma = None
     eq_smas = {}
     if nonferr_trend_window > 0 and nonferr_idx >= 0 and i > nonferr_trend_window:
         nf_sma = float(sma_cache[nonferr_trend_window][i, nonferr_idx])
     if gold_trend_filter and gold_idx >= 0 and i > gold_trend_window:
         au_sma = float(sma_cache[gold_trend_window][i, gold_idx])
+    if wti_trend_window > 0 and wti_idx >= 0 and i > wti_trend_window:
+        wti_sma = float(sma_cache[wti_trend_window][i, wti_idx])
     if equity_trend_assets:
         for eq in equity_trend_assets:
             eq_idx = col_idx.get(eq)
@@ -152,7 +162,7 @@ def _lookup_sma_params(
                 wdw = equity_trend_windows.get(eq, equity_trend_window) if equity_trend_windows else equity_trend_window
                 if i > wdw:
                     eq_smas[eq] = float(sma_cache[wdw][i, eq_idx])
-    return nf_sma, au_sma, eq_smas
+    return nf_sma, au_sma, wti_sma, eq_smas
 
 
 def _apply_drift(h: np.ndarray, ret: np.ndarray, eff_cash: float) -> np.ndarray:
@@ -166,9 +176,10 @@ def _apply_drift(h: np.ndarray, ret: np.ndarray, eff_cash: float) -> np.ndarray:
 
 def _build_signal_entry(
     d, w: np.ndarray, price_arr: np.ndarray, i: int,
-    col_idx: dict, nf_sma, au_sma, eq_smas: dict,
+    col_idx: dict, nf_sma, au_sma, wti_sma, eq_smas: dict,
     nonferr_trend_window: int, nonferr_idx: int,
     gold_trend_filter: bool, gold_idx: int, gold_dip_threshold: float | None, gold_peak: float,
+    wti_trend_window: int, wti_idx: int,
     equity_trend_assets: list | None,
     hs300_idx: int, pb_data, pe_data, hs300_peak: float, hs300_boosted: bool, hs300_dip_boost: float,
     hs300_pb_pct, hs300_pe_pct,
@@ -182,6 +193,9 @@ def _build_signal_entry(
     if gold_trend_filter and gold_idx >= 0:
         entry['gold_below_sma'] = bool(price_arr[i, gold_idx] < au_sma) if au_sma is not None else False
         entry['gold_filtered'] = w[gold_idx] == 0
+    if wti_trend_window > 0 and wti_idx >= 0:
+        entry['wti_below_sma'] = bool(price_arr[i, wti_idx] < wti_sma) if wti_sma is not None else False
+        entry['wti_filtered'] = w[wti_idx] == 0
     if equity_trend_assets:
         for eq in equity_trend_assets:
             eq_idx = col_idx.get(eq)
@@ -233,6 +247,7 @@ def backtest(
     nonferr_trend_window: int = 75,
     gold_trend_filter: bool = False,
     gold_trend_window: int = 75,
+    wti_trend_window: int = 0,
     gold_dip_threshold: float | None = GOLD_DIP_THRESHOLD,
     gold_dip_boost: float = GOLD_DIP_BOOST,
     gold_dip_cap: float | None = None,
@@ -283,6 +298,7 @@ def backtest(
     n_rebal = 0
     nonferr_idx = col_idx.get("nonferr", -1)
     gold_idx = col_idx.get("gold", -1)
+    wti_idx = col_idx.get("wti", -1)
     hs300_idx = col_idx.get("hs300", -1)
     credit_idx = col_idx.get("credit", -1)
 
@@ -293,6 +309,8 @@ def backtest(
         _needed_windows.add(nonferr_trend_window)
     if gold_trend_filter and gold_trend_window > 0:
         _needed_windows.add(gold_trend_window)
+    if wti_trend_window > 0:
+        _needed_windows.add(wti_trend_window)
     if hs300_value_dip and hs300_idx >= 0 and hs300_dip_sma > 0:
         _needed_windows.add(hs300_dip_sma)
     if equity_trend_assets:
@@ -374,10 +392,11 @@ def backtest(
                 new_w_arr = _apply_target_vol(new_w_arr, rets_rp.iloc[i - vol_target_window:i], target_vol)
 
             # --- Lookup SMA conditions from precomputed cache ---
-            nf_sma, au_sma, eq_smas = _lookup_sma_params(
+            nf_sma, au_sma, wti_sma, eq_smas = _lookup_sma_params(
                 i, price_arr, col_idx, sma_cache,
                 nonferr_trend_window, nonferr_idx,
                 gold_trend_filter, gold_idx, gold_trend_window,
+                wti_trend_window, wti_idx,
                 equity_trend_assets, equity_trend_windows, equity_trend_window,
             )
 
@@ -394,7 +413,8 @@ def backtest(
                     hs300_sma_val=hs300_sma_v, hs300_price_val=hs300_px, date=d,
                 )
             sma_params = {"nf_window": nonferr_trend_window, "nf_sma": nf_sma,
-                          "au_sma": au_sma, "eq_smas": eq_smas}
+                          "au_sma": au_sma, "wti_window": wti_trend_window, "wti_sma": wti_sma,
+                          "eq_smas": eq_smas}
             _gb_before = gold_boosted
 
             # --- Apply trend filters + dip on base weights ---
@@ -420,9 +440,10 @@ def backtest(
             if track_signals:
                 entry = _build_signal_entry(
                     d, w, price_arr, i, col_idx,
-                    nf_sma, au_sma, eq_smas,
+                    nf_sma, au_sma, wti_sma, eq_smas,
                     nonferr_trend_window, nonferr_idx,
                     gold_trend_filter, gold_idx, gold_dip_threshold, gold_peak,
+                    wti_trend_window, wti_idx,
                     equity_trend_assets,
                     hs300_idx, pb_data, pe_data, hs300_peak, hs300_boosted, hs300_dip_boost,
                     hs300_pb_pct, hs300_pe_pct, signal_label,
@@ -462,6 +483,7 @@ def backtest_iv(
     assets: list | None = None,
     gold_trend_filter: bool = False,
     gold_trend_window: int = 75,
+    wti_trend_window: int = 0,
     track_weights: bool = False,
     hs300_value_dip: bool = False,
     hs300_pb_entry: float = HS300_PB_ENTRY,
@@ -486,6 +508,7 @@ def backtest_iv(
         max_w=max_w, min_w=min_w,
         nonferr_trend_window=nonferr_trend_window,
         gold_trend_filter=gold_trend_filter, gold_trend_window=gold_trend_window,
+        wti_trend_window=wti_trend_window,
         gold_dip_threshold=gold_dip_threshold, gold_dip_boost=gold_dip_boost,
         gold_dip_cap=gold_dip_cap,
         hs300_dip_threshold=hs300_dip_threshold, hs300_dip_boost=hs300_dip_boost,
