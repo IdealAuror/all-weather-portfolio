@@ -251,12 +251,15 @@
       "Bash(daxiapi stock *)",
       "Bash(daxiapi market *)",
       "Bash(npx daxiapi-cli@latest stock info 601163 601966 601058)",
-      "Bash(py portfolio_comparison/compare.py)"
+      "Bash(py portfolio_comparison/compare.py)",
+      "Bash(xxd)",
+      "Bash(cd \"c:\\\\Users\\\\bc-2\\\\Desktop\\\\all-weather-portfolio\" && rm -f output/charts/*+WTI.png docs/charts/*+WTI.png docs/charts/regime_quadrant.png docs/charts/weights_CI011001_全天候.png docs/charts/weights_V3-B_风险平价桶20d.png && echo \"deleted\" && echo \"--- output/charts ---\" && ls output/charts/ && echo \"--- docs/charts ---\" && ls docs/charts/)"
     ],
     "additionalDirectories": [
       "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio",
       "\\tmp",
-      "c:\\Users\\bc-2\\Desktop\\all-weather-portfolio\\docs"
+      "c:\\Users\\bc-2\\Desktop\\all-weather-portfolio\\docs",
+      "C:\\Users\\bc-2\\Desktop\\all-weather-portfolio\\output\\charts"
     ]
   }
 }
