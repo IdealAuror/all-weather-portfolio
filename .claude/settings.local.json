@@ -253,7 +253,10 @@
       "Bash(npx daxiapi-cli@latest stock info 601163 601966 601058)",
       "Bash(py portfolio_comparison/compare.py)",
       "Bash(xxd)",
-      "Bash(cd \"c:\\\\Users\\\\bc-2\\\\Desktop\\\\all-weather-portfolio\" && rm -f output/charts/*+WTI.png docs/charts/*+WTI.png docs/charts/regime_quadrant.png docs/charts/weights_CI011001_全天候.png docs/charts/weights_V3-B_风险平价桶20d.png && echo \"deleted\" && echo \"--- output/charts ---\" && ls output/charts/ && echo \"--- docs/charts ---\" && ls docs/charts/)"
+      "Bash(cd \"c:\\\\Users\\\\bc-2\\\\Desktop\\\\all-weather-portfolio\" && rm -f output/charts/*+WTI.png docs/charts/*+WTI.png docs/charts/regime_quadrant.png docs/charts/weights_CI011001_全天候.png docs/charts/weights_V3-B_风险平价桶20d.png && echo \"deleted\" && echo \"--- output/charts ---\" && ls output/charts/ && echo \"--- docs/charts ---\" && ls docs/charts/)",
+      "Bash(py test_nasdaq_replace.py)",
+      "Bash(echo \"\")",
+      "Bash(echo \"- [否决：纳斯达克替换标普500 \\(2026-07-30\\)]\\(veto_nasdaq_replace_sp500.md\\) — 理论+0.52pp MDD改善，但QDII溢价摩擦吃光超额收益\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\bc-2\\.claude\\projects\\c--Users-bc-2-Desktop-all-weather-portfolio",
