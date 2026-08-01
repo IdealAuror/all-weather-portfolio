@@ -364,6 +364,9 @@ def step_6_save_outputs(nv_results, metrics, boot=None,
     chart_dst = DOCS_DIR / "charts"
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
     chart_dst.mkdir(parents=True, exist_ok=True)
+    # 先清后复制：charts.py 不再生成的旧图（如 +WTI 对比图）不残留
+    for old in chart_dst.glob("*.png"):
+        old.unlink()
     for f in chart_src.glob("*.png"):
         shutil.copy2(f, chart_dst / f.name)
     print(f"  ok docs/data.json + docs/charts/（GitHub Pages 同步）")
