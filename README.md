@@ -23,9 +23,9 @@ Online docs: [https://idealauror.github.io/all-weather-portfolio/](https://ideal
 
 | Strategy | Style | CAGR | Vol | Max DD | Sharpe | One-liner |
 |----------|:-----:|:----:|:---:|:------:|:-----:|-----------|
-| **V3-B Conservative(20d)** | Conservative Enhanced | **8.26%** | 3.62% | **-5.31%** | **1.81** | Inverse vol 20d + nonferr(75d) + HS300 AND dip |
-| **V3-B Risk Parity(20d)** | Academic | 8.95% | 4.90% | -5.68% | 1.48 | 4-bucket equal HRP + nonferr/gold/sp500/hs300 trends + dip + target vol |
-| **V3c Multi-Asset** | All-Weather | **9.29%** | 4.60% | -6.28% | 1.65 | 6-asset inverse vol 20d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
+| **V3-B Conservative(20d)** | Conservative Enhanced | **8.35%** | 3.66% | **-5.28%** | **1.82** | Inverse vol 20d + nonferr(75d) + HS300 AND dip |
+| **V3-B Risk Parity(20d)** | Academic | 9.39% | 4.95% | -6.63% | 1.55 | 4-bucket equal HRP + nonferr/gold/sp500/hs300 trends + dip + target vol |
+| **V3c Multi-Asset** | All-Weather | **10.16%** | 5.17% | -6.30% | 1.63 | 6-asset inverse vol 20d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
 
 > V3-B RP 4 trend filters: nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d); V3c 3 trend filters: nonferr(75d) + gold(75d) + sp500(75d). Both exclude bond_10y. All three strategies include crude oil (WTI 75d trend filter, default).
 
@@ -97,7 +97,7 @@ python -m allweather.rebalance         # CLI rebalancing (legacy)
 - **30Y Treasury synthesis**: No real ETF data before Mar 2024 — 3-phase synthesis (duration multiplier → spread method → real data), synthetic period deducts 0.3% annualized
 - **QDII quota**: S&P 500 (513500) subject to QDII limits — may trade at premium or suspend subscriptions under extreme conditions
 - **Fee assumption**: Backtest uses price returns, excludes management/custodian fees (~0.5%/yr at ETF level); Sharpe ratio adjusted via risk-free rate
-- **Execution risk**: Backtest assumes month-end close-price execution; real trading faces slippage and liquidity differences
+- **Execution risk**: Backtest assumes execution at the last trading day of each month close price (REBAL_MODE=month_end, avoiding the commodity futures roll window mid-month); real trading faces slippage and liquidity differences
 
 
 ## Project Layout

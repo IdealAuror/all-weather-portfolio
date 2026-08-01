@@ -321,7 +321,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 </tbody></table>
 <p class="para">All Seasons 是 Robbins 在《Money: Master the Game》里向 Dalio 求来的简化版，适合零售但忽略了风险贡献的动态变化。RPAR/ALLW 才是真正的风险平价 ETF。中国版借鉴 RPAR 的桶结构，但权重用样本协方差 + 长期波动率假设求解，避开窗口偏差。</p>
 <h2 class="ch-h1" id="ch2">三、中国版风险平价策略</h2>
-<p class="para">三套策略，三条路线，均为 ★★★ 推荐。<strong>V3c 多元</strong> 是 6 资产逆波动率 60d + nonferr/SP500 趋势过滤 + HS300 抄底；<strong>V3-B 风险平价</strong> 是 4 桶真正等权风险平价（30Y 国债，去掉 10Y）+ nonferr/Gold/SP500/HS300 四重趋势过滤 + HS300 抄底（回报最高）；<strong>V3-B 保守增强</strong> 是 7 资产逆波动率 20d + nonferr 趋势过滤 + HS300 抄底（Sharpe 最高、回撤最低）。</p>
+<p class="para">三套策略，三条路线，均为 ★★★ 推荐。<strong>V3c 多元</strong> 是 6 资产逆波动率 20d + nonferr/SP500 趋势过滤 + HS300 抄底；<strong>V3-B 风险平价</strong> 是 4 桶真正等权风险平价（30Y 国债，去掉 10Y）+ nonferr/Gold/SP500/HS300 四重趋势过滤 + HS300 抄底（回报最高）；<strong>V3-B 保守增强</strong> 是 7 资产逆波动率 20d + nonferr 趋势过滤 + HS300 抄底（Sharpe 最高、回撤最低）。</p>
 <h3 class="sec-h3">怎么选？三套策略一句话</h3>
 	<table class="data-tbl" style="--header-color: #1F4E79;">
 	<thead><tr>
@@ -333,7 +333,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	<tr>
 	<td class="td-first">不想研究桶逻辑，追求简单透明</td>
 	<td class="td-num">V3c 多元 ★★★</td>
-	<td class="td-num">6 资产逆波动率 60d，月度调仓一次，执行成本最低</td>
+	<td class="td-num">6 资产逆波动率 20d，月度调仓一次，执行成本最低</td>
 	</tr>
 	<tr>
 	<td class="td-first">认同正统全天候，追求最高长期回报</td>
@@ -357,7 +357,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 	</tr></thead>
 	<tbody>
 	<tr><td class="td-first">定位</td><td class="td-num">简约派</td><td class="td-num">学院派</td><td class="td-num">保守增强</td></tr>
-	<tr><td class="td-first">方法</td><td class="td-num">6 资产逆波动率 60d<br>+ nonferr/SP500 趋势过滤<br></td><td class="td-num">4 桶等权 × 桶内逆波动率<br>+ nonferr/Gold/SP500/HS300 趋势过滤<br></td><td class="td-num">逆波动率 20d<br>+ nonferr 趋势过滤<br>max_w=0.25</td></tr>
+	<tr><td class="td-first">方法</td><td class="td-num">6 资产逆波动率 20d<br>+ nonferr/SP500 趋势过滤<br></td><td class="td-num">4 桶等权 × 桶内逆波动率<br>+ nonferr/Gold/SP500/HS300 趋势过滤<br></td><td class="td-num">逆波动率 20d<br>+ nonferr 趋势过滤<br>max_w=0.25</td></tr>
 	<tr><td class="td-first">CAGR</td><td class="td-num td-pos">9.06%</td><td class="td-num td-pos">10.93%</td><td class="td-num td-pos">7.70%</td></tr>
 	<tr><td class="td-first">累计收益</td><td class="td-num td-pos">+546.61%</td><td class="td-num td-pos">+832.78%</td><td class="td-num td-pos">+393.42%</td></tr>
 	<tr><td class="td-first">最大回撤</td><td class="td-num td-pos">-7.01%</td><td class="td-num td-pos">-9.48%</td><td class="td-num td-pos">-6.40%</td></tr>
@@ -435,7 +435,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para" style="font-size:13px; color:#666;">此外，V3-B 风险平价额外去掉了 10 年国债：在等桶权重（25%×4）下，10Y（~8yr 久期）与 30Y（~18yr）同属增长↓桶，保留两个会稀释其他桶的风险预算。移除 10Y 后 B-RP 的 CAGR 受益于更集中的久期暴露，桶间风险预算更均衡。</p>
 
 <h2 class="plan-title plan-c">方案 1: V3c 多元型 ★★★ 强烈推荐</h2>
-<p class="para-bold">特征：6 资产逆波动率加权 60d + 月度调仓 + nonferr(75d)/SP500(75d) 趋势过滤 + HS300 AND抄底(价格回撤≥25% AND PB<30%ile → 1.8x)。精简高效，去冗余。CAGR 8.86%、回撤 -7.26%、Sharpe 1.20。</p>
+<p class="para-bold">特征：6 资产逆波动率加权 20d + 月度调仓 + nonferr(75d)/SP500(75d) 趋势过滤 + HS300 AND抄底(价格回撤≥25% AND PB<30%ile → 1.8x)。精简高效，去冗余。CAGR 10.16%、回撤 -6.30%、Sharpe 1.63。</p>
 <p class="para">适合：初入全天候、不想研究桶逻辑、追求简单透明的投资者。</p>
 <h3 class="sec-h3">核心理念</h3>
 <p class="para">用最少的资产、最简单的规则，复现全天候的核心效果。6 只 ETF 覆盖四大宏观象限，逆波动率让低波资产（信用债）自然获得高权重——不需要预设任何比例，每月花 5 分钟照着算好的权重调一次即可。nonferr + SP500 双重趋势过滤做风控增强，不追求极致回报，追求"几乎不亏钱"的稳健复利。</p>
@@ -828,7 +828,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <th>V3-B 保守增强(20d) ★★★</th>
 </tr></thead>
 <tbody><tr>
-<td class="td-first">哲学</td><td class="td-num">6资产逆波动率 60d，精简高效</td>
+<td class="td-first">哲学</td><td class="td-num">6资产逆波动率 20d，精简高效</td>
 <td class="td-num">4桶真正等权风险平价 + 四重趋势过滤</td>
 <td class="td-num">逆波动率直接加权</td></tr>
 <tr>
@@ -895,8 +895,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <tr>
 <td class="td-first">V3c 多元</td>
 <td class="td-num">逆波动率动态</td>
-<td class="td-num">60d</td>
-<td class="td-num">60d SMA</td>
+<td class="td-num">20d</td>
+<td class="td-num">75d SMA</td>
 <td class="td-num">已关闭</td>
 <td class="td-num">回撤 &gt;25%，1.8x</td>
 </tr>
@@ -926,7 +926,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <th>重定向</th>
 </tr></thead>
 <tbody>
-<tr><td class="td-first">V3c 多元</td><td class="td-num">60d SMA</td><td class="td-num">有色 &lt; 60日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
+<tr><td class="td-first">V3c 多元</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
 	<tr><td class="td-first">V3c 多元</td><td class="td-num">—</td><td class="td-num">已关闭</td><td class="td-num">—</td></tr>
 	<tr><td class="td-first">V3c 多元</td><td class="td-num">25% 回撤 AND PE<30%ile</td><td class="td-num">沪深300从高点回撤 &gt; 25% 且 PE<30%ile</td><td class="td-num">沪深300 1.8倍加仓（从信用债提取）</td></tr>
 <tr><td class="td-first">V3-B 风险平价(20d)</td><td class="td-num">75d SMA</td><td class="td-num">有色 &lt; 75日均线</td><td class="td-num">清仓有色 → 加信用债</td></tr>
@@ -1203,8 +1203,8 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 
 <h3 class="sec-h3">（四）各策略的具体公式</h3>
 
-<p class="para-bold">V3c 多元（6 资产，逆波动率 60d）</p>
-<p class="para">按上述四步计算，参数：窗口 W = 60d，max_w = 0.30，min_w = 0.03。每月计算后检查 nonferr 趋势过滤（75d SMA）。</p>
+<p class="para-bold">V3c 多元（6 资产，逆波动率 20d）</p>
+<p class="para">按上述四步计算，参数：窗口 W = 20d，max_w = 0.25，min_w = 0.03。每月计算后检查 nonferr 趋势过滤（75d SMA）。</p>
 
 <p class="para-bold">V3-B 风险平价（6 资产 4 桶，分层 RP 20d）</p>
 <p class="para">两层的逆波动率：</p>
