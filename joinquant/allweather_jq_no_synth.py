@@ -1,7 +1,7 @@
 """
 全季节策略 — 聚宽版（无合成数据 · 测试版）
 ============================================
-策略: V3c — 6资产逆波动率60d + nonferr/gold/sp500 75d趋势 + HS300 AND抄底
+策略: V3c — 6资产逆波动率20d + nonferr/gold/sp500 75d趋势 + HS300 AND抄底
 资产: 6只中国ETF，全部使用真实数据，不做久期合成
 
 回测起点: 2024-03-20（30Y国债ETF 511130 上市日，所有ETF有真实数据）
@@ -122,8 +122,8 @@ ETF_NAMES = {
 CFG = {
     "assets": ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr"],
     "weighting": "inverse_vol",
-    "window": 60,
-    "max_w": 0.30,
+    "window": 20,
+    "max_w": 0.25,
     "min_w": 0.03,
     "nonferr_trend": 75,
     "gold_trend": 75,
@@ -549,7 +549,7 @@ def initialize(context):
     g.first_rebalance = True
 
     # --- 月频调仓（每月首个交易日 14:50） ---
-    run_monthly(monthly_rebalance, monthday=1, time='14:50')
+    run_monthly(monthly_rebalance, monthday=-1, time='14:50')  # 月末最后交易日
 
 
 def apply_cost_model():

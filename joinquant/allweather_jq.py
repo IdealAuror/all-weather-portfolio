@@ -5,7 +5,7 @@
 资产: 6-7只中国ETF，覆盖增长/债券/通胀三大宏观场景
 
 三版本可选（修改 STRATEGY 变量切换）:
-  V3c        - 6资产逆波动率60d + nonferr/gold/sp500 75d趋势 + HS300 AND抄底
+  V3c        - 6资产逆波动率20d + nonferr/gold/sp500 75d趋势 + HS300 AND抄底
   V3-B Con   - 7资产逆波动率20d + nonferr 75d趋势 + HS300 AND抄底
   V3-B RP    - 4桶HRP 20d + 四重趋势 + HS300 AND抄底 + target_vol=9%
 
@@ -138,8 +138,8 @@ def _get_strategy_config():
         return {
             "assets": ["hs300", "us_sp500", "credit", "bond_30y", "gold", "nonferr"],
             "weighting": "inverse_vol",
-            "window": 60,
-            "max_w": 0.30,
+            "window": 20,
+            "max_w": 0.25,
             "min_w": 0.03,
             "nonferr_trend": 75,
             "gold_trend": 75,
@@ -804,7 +804,7 @@ def initialize(context):
     g.first_rebalance = True
 
     # --- 月频调仓（每月首个交易日 14:50） ---
-    run_monthly(monthly_rebalance, monthday=1, time='14:50')
+    run_monthly(monthly_rebalance, monthday=-1, time='14:50')  # 月末最后交易日（对齐本地 REBAL_MODE=month_end）
 
 
 def apply_cost_model():
