@@ -25,7 +25,7 @@ Online docs: [https://idealauror.github.io/all-weather-portfolio/](https://ideal
 |----------|:-----:|:----:|:---:|:------:|:-----:|-----------|
 | **V3-B Conservative(20d)** | Conservative Enhanced | **8.26%** | 3.62% | **-5.31%** | **1.81** | Inverse vol 20d + nonferr(75d) + HS300 AND dip |
 | **V3-B Risk Parity(20d)** | Academic | 8.95% | 4.90% | -5.68% | 1.48 | 4-bucket equal HRP + nonferr/gold/sp500/hs300 trends + dip + target vol |
-| **V3c Multi-Asset** | All-Weather | **9.29%** | 4.60% | -6.28% | 1.65 | 6-asset inverse vol 60d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
+| **V3c Multi-Asset** | All-Weather | **9.29%** | 4.60% | -6.28% | 1.65 | 6-asset inverse vol 20d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
 
 > V3-B RP 4 trend filters: nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d); V3c 3 trend filters: nonferr(75d) + gold(75d) + sp500(75d). Both exclude bond_10y. All three strategies include crude oil (WTI 75d trend filter, default).
 

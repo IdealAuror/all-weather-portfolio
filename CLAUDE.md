@@ -97,7 +97,7 @@ CI：`.github/workflows/backtest.yml` 跑 `py main.py`，检查 Sharpe/MDD 边�
 | 策略 | 一句话 |
 |------|--------|
 | V3-B 保守增强(20d) | 逆波动率20d + nonferr75d趋势 + HS300 AND抄底 — Sharpe 1.81 |
-| V3c 多元 | 6资产逆波动率60d + nonferr/gold/sp500趋势75d + HS300 AND抄底 — MDD -6.28% |
+| V3c 多元 | 6资产逆波动率20d + nonferr/gold/sp500趋势75d + HS300 AND抄底 — MDD -6.75% |
 | V3-B 风险平价(20d) | 4桶HRP + 四重趋势 + 抄底 + target_vol=9% — CAGR 8.95% |
 增长↑(hs300,sp500) | 收益垫(credit) | 增长↓10Y(bond_10y) | 增长↓30Y(bond_30y) | 通胀↑(gold,nonferr)
 ## 策略参考
@@ -106,7 +106,7 @@ CI：`.github/workflows/backtest.yml` 跑 `py main.py`，检查 Sharpe/MDD 边�
 |------|------|----------|------|------|
 | V3-B 保守增强(20d) | `strategy_b.py::backtest_b` | 逆波动率 20d (max 0.25) + nonferr 75d + HS300 AND抄底 | 7 (含 bond_10y) | Sharpe 最高 |
 | V3-B 风险平价(20d) | `strategy_b.py::backtest_b` | 4 桶等权 HRP + nonferr 75d + gold 75d + sp500 75d + hs300 30d + HS300 AND抄底 | 6 (无 bond_10y) | CAGR 最高 |
-| V3c 多元 | `backtest.py::backtest_iv` | 逆波动率 60d + nonferr 75d + gold 75d + sp500 75d + HS300 AND抄底 | 6 (无 bond_10y) | 最均衡 |
+| V3c 多元 | `backtest.py::backtest_iv` | 逆波动率 20d + nonferr 75d + gold 75d + sp500 75d + HS300 AND抄底 | 6 (无 bond_10y) | 最均衡 |
 
 × 3-4 现金档：100% RP / 85% RP / 70% RP / 动态（仅 V3-B 系列）。
 

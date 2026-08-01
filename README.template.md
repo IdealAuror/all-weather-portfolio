@@ -25,9 +25,9 @@
 |------|:----:|:----:|:------:|:--------:|:-----:|--------|
 | **V3-B 保守增强(20d)** | 保守增强 | **{BCON_CAGR}** | {BCON_VOL} | **{BCON_MDD}** | **{BCON_SHARPE}** | 逆波动率 20d + nonferr(75d) + HS300 AND 抄底 |
 | **V3-B 风险平价(20d)** | 学院派 | {BRP_CAGR} | {BRP_VOL} | {BRP_MDD} | {BRP_SHARPE} | 4 桶等权 HRP + nonferr/gold/sp500/hs300 趋势 + 抄底 + 波动率控制 |
-| **V3c 多元** | 多元全天候 | **{V3C_CAGR}** | {V3C_VOL} | {V3C_MDD} | {V3C_SHARPE} | 6 资产逆波动率 60d + {V3C_TREND_DESC} + HS300 AND 抄底 |
+| **V3c 多元** | 多元全天候 | **{V3C_CAGR}** | {V3C_VOL} | {V3C_MDD} | {V3C_SHARPE} | 6 资产逆波动率 20d + {V3C_TREND_DESC} + HS300 AND 抄底 |
 
-> V3-B RP 四重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d)；V3c 三重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d)。不含 bond_10y（CAGR +1.43pp, Sharpe -0.02）。V3c 多元 6 资产逆波动率 60d，同样不含 bond_10y。三策略均含原油（WTI 75d 趋势过滤，默认集成）。
+> V3-B RP 四重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d)；V3c 三重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d)。不含 bond_10y（CAGR +1.43pp, Sharpe -0.02）。V3c 多元 6 资产逆波动率 20d，同样不含 bond_10y。三策略均含原油（WTI 75d 趋势过滤，默认集成）。
 
 | | 定位 | CAGR | MDD | 核心约束 | 趋势过滤 | 负收益年 |
 |--|:--:|:---:|:---:|:--------:|:--------:|:--------:|

@@ -192,8 +192,8 @@ STRATEGY_PARAMS = {
     },
     "v3c": {
         "method": "inverse_vol",
-        "window": 60,
-        "max_w": 0.30,
+        "window": 20,    # 60→20: 更快响应波动率下降（Opus 设计，CAGR +0.47pp）
+        "max_w": 0.25,   # 0.30→0.25: 压制 credit 集中（max_w 与 window 交互最优，MDD 1:1 对称）
         "min_w": 0.03,
     },
 }
@@ -202,6 +202,6 @@ STRATEGY_PARAMS = {
 PORTFOLIO_TAGS = {
     "V3-B 保守增强(20d)":  {"stars": "★★★", "label": "保守增强 — 逆波动率 20d + nonferr(75d) + HS300 AND抄底，max_w=0.25"},
     "V3-B 风险平价(20d)":  {"stars": "★★★", "label": "学院派 — 4桶等权 HRP + nonferr(75d) + Gold(75d) + SP500(75d) + HS300(30d) + HS300 AND抄底"},
-    "V3c 多元":            {"stars": "★★★", "label": "V3c 多元 — 6资产逆波动率60d + nonferr(75d) + gold(75d) + SP500(75d) + HS300 AND抄底"},
+    "V3c 多元":            {"stars": "★★★", "label": "V3c 多元 — 6资产逆波动率20d + nonferr(75d) + gold(75d) + SP500(75d) + HS300 AND抄底"},
 }
 
