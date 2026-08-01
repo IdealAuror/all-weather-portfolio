@@ -27,7 +27,7 @@
 | **V3-B 风险平价(20d)** | 学院派 | {BRP_CAGR} | {BRP_VOL} | {BRP_MDD} | {BRP_SHARPE} | 4 桶等权 HRP + nonferr/gold/sp500/hs300 趋势 + 抄底 + 波动率控制 |
 | **V3c 多元** | 多元全天候 | **{V3C_CAGR}** | {V3C_VOL} | {V3C_MDD} | {V3C_SHARPE} | 6 资产逆波动率 60d + {V3C_TREND_DESC} + HS300 AND 抄底 |
 
-> V3-B RP 四重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d)；V3c 三重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d)。不含 bond_10y（CAGR +1.43pp, Sharpe -0.02）。V3c 多元 6 资产逆波动率 60d，同样不含 bond_10y。本表为**不含原油**版本（6 资产），含原油对比见下方。
+> V3-B RP 四重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d)；V3c 三重趋势过滤：nonferr(75d) + gold(75d) + sp500(75d)。不含 bond_10y（CAGR +1.43pp, Sharpe -0.02）。V3c 多元 6 资产逆波动率 60d，同样不含 bond_10y。三策略均含原油（WTI 75d 趋势过滤，默认集成）。
 
 | | 定位 | CAGR | MDD | 核心约束 | 趋势过滤 | 负收益年 |
 |--|:--:|:---:|:---:|:--------:|:--------:|:--------:|
@@ -35,7 +35,7 @@
 | **V3-B 风险平价** | 进取高回报 | ≥ 8.5% | ≤ -9% | CAGR 优先 | 4 个 | {BRP_NEG_YEARS} |
 | **V3c 多元** | 中位中枢 | ≥ 8.5% | ≤ -8.5% | 回撤优先 | 3 个 | {V3C_NEG_YEARS} |
 
-> 以上约束以无原油版本为基准。含原油版本 MDD 更优、CAGR 略低，详见"含原油对比"。
+> 三策略均含原油（WTI 75d 趋势过滤），指标为含原油口径。
 
 ### 一句话选策略
 
@@ -59,24 +59,13 @@
 | **增长↓ 30Y** | 30 年国债 | 511130 | ✓ | ✓ | ✓ |
 | **通胀↑** | 黄金 | 518850 | ✓ | ✓ | ✓ |
 | | 有色金属 | 159980 | ✓ | ✓ | ✓ |
+| | 原油（LOF） | 501018 | ✓ | ✓ | ✓ |
 
 > V3c 和 V3-B RP 不含 bond_10y（与 bond_30y 同在增长↓桶，久期更短，对组合贡献冗余）。
 > 
 > 30 年国债 ETF（511130）2024 年 3 月上市。回测覆盖 2005–2024 年数据缺口：**2005–2020** 10Y 国债指数 × 久期放大(×3.0)，**2020–2024** 利差法（10Y + 期限利差），**2024+** 真实数据。合成段年化扣减 0.3%。
 >
-> **原油（南方原油 LOF 501018）**：目前申购暂停，不在主版本策略中。含原油对比见下方。
-
-## 附：含原油对比
-
-三策略核心指标如下（均含原油 WTI）：
-
-| 策略 | CAGR | 波动率 | 最大回撤 | Sharpe | Calmar |
-|------|:----:|:------:|:--------:|:-----:|:------:|
-| **V3-B 保守增强** | **{BCON_CAGR}** | {BCON_VOL} | {BCON_MDD} | **{BCON_SHARPE}** | {BCON_CALMAR} |
-| **V3-B 风险平价** | **{BRP_CAGR}** | {BRP_VOL} | {BRP_MDD} | **{BRP_SHARPE}** | {BRP_CALMAR} |
-| **V3c 多元** | **{V3C_CAGR}** | {V3C_VOL} | {V3C_MDD} | **{V3C_SHARPE}** | {V3C_CALMAR} |
-
-> 8 资产含原油（南方原油 LOF 501018），相比 7 资产版 MDD 改善 1-2pp（CAGR -0.2~-0.3pp），原油在通胀桶内与 gold/nonferr 低相关分散。场内 LOF 可直接买卖。
+> **原油（南方原油 LOF 501018）**：三策略默认集成，75d 趋势过滤，MDD 改善 1-2pp（CAGR -0.2~-0.3pp），在通胀桶内与 gold/nonferr 低相关分散。场内 LOF 可直接买卖。
 
 
 ## 快速开始
@@ -99,7 +88,7 @@ python -m allweather.rebalance         # CLI 再平衡
 | `output/nv_curves.csv` | 全部回测净值曲线宽表 |
 | `output/weight_history_*.csv` | 权重历史 |
 | `output/signal_log.csv` | 风控信号触发日志 |
-| `docs/charts/*.png` | 15 张分析图表 |
+| `docs/charts/*.png` | 8 张分析图表 |
 | `docs/data.json` | 结构化指标（前端展示用） |
 
 
@@ -119,6 +108,7 @@ python -m allweather.rebalance         # CLI 再平衡
 ├── pyproject.toml
 ├── allweather/              # 核心模块
 │   ├── config.py            常量（参数阈值、回测区间）
+│   ├── types.py             共享类型定义
 │   ├── data.py              数据加载 + 30Y 国债三阶段合成
 │   ├── fetch.py             通过 akshare 拉取实时数据
 │   ├── backtest.py          统一回测引擎（V3-B RP/V3-B Con/V3c）
@@ -126,13 +116,19 @@ python -m allweather.rebalance         # CLI 再平衡
 │   ├── risk.py              逆波动率 / 风险平价 / 趋势过滤算法
 │   ├── stats.py             绩效指标 / Bootstrap / D_excess 尾部诊断
 │   ├── reports.py           控制台输出
-│   ├── charts.py            15 张分析图表生成
+│   ├── charts.py            8 张分析图表生成
+│   ├── excel_export.py      Excel 报告
+│   ├── markdown_report.py   Markdown 报告
+│   ├── update_docs.py       README/CLAUDE.md/docs 同步
+│   ├── experiment_log.py    实验日志
 │   ├── rebalance.py         实盘再平衡（CLI）
-│   ├── pipeline.py          6 步流水线编排
+│   └── pipeline.py          6 步流水线编排
 ├── streamlit_app/           # Web 再平衡面板（推荐）
 │   ├── app.py
 │   ├── run.bat              双击启动
 │   └── run.py               自动开浏览器
+├── joinquant/               # 聚宽平台量化测试代码
+├── portfolio_comparison/    # 多策略对比工具
 ├── data/                    # 历史数据 CSV
 ├── docs/                    # GitHub Pages 文档
 │   ├── index.html           交互式报告
@@ -152,6 +148,6 @@ python -m allweather.rebalance         # CLI 再平衡
 | **V3-B 保守增强** | 8.69% | 7.99% | −0.70pp | −5.22% | 1.04 |
 | **V3-B 风险平价** | 10.03% | 10.23% | +0.20pp | −7.51% | 0.93 |
 
-> 聚宽版简化项：HS300 抄底从 PB/PE 分位+价格版（纯价格版）、趋势检查月频而非日频、回测起点 2020 年。对比详情见 `_archive/joinquant/comparison.md`。
+> 聚宽版简化项：HS300 抄底从 PB/PE 分位+价格版（纯价格版）、趋势检查月频而非日频、回测起点 2020 年。对比详情见 `joinquant/comparison.md`。
 
-详见 `_archive/joinquant/` 目录或 [_archive/joinquant/README.md](_archive/joinquant/README.md)。
+详见 `joinquant/` 目录或 [joinquant/README.md](joinquant/README.md)。

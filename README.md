@@ -23,11 +23,11 @@ Online docs: [https://idealauror.github.io/all-weather-portfolio/](https://ideal
 
 | Strategy | Style | CAGR | Vol | Max DD | Sharpe | One-liner |
 |----------|:-----:|:----:|:---:|:------:|:-----:|-----------|
-| **V3-B Conservative(20d)** | Conservative Enhanced | **8.48%** | 3.69% | **-6.98%** | **1.70** | Inverse vol 20d + nonferr(75d) + HS300 AND dip |
-| **V3-B Risk Parity(20d)** | Academic | 9.61% | 5.17% | -8.61% | 1.43 | 4-bucket equal HRP + nonferr/gold/sp500/hs300 trends + dip + target vol |
-| **V3c Multi-Asset** | All-Weather | **9.54%** | 4.55% | -7.60% | 1.61 | 6-asset inverse vol 60d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
+| **V3-B Conservative(20d)** | Conservative Enhanced | **8.26%** | 3.62% | **-5.31%** | **1.81** | Inverse vol 20d + nonferr(75d) + HS300 AND dip |
+| **V3-B Risk Parity(20d)** | Academic | 8.95% | 4.90% | -5.68% | 1.48 | 4-bucket equal HRP + nonferr/gold/sp500/hs300 trends + dip + target vol |
+| **V3c Multi-Asset** | All-Weather | **9.29%** | 4.60% | -6.28% | 1.65 | 6-asset inverse vol 60d + nonferr/gold/sp500 trend(75d) + HS300 AND dip |
 
-> V3-B RP 4 trend filters: nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d); V3c 3 trend filters: nonferr(75d) + gold(75d) + sp500(75d). Both exclude bond_10y. Table shows **no-WTI** version (6 assets), see WTI comparison below.
+> V3-B RP 4 trend filters: nonferr(75d) + gold(75d) + sp500(75d) + hs300(30d); V3c 3 trend filters: nonferr(75d) + gold(75d) + sp500(75d). Both exclude bond_10y. All three strategies include crude oil (WTI 75d trend filter, default).
 
 | | Positioning | CAGR | MDD | Core Constraint | Trend Filters | Negative Years |
 |--|:-----------:|:---:|:---:|:--------------:|:-------------:|:--------------:|
@@ -57,27 +57,13 @@ Based on Bridgewater's **four-quadrant macro exposure** framework, selecting fro
 | **Growth↓ 30Y** | 30Y Treasury | 511130 | ✓ | ✓ | ✓ |
 | **Inflation↑** | Gold | 518850 | ✓ | ✓ | ✓ |
 | | Non-ferrous metals | 159980 | ✓ | ✓ | ✓ |
+| | Crude oil (LOF) | 501018 | ✓ | ✓ | ✓ |
 
 > V3c and V3-B RP exclude bond_10y (same growth↓ bucket as bond_30y, shorter duration, redundant contribution).
 >
 > 30Y Treasury ETF (511130) listed Mar 2024. Pre-listing data synthesized in 3 phases: **2005–2020** 10Y index × duration multiplier (×3.0), **2020–2024** spread method (10Y + term spread), **2024+** real data. Synthetic periods deduct 0.3% annualized.
 >
-> **Crude oil (Southern Crude Oil LOF 501018)**: subscriptions currently suspended, not in main strategy set. See WTI comparison below.
-
-## Appendix: WTI Comparison
-
-Adding crude oil (Southern Crude Oil LOF 501018) to the 7-asset pool, key metrics comparison:
-
-| Strategy | Version | CAGR | Vol | Max DD | Sharpe | Calmar |
-|----------|:------:|:----:|:---:|:------:|:-----:|:------:|
-| **V3-B Conservative** | No WTI | **8.48%** | 3.69% | -6.98% | **1.70** | 1.22 |
-| | +WTI | 8.25% | 3.93% | **-5.30%** | 1.54 | **1.56** |
-| **V3-B Risk Parity** | No WTI | **9.61%** | 5.17% | -8.61% | **1.43** | 1.12 |
-| | +WTI | 9.28% | 5.21% | **-6.52%** | 1.36 | **1.42** |
-| **V3c Multi-Asset** | No WTI | **9.54%** | 4.55% | -7.60% | **1.61** | 1.26 |
-| | +WTI | 9.32% | 4.97% | **-6.74%** | 1.43 | **1.38** |
-
-> Adding WTI reduces CAGR by 0.2-0.3pp (e.g. Conservative 8.48% → 8.25%) but improves MDD by 1-2pp (e.g. -6.98% → -5.30%). WTI diversifies within the inflation bucket alongside gold and non-ferrous metals. Subscription for 501018 currently suspended; WTI version can be enabled once resumed.
+> **Crude oil (Southern Crude Oil LOF 501018)**: default in all three strategies with a 75d trend filter — improves MDD by 1-2pp at a CAGR cost of 0.2-0.3pp, diversifying within the inflation bucket alongside gold and non-ferrous metals. Tradeable on-exchange as a LOF.
 
 > **For exact live metrics** (CAGR, Vol, MDD, Sharpe) see the [Chinese README-zh.md](README-zh.md) — automatically updated after each backtest run.
 
@@ -102,7 +88,7 @@ python -m allweather.rebalance         # CLI rebalancing (legacy)
 | `output/nv_curves.csv` | All NAV curves in wide format |
 | `output/weight_history_*.csv` | Weight history |
 | `output/signal_log.csv` | Risk control signal log |
-| `docs/charts/*.png` | 15 analysis charts |
+| `docs/charts/*.png` | 8 analysis charts |
 | `docs/data.json` | Structured metrics (for frontend) |
 
 
@@ -121,6 +107,7 @@ python -m allweather.rebalance         # CLI rebalancing (legacy)
 ├── pyproject.toml
 ├── allweather/              # Core modules
 │   ├── config.py            Constants
+│   ├── types.py             Shared type definitions
 │   ├── data.py              Data loading + 30Y bond synthesis
 │   ├── fetch.py             Data fetching via akshare
 │   ├── backtest.py          Unified backtest engine
@@ -128,16 +115,22 @@ python -m allweather.rebalance         # CLI rebalancing (legacy)
 │   ├── risk.py              Inverse vol / risk parity / trend filters
 │   ├── stats.py             Performance metrics / Bootstrap / D_excess
 │   ├── reports.py           Console output
-│   ├── charts.py            15 chart generation
+│   ├── charts.py            8 chart generation
+│   ├── excel_export.py      Excel report
+│   ├── markdown_report.py   Markdown report
+│   ├── update_docs.py       README/CLAUDE.md/docs sync
+│   ├── experiment_log.py    Experiment log
 │   ├── rebalance.py         Real-portfolio rebalancing tool
 │   └── pipeline.py          6-step pipeline orchestrator
+├── streamlit_app/           # Web rebalancing panel
+├── joinquant/               # JoinQuant platform implementations
+├── portfolio_comparison/    # Multi-strategy comparison tool
 ├── data/                    # Historical data CSV
 ├── docs/                    # GitHub Pages
 │   ├── index.html           Interactive report
 │   ├── data.json            Structured metrics
 │   ├── strategy-paper.md    Strategy design paper
 │   └── charts/              Chart PNGs
-├── _archive/joinquant/      # JoinQuant platform implementation
 └── output/                  # Auto-generated reports
 ```
 
@@ -151,6 +144,6 @@ Three strategies ported to the [JoinQuant (聚宽)](https://www.joinquant.com/) 
 | **V3-B Conservative** | 8.69% | 7.99% | −0.70pp | −5.22% | 1.04 |
 | **V3-B Risk Parity** | 10.03% | 10.23% | +0.20pp | −7.51% | 0.93 |
 
-> JQ simplifications: HS300 dip-buying uses price-only (no PB/PE percentile), trend checks monthly not daily, backtest starts 2020. See `_archive/joinquant/comparison.md` for full comparison.
+> JQ simplifications: HS300 dip-buying uses price-only (no PB/PE percentile), trend checks monthly not daily, backtest starts 2020. See `joinquant/comparison.md` for full comparison.
 
-See `_archive/joinquant/` directory or [_archive/joinquant/README.md](_archive/joinquant/README.md).
+See `joinquant/` directory or [joinquant/README.md](joinquant/README.md).
