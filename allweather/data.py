@@ -319,8 +319,9 @@ def load_panel(include_wti: bool = True) -> pd.DataFrame:
     shfe_copper = load_series("shfe_copper")
 
     # 构建 pre-ETF 的完整 proxy 链（铜 → 指数）
+    # 沪铜段扣 0.0095：159980 期货 ETF vs 沪铜 6.4 年重合期年度拖累 -0.95%（费率+移仓损耗），同 WTI 校准法
     if not shfe_copper.empty and not nonferr_idx.empty:
-        nonferr_proxy = stitch_series(nonferr_idx, shfe_copper, annual_deduct=0.0)
+        nonferr_proxy = stitch_series(nonferr_idx, shfe_copper, annual_deduct=0.0095)
     elif not nonferr_idx.empty:
         nonferr_proxy = nonferr_idx
     else:
