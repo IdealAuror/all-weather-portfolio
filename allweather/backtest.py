@@ -276,12 +276,14 @@ def backtest(
     track_dynamic_nav: bool = False,
     rebal_mode: str = REBAL_MODE,
     vol_trigger_threshold: float | None = None,
+    month_mid_day: int = 10,
 ) -> BacktestResult:
     """统一回测引擎 — 逆波动率/分层风险平价 + 趋势过滤 + 抄底。
 
-    rebal_mode: 调仓日选择 — month_end(月末最后交易日,默认,远离期货换月窗口)/month_start(月初)/month_mid(月中第10交易日)
+    rebal_mode: 调仓日选择 — month_end(月末最后交易日,默认,远离期货换月窗口)/month_start(月初)/month_mid(当月第 N 交易日)
                  /vol_trigger(月末基准 + HS300 20d 波动率超阈值时当月额外调仓一次)。
     vol_trigger_threshold: vol_trigger 模式的波动率阈值（年化，如 0.30 = 30%）。
+    month_mid_day: month_mid 模式选当月第几个交易日（默认 10，用于调仓日历网格实验）。
 
     When track_dynamic_nav=True, returns (nv, nv_dynamic, n_rebal, weight_df, signal_df).
     """
@@ -399,7 +401,7 @@ def backtest(
         if rebal_mode == "month_end":
             _rebal_trigger = (i + 1 >= len(rets_rp.index)) or (d.month != rets_rp.index[i + 1].month)
         elif rebal_mode == "month_mid":
-            _rebal_trigger = month_seq.iloc[i] == 10
+            _rebal_trigger = month_seq.iloc[i] == month_mid_day
         elif rebal_mode == "vol_trigger":
             _month_end_t = (i + 1 >= len(rets_rp.index)) or (d.month != rets_rp.index[i + 1].month)
             _rebal_trigger = _month_end_t or (
