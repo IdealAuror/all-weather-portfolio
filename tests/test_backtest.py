@@ -41,7 +41,7 @@ class TestApplyTrendDip:
         """nonferr 价格低于 SMA → 清仓转 credit"""
         w = np.array([0.0, 0.0, 0.3, 0.2, 0.5])
         sma_params = {"nf_window": 75, "nf_sma": float(self.prices[80, 3] * 1.05),
-                      "au_sma": None, "eq_smas": {}}
+                      "au_sma": None, "eq_smas": {}, "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": False, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
@@ -53,7 +53,7 @@ class TestApplyTrendDip:
         """nonferr 价格高于 SMA → 不清仓"""
         w = np.array([0.0, 0.0, 0.3, 0.2, 0.5])
         sma_params = {"nf_window": 75, "nf_sma": float(self.prices[80, 3] * 0.95),
-                      "au_sma": None, "eq_smas": {}}
+                      "au_sma": None, "eq_smas": {}, "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": False, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
@@ -65,7 +65,8 @@ class TestApplyTrendDip:
         w = np.array([0.0, 0.0, 0.3, 0.0, 0.2])
         sma_params = {"nf_window": 75, "nf_sma": None,
                       "au_sma": None,
-                      "eq_smas": {"sp500": float(self.prices[80, 4] * 1.05)}}
+                      "eq_smas": {"sp500": float(self.prices[80, 4] * 1.05)},
+                      "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": False, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
@@ -77,7 +78,8 @@ class TestApplyTrendDip:
         """SP500 价格高于 SMA → 不清仓 (之前的 bug: 无论价格如何都清仓)"""
         w = np.array([0.0, 0.0, 0.3, 0.0, 0.2])
         sma_params = {"nf_window": 0, "nf_sma": None, "au_sma": None,
-                      "eq_smas": {"sp500": float(self.prices[80, 4] * 0.95)}}
+                      "eq_smas": {"sp500": float(self.prices[80, 4] * 0.95)},
+                      "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": False, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
@@ -88,7 +90,7 @@ class TestApplyTrendDip:
         """eq_smas 中的资产不在 col_idx 中 → 忽略，不报错"""
         w = np.array([0.0, 0.2, 0.3, 0.0, 0.5])
         sma_params = {"nf_window": 0, "nf_sma": None, "au_sma": None,
-                      "eq_smas": {"nonexistent": 1.5}}
+                      "eq_smas": {"nonexistent": 1.5}, "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": False, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
@@ -100,7 +102,8 @@ class TestApplyTrendDip:
         col_idx_no_credit = {"asset1": 0, "sp500": 1, "nonferr": 2}
         w = np.array([0.3, 0.3, 0.4])
         sma_params = {"nf_window": 0, "nf_sma": None,
-                      "au_sma": None, "eq_smas": {"sp500": 1000.0}}
+                      "au_sma": None, "eq_smas": {"sp500": 1000.0},
+                      "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": False, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
@@ -110,7 +113,8 @@ class TestApplyTrendDip:
     def test_post_process_max_w_clips(self):
         """post_process_max_w 应截断极端权重"""
         w = np.array([0.1, 0.6, 0.3, 0.0, 0.0])
-        sma_params = {"nf_window": 0, "nf_sma": None, "au_sma": None, "eq_smas": {}}
+        sma_params = {"nf_window": 0, "nf_sma": None, "au_sma": None, "eq_smas": {},
+                      "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": False, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
@@ -124,7 +128,8 @@ class TestApplyTrendDip:
         col_idx_gold = {"asset1": 0, "credit": 1, "gold": 2}
         prices = make_price_array(100, 3)
         sma_params = {"nf_window": 0, "nf_sma": None,
-                      "au_sma": float(prices[80, 2] * 1.05), "eq_smas": {}}
+                      "au_sma": float(prices[80, 2] * 1.05), "eq_smas": {},
+                      "wti_window": 0, "wti_sma": None}
         dip = {"gold_trend": True, "gold_dip_threshold": None, "gold_dip_boost": 2.5,
                "gold_dip_cap": None, "gold_peak": 1.0, "gold_boosted": False,
                "gold_boosted_flag": False, "hs300_value_dip": False, "hs300_boost": None}
