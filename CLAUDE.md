@@ -92,7 +92,7 @@ CI：`.github/workflows/backtest.yml` 跑 `py main.py`，检查 Sharpe/MDD 边�
 | 正收益年比例 | ≥ 70% | ≥ 70% | ≥ 70% |
 | Bootstrap 5年亏损概率 | < 5% | < 5% | < 8% |
 | D_excess | ≥ -0.5 | ≥ -0.5 | ≥ -0.5 |
-> Sharpe 为修正版 `(CAGR - 2.2%) / vol`（代码中 `sharpe` 字段）。MDD 为全样本最大回撤。CAGR 为几何年化收益率。
+> Sharpe 为修正版 `(CAGR - 1.7%) / vol`（代码中 `sharpe` 字段，无风险利率见 `RISK_FREE_ANNUAL`）。MDD 为全样本最大回撤。CAGR 为几何年化收益率。
 ## 策略速查
 | 策略 | 一句话 |
 |------|--------|
@@ -127,7 +127,7 @@ V3-B RP 和 V3c 去掉了 bond_10y（CAGR +1.43pp，Sharpe 仅 -0.02）。
 | 常量 | 值 | 说明 |
 |------|-----|------|
 | `BACKTEST_START/END` | 2005-04-08 / 2026-05-30 | ~21 年 |
-| `RISK_FREE_ANNUAL` | 0.022 | 无风险利率 |
+| `RISK_FREE_ANNUAL` | 0.017 | 无风险利率（10Y 国债 2026.07 实际值） |
 | `GOLD_DIP_THRESHOLD` | 0.15 | 黄金抄底触发 |
 | `GOLD_DIP_BOOST` | 2.5 | 黄金抄底倍数 |
 | `HS300_DIP_THRESHOLD` | 0.25 | HS300 抄底触发 |
