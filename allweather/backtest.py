@@ -275,10 +275,13 @@ def backtest(
     hs300_pe_pct: pd.Series | None = None,
     track_dynamic_nav: bool = False,
     rebal_mode: str = REBAL_MODE,
+    vol_trigger_threshold: float | None = None,
 ) -> BacktestResult:
     """统一回测引擎 — 逆波动率/分层风险平价 + 趋势过滤 + 抄底。
 
-    rebal_mode: 调仓日选择 — month_end(月末最后交易日,默认,远离期货换月窗口)/month_start(月初)/month_mid(月中第10交易日)。
+    rebal_mode: 调仓日选择 — month_end(月末最后交易日,默认,远离期货换月窗口)/month_start(月初)/month_mid(月中第10交易日)
+                 /vol_trigger(月末基准 + HS300 20d 波动率超阈值时当月额外调仓一次)。
+    vol_trigger_threshold: vol_trigger 模式的波动率阈值（年化，如 0.30 = 30%）。
 
     When track_dynamic_nav=True, returns (nv, nv_dynamic, n_rebal, weight_df, signal_df).
     """
@@ -341,6 +344,11 @@ def backtest(
     lookback = rp_window if weighting_method in ("hierarchical_rp", "erc") else iv_window
     # 每月交易日序号（rebal_mode="month_mid" 用）：当月第 N 个交易日
     month_seq = rets_rp.index.to_series().groupby(rets_rp.index.to_period("M")).cumcount() + 1
+    # HS300 20d 年化波动率（rebal_mode="vol_trigger" 用）：波动率突破阈值时当月额外调仓
+    vol_ann = None
+    if rebal_mode == "vol_trigger" and vol_trigger_threshold is not None and hs300_idx >= 0:
+        vol_ann = rets_rp.iloc[:, hs300_idx].rolling(20, min_periods=1).std().fillna(0).values * np.sqrt(252)
+    last_rebal_month = -1
     rp_buckets_frozen = {k: list(v) for k, v in (rp_buckets or BUCKET_GROUPS).items()}
     initial_w = _compute_weights(rets_rp.iloc[:lookback], weighting_method, iv_window, rp_window, max_w, min_w, bucket_method, rp_buckets_frozen)
 
@@ -392,7 +400,12 @@ def backtest(
             _rebal_trigger = (i + 1 >= len(rets_rp.index)) or (d.month != rets_rp.index[i + 1].month)
         elif rebal_mode == "month_mid":
             _rebal_trigger = month_seq.iloc[i] == 10
+        elif rebal_mode == "vol_trigger":
+            _month_end_t = (i + 1 >= len(rets_rp.index)) or (d.month != rets_rp.index[i + 1].month)
+            _rebal_trigger = _month_end_t or (
+                vol_ann is not None and vol_ann[i] > vol_trigger_threshold and last_rebal_month != d.month)
         if _rebal_trigger and i > lookback:
+            last_rebal_month = d.month
             window_df = rets_rp.iloc[max(0, i - lookback):i]
 
             new_w = _compute_weights(window_df, weighting_method, iv_window, rp_window, max_w, min_w, bucket_method, rp_buckets_frozen)
