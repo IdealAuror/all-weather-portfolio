@@ -144,6 +144,8 @@ V3-B RP 和 V3c 去掉了 bond_10y（CAGR +1.43pp，Sharpe 仅 -0.02）。
 main.py → pipeline.run_full_pipeline()
 allweather/
   config.py         所有常量
+  types.py          PerfMetrics/Step3Metrics 等共享类型
+  experiment_log.py 实验日志（experiments.jsonl）
   data.py           加载 + 合成 30Y 国债
   fetch.py          akshare 数据拉取
   backtest.py       统一回测引擎
@@ -151,14 +153,20 @@ allweather/
   risk.py           逆波动率 / 分层风险平价 / 趋势过滤
   stats.py          指标 / Bootstrap / D_excess
   reports.py        控制台输出
+  charts.py         8 张 matplotlib 图表
   excel_export.py   Excel 报告
   markdown_report.py Markdown 报告
+  update_docs.py    README/CLAUDE.md/docs 同步
+  rebalance.py      实盘再平衡（streamlit_app 调用）
   pipeline.py       6 步编排
+streamlit_app/     Web 再平衡面板（app.py 主程序 + run.py 启动器）
+joinquant/         聚宽平台量化测试代码（独立于核心流水线）
+portfolio_comparison/  多策略对比工具
 ```
 
 **模块依赖分层：**
 - **第 0 层**: config.py, risk.py, experiment_log.py
-- **第 1 层**: data.py, fetch.py, stats.py, charts.py, reports.py, excel_export.py, markdown_report.py, update_docs.py
+- **第 1 层**: types.py, data.py, fetch.py, stats.py, charts.py, reports.py, excel_export.py, markdown_report.py, update_docs.py
 - **第 2 层**: backtest.py, rebalance.py
 - **第 3 层**: strategy_b.py
 - **第 4 层(编排)**: pipeline.py
