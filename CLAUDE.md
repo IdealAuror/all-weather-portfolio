@@ -96,9 +96,9 @@ CI：`.github/workflows/backtest.yml` 跑 `py main.py`，检查 Sharpe/MDD 边�
 ## 策略速查
 | 策略 | 一句话 |
 |------|--------|
-| V3-B 保守增强(20d) | 逆波动率20d + nonferr75d趋势 + HS300 AND抄底 — Sharpe 1.81 |
-| V3c 多元 | 6资产逆波动率20d + nonferr/gold/sp500趋势75d + HS300 AND抄底 — MDD -6.77% |
-| V3-B 风险平价(20d) | 4桶HRP + 四重趋势 + 抄底 + target_vol=9% — CAGR 8.92% |
+| V3-B 保守增强(20d) | 逆波动率20d + nonferr75d趋势 + HS300 AND抄底 — Sharpe 1.82 |
+| V3c 多元 | 6资产逆波动率20d + nonferr/gold/sp500趋势75d + HS300 AND抄底 — MDD -6.30% |
+| V3-B 风险平价(20d) | 4桶HRP + 四重趋势 + 抄底 + target_vol=9% — CAGR 9.39% |
 增长↑(hs300,sp500) | 收益垫(credit) | 增长↓10Y(bond_10y) | 增长↓30Y(bond_30y) | 通胀↑(gold,nonferr)
 ## 策略参考
 
@@ -135,6 +135,7 @@ V3-B RP 和 V3c 去掉了 bond_10y（CAGR +1.43pp，Sharpe 仅 -0.02）。
 | `HS300_PB_ENTRY` / `HS300_PE_EXIT` | 30 / 70 | AND 入场PB / 出场PE 分位 |
 | `RISK_PARITY_TARGET_VOL` | 0.09 | 风险平价目标波动率 |
 | `BOOTSTRAP_N_SIM` | 1000 | 蒙特卡洛次数 |
+| `REBAL_MODE` | month_end | 调仓日：月末最后交易日（远离期货换月窗口，三策略受益） |
 
 > 代码中的权威定义在 `config.py`。
 

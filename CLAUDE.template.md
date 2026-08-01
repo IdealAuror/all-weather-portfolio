@@ -135,6 +135,7 @@ V3-B RP 和 V3c 去掉了 bond_10y（CAGR +1.43pp，Sharpe 仅 -0.02）。
 | `HS300_PB_ENTRY` / `HS300_PE_EXIT` | 30 / 70 | AND 入场PB / 出场PE 分位 |
 | `RISK_PARITY_TARGET_VOL` | 0.09 | 风险平价目标波动率 |
 | `BOOTSTRAP_N_SIM` | 1000 | 蒙特卡洛次数 |
+| `REBAL_MODE` | month_end | 调仓日：月末最后交易日（远离期货换月窗口，三策略受益） |
 
 > 代码中的权威定义在 `config.py`。
 

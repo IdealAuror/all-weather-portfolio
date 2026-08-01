@@ -11,6 +11,7 @@ from .config import (
     HS300_DIP_THRESHOLD, HS300_DIP_BOOST,
     HS300_DIP_SMA, HS300_DIP_EXIT_RECOVERY,
     HS300_PB_ENTRY, HS300_PE_EXIT,
+    REBAL_MODE,
 )
 from .risk import inverse_vol_weights, erc_weights, hierarchical_rp_weights, hs300_dip_check, hs300_signal_snapshot, dynamic_cash_ratio
 
@@ -273,8 +274,11 @@ def backtest(
     hs300_pb_pct: pd.Series | None = None,
     hs300_pe_pct: pd.Series | None = None,
     track_dynamic_nav: bool = False,
+    rebal_mode: str = REBAL_MODE,
 ) -> BacktestResult:
     """统一回测引擎 — 逆波动率/分层风险平价 + 趋势过滤 + 抄底。
+
+    rebal_mode: 调仓日选择 — month_end(月末最后交易日,默认,远离期货换月窗口)/month_start(月初)/month_mid(月中第10交易日)。
 
     When track_dynamic_nav=True, returns (nv, nv_dynamic, n_rebal, weight_df, signal_df).
     """
@@ -335,6 +339,8 @@ def backtest(
         nv_dyn = pd.Series(index=rets_rp.index, dtype=float)
 
     lookback = rp_window if weighting_method in ("hierarchical_rp", "erc") else iv_window
+    # 每月交易日序号（rebal_mode="month_mid" 用）：当月第 N 个交易日
+    month_seq = rets_rp.index.to_series().groupby(rets_rp.index.to_period("M")).cumcount() + 1
     rp_buckets_frozen = {k: list(v) for k, v in (rp_buckets or BUCKET_GROUPS).items()}
     initial_w = _compute_weights(rets_rp.iloc[:lookback], weighting_method, iv_window, rp_window, max_w, min_w, bucket_method, rp_buckets_frozen)
 
@@ -381,7 +387,12 @@ def backtest(
                 hs300_peak = float(price_arr[i, hs300_idx])
 
         # --- Rebalance ---
-        if d.month != rets_rp.index[i - 1].month and i > lookback:
+        _rebal_trigger = d.month != rets_rp.index[i - 1].month
+        if rebal_mode == "month_end":
+            _rebal_trigger = (i + 1 >= len(rets_rp.index)) or (d.month != rets_rp.index[i + 1].month)
+        elif rebal_mode == "month_mid":
+            _rebal_trigger = month_seq.iloc[i] == 10
+        if _rebal_trigger and i > lookback:
             window_df = rets_rp.iloc[max(0, i - lookback):i]
 
             new_w = _compute_weights(window_df, weighting_method, iv_window, rp_window, max_w, min_w, bucket_method, rp_buckets_frozen)

@@ -25,6 +25,8 @@ SAFETY_DEDUCT = {
 
 # === 调仓规则 ===
 REBAL_FREQ = "ME"            # 月度再平衡（V3c）
+REBAL_MODE = "month_end"     # 调仓日: 月末最后交易日 — 远离商品期货主力换月窗口（月中），
+                             # 实证: V3c +0.43pp / RP +0.47pp / Con +0.10pp，三策略受益或中性
 RISK_FREE_RATE = 0.017 / 252   # 10年期国债收益率 ~1.7%（日度，2026.07）
 RISK_FREE_ANNUAL = 0.017       # 无风险利率年化，用于 Sharpe 修正
 
