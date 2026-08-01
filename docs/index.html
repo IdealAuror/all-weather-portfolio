@@ -440,7 +440,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <h3 class="sec-h3">核心理念</h3>
 <p class="para">用最少的资产、最简单的规则，复现全天候的核心效果。6 只 ETF 覆盖四大宏观象限，逆波动率让低波资产（信用债）自然获得高权重——不需要预设任何比例，每月花 5 分钟照着算好的权重调一次即可。nonferr + SP500 双重趋势过滤做风控增强，不追求极致回报，追求"几乎不亏钱"的稳健复利。</p>
 <h3 class="sec-h3">⚙️ 权重设计逻辑（逆波动率动态加权）</h3>
-<p class="para"><strong>动态权重方案：</strong>V3c 每月按过去 60 个交易日的逆波动率重新计算 6 项资产的权重。波动率低的资产（如信用债）自然获得更高权重，波动率高的资产（如权益）被自动压低。高 Sharpe 资产不会过度集中——只按风险贡献分配，不按历史收益分配。</p>
+<p class="para"><strong>动态权重方案：</strong>V3c 每月按过去 20 个交易日的逆波动率重新计算 6 项资产的权重。波动率低的资产（如信用债）自然获得更高权重，波动率高的资产（如权益）被自动压低。高 Sharpe 资产不会过度集中——只按风险贡献分配，不按历史收益分配。</p>
 <p class="para"><strong>资产配比（6 资产）：</strong>hs300 + us_sp500（权益）、credit（信用债）、bond_30y（长久期利率债）、gold + nonferr（通胀↑商品）。无 10Y 国债——30Y 久期约 18 年已足够覆盖利率风险，精简一只减少调仓复杂度。</p>
 <p class="para"><strong>调仓纪律：</strong>每月末逆波动率重算 + nonferr/SP500 趋势过滤（跌破 75d SMA → 清仓转投 credit）。</p>
 <table class="data-tbl" style="--header-color: #C0392B;">
@@ -1139,7 +1139,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para">这是本策略最核心的公式。不复杂，就是四步算数。以下以 V3c 多元策略为例，代入 8 个真实数据走一遍。</p>
 
 <p class="para-bold">前提：你需要什么数据？</p>
-<p class="para">每只 ETF 过去 60 个交易日的<strong>日收益率</strong>。日收益率 = (今日收盘价 − 昨日收盘价) / 昨日收盘价。比如 hs300 从 1.500 涨到 1.515，日收益率 = (1.515 − 1.500) / 1.500 = +1.0%。</p>
+<p class="para">每只 ETF 过去 20 个交易日的<strong>日收益率</strong>。日收益率 = (今日收盘价 − 昨日收盘价) / 昨日收盘价。比如 hs300 从 1.500 涨到 1.515，日收益率 = (1.515 − 1.500) / 1.500 = +1.0%。</p>
 <p class="para">实际上不需要手算——双击项目里的 <code style="background:#f0f0f0; padding:1px 4px;">streamlit_app/run.bat</code> 打开 Web 面板（推荐），或命令行 <code style="background:#f0f0f0; padding:1px 4px;">python -m allweather.rebalance</code> 全自动完成。</p>
 
 <p class="para-bold">第一步：计算每只 ETF 的年化波动率 $\sigma$</p>
@@ -1244,7 +1244,7 @@ table.data-tbl tbody tr:hover { background: #f5f9fc; }
 <p class="para-bold">手动方式（如果不用脚本）：</p>
 
 <p class="para-bold">① 获取数据（5 分钟）</p>
-<p class="para">从券商 APP 导出持仓截图，记下每只 ETF 的当前市值。然后从同花顺/东方财富导出过去 60 个交易日的日净值（V3c）/ 20 个交易日（B-RP、B-Con）。</p>
+<p class="para">从券商 APP 导出持仓截图，记下每只 ETF 的当前市值。然后从同花顺/东方财富导出过去 20 个交易日的日净值（三策略均为 20 个交易日窗口）。</p>
 
 <p class="para-bold">② 计算目标权重（10 分钟）</p>
 <p class="para">打开 Excel，按上面第（三）节公式四步走完，得到每只 ETF 的目标权重。检查 nonferr 收盘价是否跌破对应 SMA（统一 75d），如果是，nonferr 直接归零、权重加给 credit。</p>
